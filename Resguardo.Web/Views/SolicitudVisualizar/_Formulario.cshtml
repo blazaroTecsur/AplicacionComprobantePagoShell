@@ -1,0 +1,181 @@
+﻿@{
+    ViewData["Titulo"] = "Registro de Solicitud";
+}
+
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="modalSolicitud">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitulo">Nueva Solicitud</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="divErrores" class="alert alert-danger d-none" role="alert"></div>
+                <div id="modalContainerMaestro"></div>
+                <div id="modalContainerMapa"></div>                
+                <div class="modal fade" id="modalAprobar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalAprobarLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalTituloAprobar"></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body">
+                                <textarea class="form-control" id="txtComentario" rows="4" placeholder="Ingrese un comentario" required></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                <button type="button" class="btn btn-primary" id="btnAceptar">Aceptar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form id="frmSolicitud">
+                    <input type="hidden" name="id" id="hdId" value="0" />
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-2">
+                                <label for="cboFlujo" class="form-label">Flujo</label>
+                                <select class="form-select" id="cboFlujo" name="IdFlujo" required></select>
+                            </div>
+                            <div class="col-2">
+                                <label for="txtNroSro" class="form-label">N° Sro</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="txtNroSro" name="NumSro" required>
+                                    <button class="btn btn-primary" type="button" id="btnBuscarSro"><i class="bi bi-search"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-4 offset-2 div-view" hidden>
+                                <label for="cboEstado" class="form-label">Estado</label>
+                                <select class="form-select" id="cboEstado" name="IdEstado" disabled>
+                                </select>
+                            </div>
+                            <div class="col-2 div-view" hidden>
+                                <label for="txtFolio" class="form-label">Folio</label>
+                                <input type="number" class="form-control" id="txtFolio" name="Folio" disabled>
+                            </div>
+                        </div>
+                        <hr class="div-new" hidden />
+                        <div class="row mt-2 div-new" hidden>
+                            <div class="col-6">
+                                <label for="txtCodDpto" class="form-label">Departamento</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="txtDpto" readonly>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label for="txtCodActv" class="form-label">Actividad</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="txtActv" name="CodActv" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2 div-new" hidden>
+                            <div class="col-6">
+                                <label for="txtRucSctta" class="form-label">Subcontratista</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="txtSctta" name="RucSctta" readonly>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label for="txtCodCapataz" class="form-label">Capataz <a href="#" id="lnkCapataz"><i class="bi bi-box-arrow-up-right"></i></a></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="txtCodCapataz" name="CodCapataz" readonly required>
+                                    <span class="input-group-text"><i class="bi bi-arrow-left-right"></i></span>
+                                    <input type="text" class="form-control" id="txtNomCapataz" name="NomCapataz" readonly required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2 div-new" hidden>
+                            <div class="col-2">
+                                <label for="txtCelular" class="form-label">Celular</label>
+                                <input type="text" class="form-control" id="txtCelular" name="Celular" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="txtTpoTrabajo" class="form-label">Tpo. Trabajo</label>
+                                <input type="text" class="form-control" id="txtTpoTrabajo" name="TpoTrabajo" required>
+                            </div>
+                            <div class="col-2">
+                                <label for="txtTotHrasSolicitud" class="form-label">Hras Solicitadas</label>
+                                <input type="text" class="form-control" id="txtTotHrasSolicitud" readonly>
+                            </div>
+                            <div class="col-2">
+                                <label for="txtTotHrasAprobadas" class="form-label">Hras Aprobadas</label>
+                                <input type="text" class="form-control" id="txtTotHrasAprobadas" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <form id="frmServicio" class="div-new" hidden>
+                    <hr />
+                    <div class="col-12 div-servicio">
+                        <div class="row mt-2">
+                            <div class="col-2">
+                                <label for="cboServicio" class="form-label">Servicio</label>
+                                <select class="form-select" id="cboServicio" required></select>
+                            </div>
+                            <div class="col-2">
+                                <label for="txtFecha" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" id="txtFecha" required>
+                            </div>
+                            <div class="col-2">
+                                <label for="txtHraInicio" class="form-label">Hra. Inicio</label>
+                                <select id="txtHraInicio" class="form-select" required>
+                                    <option value="">--:--</option>
+                                    @for (int i = 0; i <= 23; i++)
+                                    {
+                                        <option value="@(i.ToString().PadLeft(2, '0')):00">@(i.ToString().PadLeft(2, '0')):00</option>
+                                        <option value="@(i.ToString().PadLeft(2, '0')):30">@(i.ToString().PadLeft(2, '0')):30</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-2">
+                                <label for="txtHraFin" class="form-label">Hra. Fin</label>
+                                <select id="txtHraFin" class="form-select" required>
+                                    <option value="">--:--</option>
+                                    @for (int i = 0; i <= 23; i++)
+                                    {
+                                        <option value="@(i.ToString().PadLeft(2, '0')):00">@(i.ToString().PadLeft(2, '0')):00</option>
+                                        <option value="@(i.ToString().PadLeft(2, '0')):30">@(i.ToString().PadLeft(2, '0')):30</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-4 d-flex align-items-end">                                
+                                <div class="input-group">
+                                    <div class="input-group-text">
+                                        <input class="form-check-input mt-0" type="checkbox" value="" id="chkDiaSig" />
+                                    </div>
+                                    <input type="text" class="form-control" value="¿Servicio hasta el día siguiente?" readonly/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <label for="txtDireccion" class="form-label">Ubicación</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="txtDireccion" required>
+                                    <button class="btn btn-primary" type="button" id="btnVerMapa"><i class="bi bi-geo-alt-fill"></i></button>
+                                </div>
+                                <input type="hidden" class="form-control" id="txtCoordenada" def="" />
+                            </div>
+                            <div class="col-2">
+                                <label for="txtCantidad" class="form-label">Cantidad</label>
+                                <input type="number" class="form-control" id="txtCantidad" required>
+                            </div>
+                            <div class="col-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-secondary" id="btnAgregar">Agregar</button>
+                            </div>
+                        </div>                        
+                    </div>
+                    <div id="tablaServicios" class="mt-2"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>
+                <button type="button" id="btnAprobar" class="btn btn-success div-check" hidden>Aprobar</button>                
+                <button type="button" id="btnAnular" class="btn btn-danger div-check" hidden>Anular</button>
+                <button type="button" id="btnGrabar" class="btn btn-primary div-new">Grabar</button>
+            </div>
+        </div>
+    </div>
+</div>

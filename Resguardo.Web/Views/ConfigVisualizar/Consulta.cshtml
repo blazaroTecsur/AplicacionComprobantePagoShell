@@ -1,0 +1,43 @@
+﻿@{
+    ViewData["Titulo"] = "Límites de Aprobación de Efectivos";
+}
+
+<div class="col-12">
+    <div id="divErrores" class="alert alert-danger d-none" role="alert"></div>
+    <div class="row">
+        <div class="col-2">
+            <label for="consulta_txtFecha" class="form-label">Fecha</label>
+            <input type="date" class="form-control" id="consulta_txtFecha">
+        </div>
+        <div class="col-3">
+            <label for="consulta_cboServicio" class="form-label">Departamento</label>
+            <select class="form-select" id="consulta_cboServicio">
+            </select>
+        </div>
+        <div class="col-2 d-flex align-items-end">
+            @if (User.HasClaim("permission", "CONF.VER"))
+            {
+                <button type="button" class="btn btn-primary" id="consulta_btnBuscar"><i class="bi bi-search"></i> Buscar</button>
+            }
+            &nbsp;&nbsp;
+            @if (User.HasClaim("permission", "CONF.COPIAR"))
+            {
+                <button type="button" class="btn btn-secondary" id="consulta_btnCopiar"><i class="bi bi-copy"></i> Copiar</button>
+            }
+        </div>
+        @if (User.HasClaim("permission", "CONF.CREAR"))
+        {
+            <div class="col-5 d-flex align-items-end justify-content-end">
+                <button type="button" class="btn btn-success" id="consulta_btnGrabar"><i class="bi bi-floppy"></i> Grabar</button>
+            </div>
+        }
+    </div>
+</div>
+<hr />
+<div id="consulta_tablaConfiguracion" class="mt-2"></div>
+<div id="modalContainer"></div>
+
+@section Scripts {
+    <script src="~/js/consulta_config.js"></script>
+    <script src="~/js/config.js"></script>
+}

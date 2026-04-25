@@ -1,0 +1,20 @@
+Scaffold-DbContext "server=10.160.9.18;uid=tecsur_root;pwd=Tecsur2021$;database=erp_tecsur_pinterna" Pomelo.EntityFrameworkCore.MySql -OutputDir Scaffold -Tables rpogenerico,rposolicitud,rposervicio,rpoconfig,rpoaprobador,rpopersonal,rpoefectivo,rposervicioprov -f
+
+
+En C# programa las siguientes reglas de validación: 
+hoy, lunes	 hasta el 12pm	puedo generar una solicitud para el día martes (fecha del servicio) desde las 6 am (hora del servicio)
+hoy, martes	hasta el 12pm puedo generar una solicitud para el día 	miercoles (fecha del servicio) desde las 6 am (hora del servicio)
+hoy, miercoles	hasta el 12pm puedo generar una solicitud para el día 	jueves (fecha del servicio) desde las 6 am (hora del servicio)
+hoy, jueves	hasta el 12pm puedo generar una solicitud para el día viernes (fecha del servicio) desde las 6 am (hora del servicio)
+hoy, viernes hasta el 12pm puedo generar una solicitud para el día sabado (fecha del servicio) desde las 6 am (hora del servicio)
+hoy, viernes hasta las 3pm puedo generar una solicitud para el día domingo y lunes (fecha del servicio) desde las 6 am (hora del servicio)
+hoy, sabado	puedo generar una solicitud	a partir del día martes	(fecha del servicio)  desde las 6 am (hora del servicio)
+hoy, domingo	puedo generar una solicitud	a partir del día martes (fecha del servicio) desde las 6 am (hora del servicio)
+Los siguientes parametros son: "fechaActual", "fechaServicio" y "horaServicio"
+
+
+Roles:
+Registrador
+Consultador
+AprobadorRegular
+AprobadorEspecial

@@ -1,0 +1,29 @@
+@*
+ ╔══════════════════════════════════════════════════════════════╗
+ ║  Views/Shared/_LoginLayout.cshtml                           ║
+ ║  Layout minimalista para páginas de autenticación           ║
+ ║  Sin sidebar ni topbar.                                     ║
+ ╚══════════════════════════════════════════════════════════════╝
+*@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="robots" content="noindex, nofollow"/>
+    <title>:: Plataforma Interna</title>
+
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/dist/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="~/lib/ui-corporativo/corp-design-system.min.css" rel="stylesheet" />
+    <link href="~/css/site-select.css" rel="stylesheet" asp-append-version="true" />
+</head>
+<body class="login-page">
+
+    @RenderBody()
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/ui-corporativo/corp-design-system.js" asp-append-version="true"></script>
+    <script src="~/js/site-select.js" asp-append-version="true"></script>    
+</body>
+</html>

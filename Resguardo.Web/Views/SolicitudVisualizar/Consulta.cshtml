@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Titulo"] = "Consulta de Solicitud";
+}
+
+<div class="col-12">
+    <div class="row">
+        <div class="col-2">
+            <label for="cboTipo" class="form-label">Tipo</label>
+            <select class="form-select" id="consulta_cboTipo">
+            </select>
+        </div>
+        <div class="col-2">
+            <label for="cboFlujo" class="form-label">Flujo</label>
+            <select class="form-select" id="consulta_cboFlujo"></select>
+        </div>
+        <div class="col-2">
+            <label for="txtNroSro" class="form-label">N° Sro</label>
+            <input type="number" class="form-control" id="consulta_txtNroSro">
+        </div>
+        <div class="col-2">
+            <label for="cboEstado" class="form-label">Estado</label>
+            <select class="form-select" id="consulta_cboEstado">
+            </select>
+        </div>
+        <div class="col-2">
+            <label for="txtFolio" class="form-label">Folio</label>
+            <input type="number" class="form-control" id="consulta_txtFolio">
+        </div>
+        <div class="col-2 d-flex align-items-end justify-content-between">
+            @if (User.HasClaim("permission", "SOLC.VER"))
+            {
+                <button type="button" class="btn btn-primary" id="consulta_btnBuscar"><i class="bi bi-search"></i> Buscar</button>
+            }
+            &nbsp;&nbsp;&nbsp;
+            @if (User.HasClaim("permission", "SOLC.CREAR"))
+            {
+                <button type="button" class="btn btn-secondary" id="consulta_btnNuevo"><i class="bi bi-file-earmark-plus"></i> Nuevo</button>
+            }
+        </div>
+    </div>
+</div>
+<hr />
+<div id="consulta_tablaSolicitudes" class="mt-2"></div>
+<div id="modalContainer"></div>
+
+@section Scripts {
+    <script src="~/js/consulta_solicitudes.js"></script>
+    <script src="~/js/solicitud.js"></script>
+    <script src="~/js/servicio.js"></script>
+    <script src="~/js/maestro.js"></script>
+    <script src="~/js/mapa.js"></script>
+}

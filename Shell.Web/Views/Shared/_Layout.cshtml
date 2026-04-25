@@ -1,0 +1,327 @@
+@model Shell.Web.Models.UsuarioViewModel
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>:: Plataforma Interna</title>
+
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/dist/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="~/lib/ui-corporativo/corp-design-system.min.css" rel="stylesheet" />
+    <link href="~/css/site-index.css" rel="stylesheet" asp-append-version="true" />
+
+</head>
+<body>
+
+    @* ══════════════════════════════════════════════════════════════
+    SIDEBAR
+    ══════════════════════════════════════════════════════════════ *@
+    <aside class="layout-sidebar" id="layoutSidebar" aria-label="Navegación principal">
+
+        <a class="layout-sb-brand" href="#" aria-label="Ir al inicio">
+            <div class="layout-sb-logo" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 3L5 7.5V15c0 6.5 4.7 12.6 11 14 6.3-1.4 11-7.5 11-14V7.5L16 3Z" fill="#004b8d" />
+                    <path d="M16 3L5 7.5V15c0 6.5 4.7 12.6 11 14 6.3-1.4 11-7.5 11-14V7.5L16 3Z"
+                          fill="url(#sbGrad)" opacity=".55" />
+                    <path d="M11 15.5l3.5 3.5 6.5-7" stroke="#fff" stroke-width="2.2"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                    <defs>
+                        <linearGradient id="sbGrad" x1="5" y1="3" x2="27" y2="29" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#039f61" />
+                            <stop offset="1" stop-color="#004b8d" stop-opacity="0" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <div>
+                <span class="layout-sb-app-name">Plataforma Interna</span>
+                <span class="layout-sb-app-sub">@ViewBag.Version</span>
+            </div>
+        </a>
+
+        <button class="layout-env-badge env-dev" id="envBadge"
+                onclick="Layout.toggleDrop('envDrop')"
+                aria-haspopup="true" aria-expanded="false"
+                aria-label="Entorno actual: @ViewBag.Entorno. Clic para cambiar.">
+            <span class="layout-env-dot" aria-hidden="true"></span>
+            <span id="envBadgeLabel">@ViewBag.Entorno</span>
+            <i class="bi bi-chevron-down ms-auto" style="font-size:.6rem;" aria-hidden="true"></i>
+        </button>
+
+        <nav class="layout-sb-nav" aria-label="Menú principal">
+            @{
+
+
+
+                var apps = Model.Menus.Select(m => new Shell.Web.Models.AppViewModel()
+            {
+                Codigo = m.App.Codigo,
+                Nombre = m.App.Nombre,
+                Ruta = m.App.Ruta,
+                Icono = m.App.Icono
+            }).DistinctBy(a=> new {  a.Codigo, a.Nombre, a.Ruta, a.Icono } ).ToList();
+            }
+            @foreach (var app in apps)
+            {
+                    <span class="layout-nav-section">@app.Nombre</span>
+                @foreach (var menu in Model.Menus.Where(m => m.App.Codigo == app.Codigo))
+                {
+                            <div class="layout-nav-item">
+                                <a class="layout-nav-link" href="@($"{app.Ruta}{menu.Ruta}")" target="_blank" app="@app.Codigo" menu="@menu.Codigo" >
+                                    <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i> @menu.Nombre
+                                </a>
+                            </div>
+                }
+            }
+        </nav>
+    </aside>
+
+    <div class="layout-sb-overlay" id="sbOverlay" onclick="Layout.closeSidebar()" aria-hidden="true"></div>
+
+    @* ══════════════════════════════════════════════════════════════
+    TOPBAR
+    ══════════════════════════════════════════════════════════════ *@
+    <header class="layout-topbar" role="banner">
+
+        <button class="layout-topbar-hamburger" id="hamburgerBtn"
+                onclick="Layout.toggleSidebar()"
+                aria-label="Abrir menú" aria-controls="layoutSidebar" aria-expanded="false">
+            <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+
+        <div class="layout-topbar-title">
+            Panel
+            <span class="layout-topbar-section">/ Inicio</span>
+        </div>
+
+        @* Botón usuario (texto visible ≥ md) *@
+        <button class="layout-topbar-userinfo"
+                onclick="Layout.toggleDrop('userDrop')"
+                aria-label="Menú de @Model.Titulo" aria-haspopup="true" aria-expanded="false"
+                id="userBtn">
+            <div class="layout-topbar-avatar" aria-hidden="true">@Model.Titulo.Substring(0, 2)</div>
+            <div class="layout-topbar-userdetail d-none d-md-block" style="text-align:left;">
+                <span class="layout-topbar-uname">@Model.Titulo</span>
+                <span class="layout-topbar-utenant">@ViewBag.Tenant · @ViewBag.Entorno</span>
+            </div>
+            <i class="bi bi-chevron-down d-none d-md-block"
+               style="color:var(--corp-gray-400);font-size:.75rem;" aria-hidden="true"></i>
+        </button>
+
+    </header>
+
+    @* ══════════════════════════════════════════════════════════════
+    CONTENIDO PRINCIPAL
+    ══════════════════════════════════════════════════════════════ *@
+    <main class="layout-main" id="mainContent" role="main">
+        <div class="layout-page-body">
+
+            @* ── Mensajes flash (TempData) ────────────────────────── *@
+            @if (TempData["SuccessMessage"] != null)
+            {
+                    <div class="corp-alert corp-alert--success mb-3" role="alert">
+                        <i class="bi bi-check-circle-fill corp-alert__icon" aria-hidden="true"></i>
+                        <div class="corp-alert__body">@TempData["SuccessMessage"]</div>
+                        <button class="corp-alert__close" aria-label="Cerrar">✕</button>
+                    </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                    <div class="corp-alert corp-alert--danger mb-3" role="alert">
+                        <i class="bi bi-x-circle-fill corp-alert__icon" aria-hidden="true"></i>
+                        <div class="corp-alert__body">@TempData["ErrorMessage"]</div>
+                        <button class="corp-alert__close" aria-label="Cerrar">✕</button>
+                    </div>
+            }
+            @if (TempData["WarningMessage"] != null)
+            {
+                    <div class="corp-alert corp-alert--warning mb-3" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill corp-alert__icon" aria-hidden="true"></i>
+                        <div class="corp-alert__body">@TempData["WarningMessage"]</div>
+                        <button class="corp-alert__close" aria-label="Cerrar">✕</button>
+                    </div>
+            }
+
+            @RenderBody()
+
+        </div>
+    </main>
+
+    @* ── Usuario ── *@
+    <div class="layout-dropdown layout-dropdown--user"
+         id="userDrop" role="menu" aria-label="Menú de usuario">
+        <div class="layout-ud-header">
+            <div class="layout-ud-name">@Model.Titulo</div>
+            <div class="layout-ud-email">@Model.Correo</div>
+        </div>
+        <div style="padding:6px 0;">
+            <button class="layout-ud-item" onclick="Layout.abrirModalActualizar()" role="menuitem">
+                <i class="bi bi-person-fill-gear" aria-hidden="true"></i> Actualizar datos
+            </button>            
+            <div class="layout-ud-divider"></div>
+            <button class="layout-ud-item danger" onclick="Layout.confirmarLogout()" role="menuitem">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión
+            </button>
+        </div>
+    </div>
+
+    @* ══════════════════════════════════════════════════════════════
+    MODAL: ACTUALIZAR DATOS DE USUARIO
+    Definido aquí para que esté disponible desde el dropdown
+    de usuario en CUALQUIER vista, no solo en Dashboard.
+    ══════════════════════════════════════════════════════════════ *@
+    <div class="modal fade" id="layoutUpdateModal" tabindex="-1"
+         aria-labelledby="layoutUpdateModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"
+                 style="border:none; border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-lg);">
+
+                <div style="background:var(--corp-blue); padding:16px 20px;
+                        display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-family:var(--font-display); font-weight:var(--fw-bold);
+                            font-size:var(--text-base); color:#fff;
+                            display:flex; align-items:center; gap:8px;"
+                         id="layoutUpdateModalTitle">
+                        <i class="bi bi-person-fill-gear" aria-hidden="true"></i>
+                        Actualizar Datos Personales
+                    </div>
+                    <button style="background:rgba(255,255,255,.15); border:none; width:30px; height:30px;
+                               border-radius:var(--radius-sm); color:#fff; cursor:pointer;
+                               display:flex; align-items:center; justify-content:center; font-size:.9rem;
+                               transition:background var(--transition-fast);"
+                            onmouseover="this.style.background='rgba(255,255,255,.28)'"
+                            onmouseout="this.style.background='rgba(255,255,255,.15)'"
+                            data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <div style="padding:24px;">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="corp-field">
+                                <label class="corp-field__label">Nombre</label>
+                                <input type="text" id="layoutUpdNombre" class="corp-input"
+                                       value="@(Model.Titulo.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault())"
+                                       placeholder="Nombre" />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="corp-field">
+                                <label class="corp-field__label">Apellido</label>
+                                <input type="text" id="layoutUpdApellido" class="corp-input"
+                                       value="@(Model.Titulo.Contains(' ') ? Model.Titulo.Substring(Model.Titulo.IndexOf(' ')+1) : "")"
+                                       placeholder="Apellido" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="corp-field">
+                                <label class="corp-field__label">Correo electrónico</label>
+                                <div class="corp-input-group corp-input-group--icon-left">
+                                    <span class="corp-input-group__icon corp-input-group__icon--left">
+                                        <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                                    </span>
+                                    <input type="email" id="layoutUpdEmail" class="corp-input"
+                                           value="@Model.Correo" placeholder="Correo" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="corp-field">
+                                <label class="corp-field__label">Teléfono</label>
+                                <div class="corp-input-group corp-input-group--icon-left">
+                                    <span class="corp-input-group__icon corp-input-group__icon--left">
+                                        <i class="bi bi-telephone-fill" aria-hidden="true"></i>
+                                    </span>
+                                    <input type="tel" id="layoutUpdTelefono" class="corp-input"
+                                           value="@(ViewData["UserPhone"] as string ?? "")"
+                                           placeholder="Teléfono" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="corp-field">
+                                <label class="corp-field__label">Ubicación / Oficina</label>
+                                <input type="text" id="layoutUpdUbicacion" class="corp-input"
+                                       value="@(ViewData["UserLocation"] as string ?? "")"
+                                       placeholder="Sede / Piso" />
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+                        <button class="corp-btn corp-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="corp-btn corp-btn--primary" id="layoutBtnGuardarUpd"
+                                onclick="Layout.guardarActualizacion()">
+                            <i class="bi bi-check-lg" aria-hidden="true"></i> Guardar cambios
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @* ══════════════════════════════════════════════════════════════
+    MODAL: CONFIRMAR LOGOUT
+    ══════════════════════════════════════════════════════════════ *@
+    <div class="modal fade" id="layoutLogoutModal" tabindex="-1"
+         aria-labelledby="layoutLogoutModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content"
+                 style="border:none; border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-lg);">
+
+                <div style="background:var(--corp-danger); padding:16px 20px;
+                        display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-family:var(--font-display); font-weight:var(--fw-bold);
+                            font-size:var(--text-base); color:#fff;
+                            display:flex; align-items:center; gap:8px;"
+                         id="layoutLogoutModalTitle">
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión
+                    </div>
+                    <button style="background:rgba(255,255,255,.15); border:none; width:30px; height:30px;
+                               border-radius:var(--radius-sm); color:#fff; cursor:pointer;
+                               display:flex; align-items:center; justify-content:center; font-size:.9rem;"
+                            data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <div style="padding:24px; text-align:center;">
+                    <div style="width:56px; height:56px; border-radius:50%;
+                            background:var(--corp-danger-light); margin:0 auto 14px;
+                            display:flex; align-items:center; justify-content:center;
+                            font-size:1.5rem; color:var(--corp-danger);" aria-hidden="true">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </div>
+                    <div style="font-family:var(--font-display); font-weight:var(--fw-bold);
+                            font-size:var(--text-md); color:var(--corp-gray-800); margin-bottom:6px;">
+                        ¿Cerrar sesión?
+                    </div>
+                    <div style="font-size:var(--text-sm); color:var(--corp-gray-400);
+                            line-height:1.5; margin-bottom:20px;">
+                        ¿Está seguro que desea desconectarse de tu cuenta?
+                    </div>
+                    <div style="display:flex; gap:10px; justify-content:center;">
+                        <button class="corp-btn corp-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
+                        <a asp-controller="Auth" asp-action="Logout" class="corp-btn corp-btn--danger">
+                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Sí, salir
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @* ── Toast container del Design System (único en toda la app) ── *@
+    <div class="corp-toast-container" id="corp-toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/ui-corporativo/corp-design-system.js" asp-append-version="true"></script>
+    <script src="~/js/site-index.js" asp-append-version="true"></script>
+
+</body>
+</html>

@@ -1,0 +1,82 @@
+@{
+    Layout = "_Layout";
+}
+
+@model Shell.Web.Models.UsuarioViewModel
+
+@* ═══════════════════════════════════════════════════════════
+   WELCOME BANNER
+═══════════════════════════════════════════════════════════ *@
+<div class="wb-banner">
+    <div class="wb-greeting">Bienvenido de vuelta</div>
+    <div class="wb-name">@Model.Titulo</div>
+    <div class="wb-meta">
+        <span class="wb-pill">
+            <i class="bi bi-calendar3" aria-hidden="true"></i>
+            @DateTime.Now.ToString("dddd, dd MMM yyyy",
+                     new System.Globalization.CultureInfo("es-ES"))
+        </span>
+        <span class="wb-pill" id="wbClock">
+            <i class="bi bi-clock" aria-hidden="true"></i>
+            @DateTime.Now.ToString("hh:mm tt")
+        </span>
+        <span class="wb-pill env-dev" id="wbEnvPill">
+            <i class="bi bi-circle-fill" style="font-size:.5rem;" aria-hidden="true"></i>
+            @ViewBag.Entorno
+        </span>
+        <span class="wb-pill">
+            <i class="bi bi-building" aria-hidden="true"></i> @ViewBag.Tenant
+        </span>
+    </div>
+</div>
+
+@* ═══════════════════════════════════════════════════════════
+   GRID DE CONTENIDO
+═══════════════════════════════════════════════════════════ *@
+<div class="db-grid">
+
+    @* ── COLUMNA DERECHA ── *@
+    <div class="db-col">
+
+        @* Accesos rápidos *@
+        <div class="db-panel">
+            <div class="db-panel-header">
+                <div class="db-panel-icon" style="background:var(--corp-green-light);color:var(--corp-green);">
+                    <i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>
+                </div>
+                <div class="db-panel-title">Accesos Rápidos</div>
+            </div>
+            <div class="db-panel-body">
+                <div class="db-quicklinks">
+                    @{
+                        var apps = Model.Menus.Select(m => new Shell.Web.Models.AppViewModel()
+
+            {
+
+                Codigo = m.App.Codigo,
+
+                Nombre = m.App.Nombre,
+
+                Ruta = m.App.Ruta,
+
+                Icono = m.App.Icono
+
+            }).DistinctBy(a => new { a.Codigo, a.Nombre, a.Ruta, a.Icono }).ToList();
+                    }
+                    @foreach (var app in apps)
+                    {                        
+                        @foreach (var menu in Model.Menus.Where(m => m.App.Codigo == app.Codigo))
+                        {
+                            <button class="db-quicklink blue"
+                                    onclick="window.open('@($"{app.Ruta}{menu.Ruta}")', '_blank')"
+                                    app="@app.Codigo" menu="@menu.Codigo">
+                                <i class="bi bi-folder2-open" aria-hidden="true"></i> @menu.Nombre
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
