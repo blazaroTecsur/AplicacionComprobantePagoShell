@@ -1,0 +1,21 @@
+﻿<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="modalServicio">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitulo"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="divErrores" class="alert alert-danger d-none" role="alert"></div>
+                <div id="tablaServicios" class="mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>
+                @if (User.HasClaim("permission", "SOLC.CONFIRMAR"))
+                {
+                    <button type="button" id="servicio_btnGrabar" class="btn btn-primary div-new">Grabar</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

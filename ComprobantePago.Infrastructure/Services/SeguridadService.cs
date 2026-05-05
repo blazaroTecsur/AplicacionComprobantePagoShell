@@ -1,0 +1,48 @@
+﻿using ComprobantePago.Application.DTOs.Response;
+using ComprobantePago.Application.DTOs.Responses;
+using ComprobantePago.Application.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using static ComprobantePago.Application.Exceptions.AppException;
+
+namespace ComprobantePago.Infrastructure.Services
+{
+    public class SeguridadService : ISeguridadService
+    {
+        private readonly IConfiguration _configuration;
+        private readonly HttpClient _httpClient;
+        private readonly TokenSeguridadService _token;        
+        public SeguridadService(
+            IConfiguration configuration, 
+            HttpClient httpClient, 
+            TokenSeguridadService token,
+            IMemoryCache cache)
+        {
+            _configuration = configuration;
+            _httpClient = httpClient;
+            _token = token;
+        }
+        public async Task<IEnumerable<SeguridadRolResponse>> ObtenerPermisos(
+            string codTenant, string codUsuario, string codApp)
+        {            
+            var token = await _token.GetTokenAsync();            
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var url = _configuration["ApiSettings:Seguridad:ObtenerPermisos"];
+            url = url + $"?codUsuario={codUsuario}&codTenant={codTenant}&codApp={codApp}";
+            
+            var response = await _httpClient.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<SeguridadResponse<IEnumerable<SeguridadRolResponse>>>(content,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (apiResponse == null)
+                throw new NotFoundException("PERMISOS");
+            if (!apiResponse.Success)
+                throw new BusinessException(StatusCodes.Status400BadRequest.ToString(), apiResponse.Error?.UserMessage);
+
+            return apiResponse.Data;
+        }
+    }
+}

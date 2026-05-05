@@ -1,0 +1,29 @@
+﻿<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="modalCopia">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Copiar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="col-12">
+                    <div class="row">
+                        <label for="config_txtFechaOrigen" class="form-label">Fecha: Origen -> Destino</label>
+                        <div class="input-group mb-3">
+                            <input type="date" class="form-control" id="config_txtFechaOrigen">
+                            <span class="input-group-text"><i class="bi bi-chevron-double-right"></i></span>
+                            <input type="date" class="form-control" id="config_txtFechaDestino">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>
+                @if (User.HasClaim("permission", "LIMT.COPIAR"))
+                {
+                    <button type="button" id="config_btnGrabar" class="btn btn-primary div-new">Grabar</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

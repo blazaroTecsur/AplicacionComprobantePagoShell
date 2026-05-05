@@ -1,0 +1,98 @@
+﻿<div class="panel-contenedor">
+
+    <!-- Header -->
+    <div class="panel-principal">
+        <h5><i class="bi bi-receipt"></i> Consulta de Comprobantes de Pago</h5>
+    </div>
+
+    <!-- Filtros -->
+    <div class="panel-filtros">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">Tipo Comprobante</label>
+                <select class="form-select form-select-sm" id="index_cboTipo">
+                    <option value="">-- Todos --</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Estado</label>
+                <select class="form-select form-select-sm" id="index_cboEstado">
+                    <option value="">-- Todos --</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Proveedor</label>
+                <input type="text" class="form-control form-control-sm"
+                       id="index_txtProveedor" placeholder="RUC o razón social">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Folio</label>
+                <input type="text" class="form-control form-control-sm" id="index_txtFolio">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label invisible">.</label>
+                <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="btn btn-success btn-sm flex-fill justify-content-center"
+                        id="index_btnBuscar">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                <button type="button" class="btn btn-primary btn-sm flex-fill justify-content-center"
+                        id="index_btnNuevo">
+                    <i class="bi bi-file-earmark-plus"></i> Nuevo
+                </button>
+                <button type="button" class="btn btn-info btn-sm flex-fill justify-content-center"
+                        id="index_btnEnviarSyteline" disabled
+                        title="Enviar cabecera al IDO SLAptrxs de Infor Syteline">
+                    <i class="bi bi-send"></i> Enviar a Syteline
+                </button>
+                <button type="button" class="btn btn-success btn-sm d-none"
+                        id="index_btnExportarCabecera"
+                        title="Exportar cabecera en Excel (respaldo)">
+                    <i class="bi bi-file-excel"></i> Excel Cabecera
+                </button>
+                <button type="button" class="btn btn-success btn-sm d-none"
+                        id="index_btnExportarImputacion"
+                        title="Exportar imputación en Excel (respaldo)">
+                    <i class="bi bi-file-excel"></i> Excel Imputación
+                </button>
+                <span id="lblSeleccionados" class="badge bg-secondary d-none align-self-center"></span>
+                </div>
+            </div>
+            @Html.AntiForgeryToken()
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="panel-tabla">
+        <table id="index_tblComprobantes"
+               class="table tabla-corporativa w-100">
+            <thead>
+                <tr>
+                    <!-- ← agregar columna checkbox -->
+                    <th>
+                        <input type="checkbox" id="chkTodos"
+                               title="Seleccionar todos" />
+                    </th>
+                    <th>FOLIO</th>
+                    <th>TIPO</th>
+                    <th>SERIE</th>
+                    <th>NÚMERO</th>
+                    <th>PROVEEDOR</th>
+                    <th>FECHA</th>
+                    <th>MONEDA</th>
+                    <th>MONTO TOTAL</th>
+                    <th>ESTADO</th>
+                    <th>VOUCHER</th>
+                    <th>ACCIONES</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+</div>
+
+<div id="modalContainer"></div>
+
+@section Scripts {
+    <script src="~/js/Comprobante/index.js" asp-append-version="true"></script>
+}

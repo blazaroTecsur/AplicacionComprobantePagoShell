@@ -1,0 +1,40 @@
+﻿<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="modalFiltro">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Filtros del Reporte</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="col-12">
+                    <div class="col mb-2">
+                        <label for="reporte_txtFechaDsd" class="form-label">Fecha: Desde -> Hasta</label>
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="reporte_txtFechaDsd">
+                            <span class="input-group-text"><i class="bi bi-chevron-double-right"></i></span>
+                            <input type="date" class="form-control" id="reporte_txtFechaHst">
+                        </div>
+                    </div>
+                    <div class="col mb-2 reporte_cboFlujo" hidden>
+                        <label for="reporte_cboFlujo" class="form-label">Flujo</label>
+                        <select class="form-select" id="reporte_cboFlujo">
+                        </select>
+                    </div>
+                    <div class="col reporte_cboServicio" hidden>
+                        <label for="reporte_cboServicio" class="form-label">Servicio</label>
+                        <select class="form-select" id="reporte_cboServicio">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>
+                @if (User.HasClaim("permission", "SOLC.RPT") ||
+                User.HasClaim("permission", "SERV.RPT"))
+                {
+                <button type="button" id="reporte_btnGenerar" class="btn btn-primary">Generar</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

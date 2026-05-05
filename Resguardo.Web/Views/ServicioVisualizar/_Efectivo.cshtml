@@ -1,0 +1,52 @@
+﻿<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="modalEfectivo">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitulo"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="divErrores" class="alert alert-danger d-none" role="alert"></div>
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-3">
+                            <label for="efectivo_txtFolio" class="form-label">Folio</label>
+                            <input type="text" class="form-control" id="efectivo_txtFolio" readonly>
+                        </div>
+                        <div class="col-3">
+                            <label for="efectivo_txtProveedor" class="form-label">Proveedor</label>
+                            <input type="text" class="form-control" id="efectivo_txtProveedor" readonly>
+                        </div>
+                        <div class="col-3">
+                            <label for="efectivo_txtServicio" class="form-label">Servicio</label>
+                            <input type="text" class="form-control" id="efectivo_txtServicio" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <label for="efectivo_txtFecha" class="form-label">Fecha</label>
+                            <input type="text" class="form-control" id="efectivo_txtFecha" readonly>
+                        </div>
+                        <div class="col-3">
+                            <label for="efectivo_txtHraInicio" class="form-label">Hra. Inicio</label>
+                            <input type="text" class="form-control" id="efectivo_txtHraInicio" readonly>
+                        </div>
+                        <div class="col-3">
+                            <label for="efectivo_txtHraFinal" class="form-label">Hra. Fin</label>
+                            <input type="text" class="form-control" id="efectivo_txtHraFinal" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div id="tablaEfectivos" class="mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>
+                @if (User.HasClaim("permission", "SERV.ASIGNAR") ||                
+                User.HasClaim("permission", "SERV.CERRAR"))
+                {
+                    <button type="button" id="efectivo_btnGrabar" class="btn btn-primary div-new">Grabar</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,118 @@
+@{
+    Layout  = "_LoginLayout";    
+}
+
+@* ─── CUERPO ─────────────────────────────────────────────────── *@
+
+<div class="bg-scene">
+    <div class="bg-grid"></div>
+    <div class="bg-particles" id="bgParticles"></div>
+</div>
+
+<div class="login-wrapper">
+    <div class="access-card">
+
+        @* ── Franja de header ── *@
+        <div class="card-header-band">
+            <div class="brand-lockup">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M16 3L5 7.5V15c0 6.5 4.7 12.6 11 14 6.3-1.4 11-7.5 11-14V7.5L16 3Z" fill="#004b8d"/>
+                        <path d="M16 3L5 7.5V15c0 6.5 4.7 12.6 11 14 6.3-1.4 11-7.5 11-14V7.5L16 3Z" fill="url(#loginGrad)" opacity="0.55"/>
+                        <path d="M11 15.5l3.5 3.5 6.5-7" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="loginGrad" x1="5" y1="3" x2="27" y2="29" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#039f61"/>
+                                <stop offset="1" stop-color="#004b8d" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div>
+                    <div class="brand-name">Plataforma Interna</div>
+                    <div class="brand-tagline">Selección de cuenta</div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Cuerpo de la card ── *@
+        <div class="card-body-section">
+
+            @* Mensajes de error de autenticación desde TempData *@
+            @if (TempData["AuthError"] != null)
+            {
+                <div class="corp-alert corp-alert--danger mb-3" role="alert">
+                    <i class="bi bi-x-circle-fill corp-alert__icon"></i>
+                    <div class="corp-alert__body">@TempData["AuthError"]</div>
+                    <button class="corp-alert__close" data-dismiss="alert" aria-label="Cerrar">✕</button>
+                </div>
+            }
+
+            <div class="access-title">¿Cómo desea ingresar?</div>
+            <p class="access-subtitle">
+                Seleccione el tipo de cuenta con el que se autenticará en la plataforma. Será redirigido al portal de inicio de sesión correspondiente a su perfil.
+            </p>
+
+            <div class="section-divider">
+                <span>Seleccione su perfil de acceso</span>
+            </div>
+
+            @* ── Grid de tenants ── *@
+            <div class="tenant-grid">
+
+                @* Corporativo *@
+                <a class="tenant-btn corporate"
+                   asp-controller="Auth" asp-action="Login" asp-route-tenant="Tecsur"
+                   role="button"
+                   aria-label="Acceso corporativo mediante cuenta Microsoft Azure">
+                    <div class="tb-top">
+                        <div class="tb-icon"><i class="bi bi-building-fill" aria-hidden="true"></i></div>
+                        <div class="tb-arrow"><i class="bi bi-arrow-up-right" aria-hidden="true"></i></div>
+                    </div>
+                    <div class="tb-label">Corporativo</div>
+                    <div class="tb-desc">
+                        Acceso exclusivo para colaboradores y personal interno de la empresa.
+                    </div>
+                    <span class="tb-tag">
+                        <i class="bi bi-shield-lock-fill" aria-hidden="true"></i> Cuenta Corporativa
+                    </span>
+                </a>
+
+                @* Proveedores *@
+                <a class="tenant-btn suppliers"
+                   asp-controller="Auth" asp-action="Login" asp-route-tenant="Externo"
+                   role="button"
+                   aria-label="Acceso para proveedores y subcontratistas">
+                    <div class="tb-top">
+                        <div class="tb-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></div>
+                        <div class="tb-arrow"><i class="bi bi-arrow-up-right" aria-hidden="true"></i></div>
+                    </div>
+                    <div class="tb-label">Proveedores y Subcontratistas</div>
+                    <div class="tb-desc">
+                        Acceso para socios externos, proveedores y empresas subcontratadas.
+                    </div>
+                    <span class="tb-tag">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i> Cuenta de Externo
+                    </span>
+                </a>
+
+            </div>
+
+            <div class="secure-note">
+                <i class="bi bi-lock-fill" aria-hidden="true"></i>
+                Autenticación segura
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="login-footer">
+        &copy; @DateTime.Now.Year &nbsp;·&nbsp; Todos los derechos reservados
+    </footer>
+</div>
+
+@* ─── LOADING OVERLAY (usa Design System) ───────────────────── *@
+<div class="corp-loading-overlay" id="loginLoadingOverlay" style="display:none;">
+    <div class="corp-spinner corp-spinner--xl corp-spinner--white"></div>
+    <div class="corp-loading-overlay__msg">Redirigiendo a Microsoft…</div>
+</div>

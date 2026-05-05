@@ -1,0 +1,18 @@
+﻿@using Resguardo.Web.Models
+<!-- Views/Home/Error.cshtml -->
+@model ErrorViewModel
+
+@{
+    ViewData["Title"] = "Error";
+    Layout = "_Layout";
+}
+
+<div class="error-container text-center mt-5">
+    <h1 class="display-1 text-danger">@Model.StatusCode</h1>
+    <h4>@Model.UserMessage</h4>
+    <p class="text-muted">
+        Si el problema persiste, comparte este código con soporte:
+        <code>@Model.TraceId</code>
+    </p>
+    @* <a href="/Home/Index" class="btn btn-primary mt-3">Volver al inicio</a> *@
+</div>

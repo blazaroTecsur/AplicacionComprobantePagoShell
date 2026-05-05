@@ -1,0 +1,60 @@
+﻿@using System.Security.Claims
+@{
+    string Web = "Módulo de Resguardo";
+}
+<base href="~/">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>:: @Web</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="~/lib/bootstrap/dist/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="~/lib/tabulator/css/tabulator_bootstrap5.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-primary border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand text-white" href="#">@ViewData["Titulo"]</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @Html.AntiForgeryToken()
+            @RenderBody()
+            <div id="modalContainer"></div>
+            <div id="modalContainerMapa"></div>
+            <div id="modalContainerMaestro"></div>
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container mt-2">
+            &copy; @DateTime.Now.Year - @Web
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/tabulator/js/tabulator.min.js"></script>
+    <script src="~/js/global.js" asp-version="true"></script>
+
+    <script type="text/javascript">
+        const BASE_URL = '@Url.Content("~")';
+        window.ROLES = @Html.Raw(Json.Serialize(
+            User.Claims
+            .Where(c => c.Type == "permission")
+            .Select(c => c.Value)
+            ));
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
