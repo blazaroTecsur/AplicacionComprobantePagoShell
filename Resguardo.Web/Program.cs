@@ -2,8 +2,11 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Identity.Client;
+using Notificacion.Abstractions;
+using Notificacion.Application;
+using Notificacion.Infrastructure.DependencyInjection;
+using Notificacion.Infrastructure.Email;
 using Resguardo.Application.Commands.ActualizarSolicitud;
 using Resguardo.Application.Commands.AmpliarServicio;
 using Resguardo.Application.Commands.AprobarAmplia;
@@ -18,17 +21,20 @@ using Resguardo.Application.Commands.RegistrarSolicitud;
 using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Common.Services;
 using Resguardo.Application.Interfaces;
+using Resguardo.Application.Interfaces.Background;
 using Resguardo.Application.Queries.ConsultarSolicitud;
-using Resguardo.Application.Queries.ListarLimites;
 using Resguardo.Application.Queries.ListarEfectivos;
+using Resguardo.Application.Queries.ListarLimites;
 using Resguardo.Application.Queries.ListarServicio;
 using Resguardo.Application.Queries.ListarServicioProv;
+using Resguardo.Application.Queries.ObtenerConfig;
 using Resguardo.Application.Queries.ObtenerPersonal;
 using Resguardo.Application.Queries.ObtenerSolicitud;
 using Resguardo.Application.Queries.ReporteEfectivo;
 using Resguardo.Application.Queries.ReporteSolicitud;
 using Resguardo.Application.Services;
 using Resguardo.Domain.Interfaces;
+using Resguardo.Infrastructure.Background.Email;
 using Resguardo.Infrastructure.Data;
 using Resguardo.Infrastructure.QueryServices;
 using Resguardo.Infrastructure.Repositorios;
@@ -38,14 +44,6 @@ using Resguardo.Web.Handler;
 using Resguardo.Web.Middlewares;
 using Serilog;
 using Serilog.Events;
-using System.Security.Claims;
-using Notificacion.Infrastructure.DependencyInjection;
-using Resguardo.Application.Interfaces.Background;
-using Resguardo.Infrastructure.Background.Email;
-using Notificacion.Application;
-using Notificacion.Infrastructure.Email;
-using Notificacion.Abstractions;
-using Resguardo.Application.Queries.ObtenerConfig;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -126,8 +124,8 @@ builder.Services.AddScoped<AprobarAmpliaHandler>();
 builder.Services.AddScoped<ReporteSolicitudHandler>();
 builder.Services.AddScoped<ReporteEfectivoHandler>();
 builder.Services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
-builder.Services.AddSingleton<TokenService>();
-builder.Services.AddHttpClient<ISytelineService, SytelineService>();
+builder.Services.AddSingleton<SeguridadTokenService>();
+builder.Services.AddHttpClient<IInforService, InforService>();
 builder.Services.AddHttpClient<IMaestroService, MaestroService>();
 builder.Services.AddHttpClient<ISeguridadService, SeguridadService>();
 builder.Services.AddHttpContextAccessor();
@@ -161,36 +159,7 @@ app.Use(async (context, next) =>
         context.Response.StatusCode = 401;
         return;
     }
-    //var codUsuario = user.FindFirst("oid")?.Value;
-    //var codTenant = user.FindFirst("tid")?.Value;
-    //var codApp = user.FindFirst("app")?.Value;
-    //var idSession = user.FindFirst("session_id")?.Value;
-    //if (string.IsNullOrEmpty(codUsuario) ||
-    //    string.IsNullOrEmpty(codTenant) ||
-    //    string.IsNullOrEmpty(codApp) ||
-    //    string.IsNullOrEmpty(idSession))
-    //{
-    //    context.Response.StatusCode = 401;
-    //    return;
-    //}
-
-    //var cache = context.RequestServices.GetRequiredService<IMemoryCache>();
-    //var key = $"permisos-{codApp.ToLower()}:{idSession}";
-    //if (!cache.TryGetValue(key, out List<string> permisos))
-    //{
-    //    var seguridad = context.RequestServices.GetRequiredService<ISeguridadService>();
-    //    var permisosBD = await seguridad.ObtenerPermisos(codTenant, codUsuario, codApp);
-
-    //    permisos = permisosBD?.Select(x => x.Codigo).ToList() ?? new List<string>();
-    //    cache.Set(key, permisos, new MemoryCacheEntryOptions
-    //    {
-    //        SlidingExpiration = TimeSpan.FromHours(1),
-    //        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
-    //    });
-    //}
-    //var identity = (ClaimsIdentity)context.User.Identity!;
-    //identity.AddClaims(permisos.Select(p => new Claim("permission", p)));
-
+    
     await next();
 });
 app.UseAuthorization();

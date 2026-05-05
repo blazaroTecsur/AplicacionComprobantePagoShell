@@ -6,12 +6,11 @@ using System.Net.Http.Json;
 
 namespace Resguardo.Infrastructure.Services
 {
-    public class SytelineService : ISytelineService
+    public class InforService : IInforService
     {
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-
-        public SytelineService(IConfiguration configuration, HttpClient httpClient)
+        public InforService(IConfiguration configuration, HttpClient httpClient)
         {
             _configuration = configuration;
             _httpClient = httpClient;

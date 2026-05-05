@@ -21,7 +21,7 @@ namespace Resguardo.Web.Controllers
         private readonly ListarGenericoHandler _listarGenerico;
         private readonly ListarServicioHandler _listarServicio;
         private readonly ListarServicioProvHandler _listarServicioCtta;
-        private readonly ISytelineService _orden;
+        private readonly IInforService _orden;
         private readonly IMaestroService _maestro;
         public SolicitudVisualizarController(         
             ObtenerSolicitudHandler obtenerSolicitud,
@@ -29,7 +29,7 @@ namespace Resguardo.Web.Controllers
             ListarGenericoHandler listarGenerico,
             ListarServicioHandler listarServicio,
             ListarServicioProvHandler listarServicioCtta,
-            ISytelineService orden,
+            IInforService orden,
             IMaestroService maestro)
         {           
             _obtenerSolicitud = obtenerSolicitud;

@@ -2,7 +2,7 @@
 
 namespace Resguardo.Application.Services
 {
-    public interface ISytelineService
+    public interface IInforService
     {
         Task<ObtenerOrdenResponse> ObtenerOrden(string sro);
     }

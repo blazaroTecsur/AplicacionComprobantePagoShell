@@ -13,11 +13,11 @@ namespace Resguardo.Infrastructure.Services
     {
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-        private readonly TokenService _token;        
+        private readonly SeguridadTokenService _token;        
         public SeguridadService(
             IConfiguration configuration, 
             HttpClient httpClient, 
-            TokenService token,
+            SeguridadTokenService token,
             IMemoryCache cache)
         {
             _configuration = configuration;

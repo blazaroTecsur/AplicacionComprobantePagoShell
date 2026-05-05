@@ -13,7 +13,7 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
     public class RegistrarSolicitudHandler
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
-        private readonly ISytelineService _syteline;
+        private readonly IInforService _syteline;
         private readonly IValidacionService _validacion;
         private readonly IMapper _mapeo;
         private readonly IValidator<RegistrarSolicitudCommand> _fluentv;
@@ -21,7 +21,7 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
         public RegistrarSolicitudHandler(
             IValidator<RegistrarSolicitudCommand> fluentv,
             IUnidadTrabajo unidadTrabajo,
-            ISytelineService syteline,
+            IInforService syteline,
             IValidacionService validacion,
             IMapper mapeo,
             IUsuarioContexto usuario)
