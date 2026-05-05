@@ -1,0 +1,410 @@
+﻿@{
+    ViewData["Titulo"] = "Registro de Comprobantes de Pago";
+}
+
+<!-- Campos hidden de estado global -->
+<input type="hidden" id="hdnModificaInformacion" value="N" />
+<input type="hidden" id="hdnEstadoDocumento" />
+<input type="hidden" id="hdnIGVCredito" />
+<input type="hidden" id="hdnIGVCosto" />
+<input type="hidden" id="hdnAplicaIGV" value="N" />
+<input type="hidden" id="hdnRequiereDetraccion" value="N" />
+<input type="hidden" id="hdnEstaDerivado" />
+<input type="hidden" id="hdnRequiereAduana" />
+<input type="hidden" id="hdnCodigoEstado" />
+<input type="hidden" id="hdnEsDocumentoElectronico" />
+<input type="hidden" id="hdnTienePdf" />
+<input type="hidden" id="hdnOrigen" />
+<input type="hidden" id="hdnEdicionManual" />
+<input type="hidden" id="hdnMontoTotalOriginal" />
+<input type="hidden" id="hdnEstadoSunat" />
+<input type="hidden" id="hdnSPO" />
+<input type="hidden" id="hdnFolio" />
+<input type="hidden" id="hdnProveedorPermiteDetraccion" />
+<input type="hidden" id="hdnTipoComprobantePermiteDetraccion" />
+<input type="hidden" id="hdnTipoSunatPermiteElectronico" value="N" />
+<input type="hidden" id="hdnIndicaValorReferencial" />
+<input type="hidden" id="hdnAplicaReferencia" />
+<input type="hidden" id="hdnFormatoSerie" value="N" />
+<input type="hidden" id="hdnFormatoNumero" value="N" />
+<input type="hidden" id="hdnIdDocumentoFirma" />
+<input type="hidden" id="hdnIndImputableTodosCRs" />
+<input type="hidden" id="hdnHabilitaEditarMontos" value="N" />
+<input type="hidden" id="hdnHabSegAprob" value="N" />
+<input type="hidden" id="hdnPerdida" value="1" />
+<input type="hidden" id="hdnMontoRedondeo" />
+<input type="hidden" id="hdnSentidoDocumento" />
+<input type="hidden" id="hdnXmlCuadrado" />
+<input type="hidden" id="hdnValor1Sunat" />
+<input type="hidden" id="hdnDatosDeposito" value="N" />
+<input type="hidden" id="hdnPorcentajeValorReferencial" value="0.00" />
+
+<div class="panel-contenedor">
+
+    <!-- Tipo de documento — SIEMPRE VISIBLE -->
+    <div class="seccion-panel mx-3 mt-3">
+        <div class="seccion-header">
+            <strong>Tipo de Documento</strong>
+        </div>
+        <div class="seccion-body">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio"
+                       id="rdoFacturacionManual" name="rdoFacturacion" />
+                <label class="form-check-label" for="rdoFacturacionManual">
+                    Facturación Manual / PreImpreso
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio"
+                       id="rdoFacturacionElectronica" name="rdoFacturacion" checked />
+                <label class="form-check-label" for="rdoFacturacionElectronica">
+                    Facturación Electrónica
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zona drag & drop -->
+    <div id="divCorreo" class="d-none">
+        <div id="areaDragDrop" class="drag_area p-4">
+            <i class="bi bi-cloud-upload fs-2"></i>
+            <p class="mb-1 mt-2 fw-bold">
+                Arrastre un archivo XML, PDF o ZIP aquí
+            </p>
+            <p class="mb-2 text-muted small">
+                El XML del comprobante será validado contra SUNAT.
+                Los archivos ZIP se descomprimirán automáticamente.
+            </p>
+            <div class="mt-2">
+                <button type="button" class="btn btn-primary btn-sm"
+                        id="btnSeleccionarArchivo">
+                    <i class="bi bi-folder2-open"></i> Seleccionar archivo
+                </button>
+                <input type="file" id="inpArchivoComprobante"
+                       accept=".xml,.pdf,.zip" style="display:none" />
+            </div>
+        </div>
+
+        <!-- Resultado validación SUNAT -->
+        <div id="divResultadoSunat" class="d-none p-3">
+            <div id="alertaSunat"></div>
+        </div>
+    </div>
+
+    <!-- Barra de acciones -->
+    <div class="barra-acciones" id="barraAcciones">
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnLimpiar">
+            <i class="bi bi-brush"></i> Limpiar
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnLeerDetalle">
+            <i class="bi bi-search"></i> Leer
+        </button>
+        <button type="button" class="btn btn-primary btn-sm d-none" id="btnRegistrar">
+            <i class="bi bi-floppy"></i> Guardar
+        </button>
+        <button type="button" class="btn btn-primary btn-sm d-none" id="btnEnviar">
+            <i class="bi bi-check2-square"></i> Enviar
+        </button>
+        <button type="button" class="btn btn-primary btn-sm d-none" id="btnAutorizarDetalle">
+            <i class="bi bi-pen"></i> Firmar
+        </button>
+        <button type="button" class="btn btn-primary btn-sm d-none" id="btnAprobarDetalle">
+            <i class="bi bi-check-circle"></i> Aprobar
+        </button>
+        <button type="button" class="btn btn-primary btn-sm d-none" id="btnDerivar">
+            <i class="bi bi-arrow-right-circle"></i> Derivar
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnImprimirComprobante">
+            <i class="bi bi-file-pdf"></i> Descargar Imputación
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnVistaPrevia">
+            <i class="bi bi-binoculars"></i> Vista Previa
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnAsociados">
+            <i class="bi bi-arrow-repeat"></i> Asociados
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnOrigen">
+            <i class="bi bi-cash"></i> Origen
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnDestino">
+            <i class="bi bi-wrench"></i> Destino
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnCtaBancaria">
+            <i class="bi bi-credit-card"></i> Cta. Bancaria
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnValidacionSunat">
+            <i class="bi bi-shield-check"></i> Validación SUNAT
+        </button>
+        <input type="file" id="inpFileValSunat" accept=".xlsx" style="display:none" />
+        <button type="button" class="btn btn-primary btn-sm d-none" id="btnModoImputacion">
+            <i class="bi bi-bookmark"></i> Modo Digitación
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnGenerarCargo">
+            <i class="bi bi-list-ul"></i> Generar Cargo
+        </button>
+        <span class="mx-1"></span>
+        <button type="button" class="btn btn-danger btn-sm d-none" id="btnAnular">
+            <i class="bi bi-ban"></i> Anular
+        </button>
+        <span class="mx-1"></span>
+        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnAtras">
+            <i class="bi bi-arrow-counterclockwise"></i> Salir
+        </button>
+    </div>
+
+    <!-- Tabs -->
+    <div id="Resultados" class="d-none">
+        <ul class="nav nav-tabs" id="tabsDetalle">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#tabDetalleComprobante">
+                    Detalle Comprobante
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tabImputacion">
+                    Imputación Contable
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tabDocElectronicos">
+                    Documentos Electrónicos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tabImpresion">
+                    Impresión
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tabOtrosDatos">
+                    Datos Adicionales
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <!-- Tab 1: Detalle Comprobante -->
+            <div class="tab-pane fade show active" id="tabDetalleComprobante">
+                @await Html.PartialAsync("_DetalleComprobante")
+            </div>
+
+            <!-- Tab 2: Imputación Contable -->
+            <div class="tab-pane fade" id="tabImputacion">
+
+                <!-- Barra botones imputación -->
+                <div class="barra-imputacion d-none" id="barraOpcionesImputacion">
+                    <button type="button" class="btn btn-secondary btn-sm" id="btnLimpiarImputacion">
+                        <i class="bi bi-brush"></i> Limpiar Imputación
+                    </button>
+                    <input type="file" id="inpFile" accept=".xlsx" style="display:none" />
+                    <button type="button" class="btn btn-primary btn-sm" id="btnExplorar">
+                        <i class="bi bi-folder2-open"></i> Cargar Imputación Masiva
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" id="btnDescargarPlantillaImputacion">
+                        <i class="bi bi-file-earmark-excel"></i> Descargar Plantilla
+                    </button>
+                </div>
+
+                <!-- Tabla imputación -->
+                <div class="table-responsive mt-2">
+                    <table id="tblImputacion" class="tabla-corporativa w-100">
+                        <thead>
+                            <tr>
+                                <th>Cuenta</th>
+                                <th>Afectación</th>
+                                <th>Proyecto</th>
+                                <th>Unidad 1</th>
+                                <th>Unidad 3</th>
+                                <th>Unidad 4</th>
+                                <th>Monto</th>
+                                <th>Descripción</th>
+                                <th class="d-none">Cuenta Larga</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- Totales -->
+                <div class="row justify-content-end mt-2 fila-totales">
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Subtotal</span>
+                            <input type="text" class="form-control text-end" id="txtPorImputar" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Total Imputación</span>
+                            <input type="text" class="form-control text-end" id="txtTotalImputacion" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Diferencia</span>
+                            <input type="text" class="form-control text-end" id="txtDiferenciaImputacion" readonly />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones agregar/editar imputación -->
+                <div class="barra-imputacion mt-2 d-none" id="barraAccionesImputacion">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnAgregarDetalle">
+                        <i class="bi bi-file-earmark-plus"></i> Nueva Imputación
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm d-none" id="btnAgregarNuevaImputacion">
+                        <i class="bi bi-plus-square"></i> Agregar
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm d-none" id="btnEliminarDetalle">
+                        <i class="bi bi-dash-square"></i> Eliminar Imputación
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm d-none" id="btnEditarDetalle">
+                        <i class="bi bi-floppy"></i> Guardar Imputación
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm d-none" id="btnActivoFijo">
+                        <i class="bi bi-display"></i> Activo Fijo
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm d-none" id="btnCancelarDetalle">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                </div>
+
+                <!-- Panel formulario nueva imputación -->
+                <div id="pnlDetalleImputacion" class="seccion-panel mt-3 d-none">
+                    <div class="seccion-header d-flex align-items-center gap-2">
+                        <strong>Detalle Imputación</strong>
+                        <span id="lblLineaImputacion" class="badge bg-info d-none"></span>
+                    </div>
+                    <div class="seccion-body">
+                        <input type="hidden" id="txtSecuencia" />
+
+                        <!-- Cuenta contable -->
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-8">
+                                <label class="form-label">Cuenta</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" id="txtAliasCuenta" readonly placeholder="Alias" />
+                                    <input type="hidden" id="txtCuentaContable" />
+                                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarCuentaContable">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                    <input type="text" class="form-control" id="txtDescripcionCuenta" readonly placeholder="Descripción" />
+                                </div>
+                                <div id="divCodigosUnidadCuenta" class="d-none mt-2">
+                                    <div class="row g-1">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Cód. Unidad 1</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control" id="txtCodUnidad1Cuenta" />
+                                                <button class="btn btn-outline-secondary" type="button" id="btnBuscarCodUnidad1Cuenta"><i class="bi bi-search"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Cód. Unidad 3</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control" id="txtCodUnidad3Cuenta" />
+                                                <button class="btn btn-outline-secondary" type="button" id="btnBuscarCodUnidad3Cuenta"><i class="bi bi-search"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Cód. Unidad 4</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control" id="txtCodUnidad4Cuenta" />
+                                                <button class="btn btn-outline-secondary" type="button" id="btnBuscarCodUnidad4Cuenta"><i class="bi bi-search"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Monto</label>
+                                <input type="text" class="form-control form-control-sm text-end" id="txtMonto" value="0.00" />
+                            </div>
+                        </div>
+
+                        <!-- Proyecto y Descripción -->
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <label class="form-label">Proyecto</label>
+                                <input type="text" class="form-control form-control-sm" id="txtProyecto" placeholder="Código de proyecto" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Descripción</label>
+                                <input type="text" class="form-control form-control-sm" id="txtDescripcion" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tab 3: Documentos Electrónicos -->
+            <div class="tab-pane fade" id="tabDocElectronicos">
+                <div class="seccion-panel mt-2">
+                    <div class="seccion-header">
+                        <strong>Documentos Electrónicos Relacionados</strong>
+                    </div>
+                    <div class="seccion-body p-0">
+                        <div class="row g-0" style="min-height:300px">
+                            <!-- Panel izquierdo: categorías -->
+                            <div class="col-auto border-end" style="width:220px; background:#fafafa;">
+                                <ul class="list-unstyled mb-0" id="listaCategoriasDocs">
+                                    <li class="doc-cat-item" data-subtipo="REPRESENTACION_IMPRESA"
+                                        data-accept=".pdf" data-label="Representación Impresa">
+                                        REPRESENTACIÓN IMPRESA
+                                    </li>
+                                    <li class="doc-cat-item" data-subtipo="XML_SUNAT"
+                                        data-accept=".xml" data-label="XML SUNAT">
+                                        XML SUNAT
+                                    </li>
+                                    <li class="doc-cat-item" data-subtipo="CORREO_ORIGEN"
+                                        data-accept=".msg,.eml" data-label="Correo Origen">
+                                        CORREO ORIGEN
+                                    </li>
+                                    <li class="doc-cat-item" data-subtipo="ORDEN_COMPRA"
+                                        data-accept=".pdf" data-label="Orden de Compra">
+                                        ORDEN DE COMPRA
+                                    </li>
+                                    <li class="doc-cat-item" data-subtipo="XML_CDR"
+                                        data-accept=".xml" data-label="XML CDR">
+                                        XML CDR
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- Panel derecho: contenido de la categoría -->
+                            <div class="col p-3" id="panelContenidoDoc">
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-arrow-left fs-5 d-block mb-2"></i>
+                                    Seleccione una categoría
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Input file oculto para subir documentos por categoría -->
+                <input type="file" id="inpDocCategoria" style="display:none" />
+            </div>
+
+            <!-- Tab 4: Impresión -->
+            <div class="tab-pane fade" id="tabImpresion">
+                <iframe id="pdfComprobante" style="width:100%; height:650px;" frameborder="0"></iframe>
+            </div>
+
+            <!-- Tab 5: Datos Adicionales -->
+            <div class="tab-pane fade" id="tabOtrosDatos">
+                @await Html.PartialAsync("_DatosAdicionales")
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/Comprobante/detalle.js" asp-append-version="true"></script>
+    <script src="~/js/Comprobante/dragdrop.js" asp-append-version="true"></script>
+    <script src="~/js/Comprobante/imputacion.js" asp-append-version="true"></script>
+}

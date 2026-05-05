@@ -1,0 +1,93 @@
+﻿@{
+    string Web = "Registro de Comprobantes de Pago";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>:: @Web - @ViewData["Titulo"]</title>
+
+    <!-- Bootstrap + Icons -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="~/lib/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <!-- UI Corporativo -->
+    <link href="~/lib/ui-corporativo/corp-design-system.min.css" rel="stylesheet" />
+
+    <!-- DataTables (necesario para tblImputacion) -->
+    <link href="~/lib/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <!-- reemplaza al toast -->
+    <link href="~/lib/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet" />
+    <!-- Estilos propios -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="nav-link" asp-controller="Comprobante" asp-action="Index">
+                    <i class="bi bi-file-earmark-text"></i> @Web
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                @*<div class="collapse navbar-collapse">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Comprobante" asp-action="Index">
+                                <i class="bi bi-receipt"></i> Comprobantes
+                            </a>
+                        </li>
+                    </ul>
+                </div> *@
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid">
+        <main role="main" class="pb-3">
+
+            <!-- Loading global (reemplaza los múltiples imgCargando del original) -->
+            <div id="loading" style="display:none; position:fixed; top:50%; left:50%;
+                 z-index:9999; transform:translate(-50%,-50%);">
+                <div class="d-flex align-items-center gap-2 bg-white p-3 rounded shadow">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span>Cargando información...</span>
+                </div>
+            </div>
+
+            <!-- Contenedor de modales dinámicos -->
+            <div id="modalContainer"></div>
+
+            @Html.AntiForgeryToken()
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted text-center">
+        <div class="container mt-2">
+            &copy; @DateTime.Now.Year - @Web
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables -->
+    <script src="~/lib/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
+    <!-- SweetAlert2 ANTES de global.js -->
+    <script src="~/lib/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    <!-- UI Corporativo -->
+    <script src="~/lib/ui-corporativo/corp-design-system.js"></script>
+    <!-- Global JS propio -->
+    <script src="~/js/global.js" asp-append-version="true"></script>
+
+    <!-- Scripts por vista -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
