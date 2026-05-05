@@ -9,7 +9,6 @@ using Serilog;
 using Serilog.Events;
 using Shell.Web.Middleware;
 using Shell.Web.Services;
-using System.Data;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,8 +48,6 @@ builder.Services
     .AddMicrosoftIdentityWebApp(options =>
     {
         builder.Configuration.Bind("AzureAd", options);
-
-        //options.Authority = "https://login.microsoftonline.com/common/v2.0";
         options.ResponseType = "code";
         options.SaveTokens = true;
         options.MapInboundClaims = false;
