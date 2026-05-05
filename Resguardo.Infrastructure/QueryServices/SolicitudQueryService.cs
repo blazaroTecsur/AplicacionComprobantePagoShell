@@ -59,9 +59,7 @@ namespace Resguardo.Infrastructure.QueryServices
             var solicitud = grid.Filtros;
 
             if (!string.IsNullOrEmpty(solicitud.Folio))
-                consulta = consulta.Where(x => x.Folio == solicitud.Folio);
-            if (solicitud.IdTipo.HasValue)
-                consulta = consulta.Where(x => x.IdTipo == solicitud.IdTipo);
+                consulta = consulta.Where(x => x.Folio == solicitud.Folio);            
             if (solicitud.IdEstado.HasValue)
                 consulta = consulta.Where(x => x.IdEstado == solicitud.IdEstado);
             if (solicitud.IdFlujo.HasValue)
@@ -100,6 +98,6 @@ namespace Resguardo.Infrastructure.QueryServices
                 Data = data,
                 Total = total
             };
-        }
+        }        
     }
 }

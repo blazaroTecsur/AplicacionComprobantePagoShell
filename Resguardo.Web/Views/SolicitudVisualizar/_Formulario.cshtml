@@ -11,8 +11,6 @@
             </div>
             <div class="modal-body">
                 <div id="divErrores" class="alert alert-danger d-none" role="alert"></div>
-                <div id="modalContainerMaestro"></div>
-                <div id="modalContainerMapa"></div>                
                 <div class="modal fade" id="modalAprobar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalAprobarLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
@@ -25,7 +23,10 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                <button type="button" class="btn btn-primary" id="btnAceptar">Aceptar</button>
+                                @if (User.HasClaim("permission", "SOLC.APROBAR"))
+                                {
+                                    <button type="button" class="btn btn-primary" id="btnAceptar">Aceptar</button>
+                                }
                             </div>
                         </div>
                     </div>
@@ -78,7 +79,7 @@
                                 </div>
                             </div>
                             <div class="col-6">
-                                <label for="txtCodCapataz" class="form-label">Capataz <a href="#" id="lnkCapataz"><i class="bi bi-box-arrow-up-right"></i></a></label>
+                                <label for="txtCodCapataz" class="form-label">Capataz</label>&nbsp;&nbsp;<button id="lnkCapataz" type="button" class="btn btn-secondary"><i class="bi bi-box-arrow-up-right"></i></button>
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="txtCodCapataz" name="CodCapataz" readonly required>
                                     <span class="input-group-text"><i class="bi bi-arrow-left-right"></i></span>
@@ -106,6 +107,13 @@
                         </div>
                     </div>
                 </form>
+                <div class="card" id="cardLimites" hidden>
+                    <div class="card-body">
+                        <p class="card-text">De acuerdo con la fecha y el departamento imputado en la solicitud, se tiene establecido los siguientes limites de aprobación:</p>
+                        <ul id="ulConfig" class="mb-0">
+                        </ul>
+                    </div>
+                </div>
                 <form id="frmServicio" class="div-new" hidden>
                     <hr />
                     <div class="col-12 div-servicio">
@@ -140,12 +148,12 @@
                                     }
                                 </select>
                             </div>
-                            <div class="col-4 d-flex align-items-end">                                
+                            <div class="col-4 d-flex align-items-end">
                                 <div class="input-group">
                                     <div class="input-group-text">
                                         <input class="form-check-input mt-0" type="checkbox" value="" id="chkDiaSig" />
                                     </div>
-                                    <input type="text" class="form-control" value="¿Servicio hasta el día siguiente?" readonly/>
+                                    <input type="text" class="form-control" value="¿Servicio hasta el día siguiente?" readonly />
                                 </div>
                             </div>
                         </div>
@@ -165,16 +173,24 @@
                             <div class="col-2 d-flex align-items-end">
                                 <button type="button" class="btn btn-secondary" id="btnAgregar">Agregar</button>
                             </div>
-                        </div>                        
+                        </div>
                     </div>
                     <div id="tablaServicios" class="mt-2"></div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>
-                <button type="button" id="btnAprobar" class="btn btn-success div-check" hidden>Aprobar</button>                
-                <button type="button" id="btnAnular" class="btn btn-danger div-check" hidden>Anular</button>
-                <button type="button" id="btnGrabar" class="btn btn-primary div-new">Grabar</button>
+                @if (User.HasClaim("permission", "SOLC.APROBAR"))
+                {
+                    <button type="button" id="btnAprobar" class="btn btn-success div-check" hidden>Aprobar</button>
+                    <button type="button" id="btnAnular" class="btn btn-danger div-check" hidden>Anular</button>
+                }
+                @if (User.HasClaim("permission", "SOLC.CREAR") ||
+                User.HasClaim("permission", "SOLC.MODIF") ||
+                User.HasClaim("permission", "SOLC.EDITAR"))
+                {
+                    <button type="button" id="btnGrabar" class="btn btn-primary div-new">Grabar</button>
+                }
             </div>
         </div>
     </div>

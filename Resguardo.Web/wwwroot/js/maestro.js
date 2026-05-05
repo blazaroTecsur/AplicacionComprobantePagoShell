@@ -5,20 +5,19 @@ var fncMaestro = {
         $("#capataz_btnBuscar").click(function (e) {
             e.preventDefault();
             fncMaestro.buscarCapataces();
-        });
-        fncMaestro.crearTabla();
-
-        $("#modalCapataz").modal("show");
+        });        
         $("#modalCapataz").on("hidden.bs.modal", function () {
-            if (fncRegistro.tablaCapataz !== null) {
-                fncRegistro.tablaCapataz.destroy();
-                fncRegistro.tablaCapataz = null;
+            if (fncSolicitud.tablaCapataz !== null) {
+                fncSolicitud.tablaCapataz.destroy();
+                fncSolicitud.tablaCapataz = null;
             }
         });
+        fncMaestro.crearTabla();
+        $("#modalCapataz").modal("show");
     },
     crearTabla: function () {
 
-        fncRegistro.tablaCapataz = CorporativoGrid.crear({
+        fncSolicitud.tablaCapataz = CorporativoGrid.crear({
             element: "#tablaCapataces",
             url: BASE_URL + "/SolicitudVisualizar/ConsultarCapataces",
             pageSize: 10,            

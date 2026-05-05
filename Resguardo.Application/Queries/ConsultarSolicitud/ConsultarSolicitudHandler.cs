@@ -11,7 +11,7 @@ namespace Resguardo.Application.Queries.ConsultarSolicitud
             _query = query;
         }
         public async Task<GridResponse<ConsultarSolicitudResponse>> Ejecutar(GridRequest<ConsultarSolicitudQuery> grid)
-        {
+        {            
             var solicitudes = await _query.Consultar(grid);
             return solicitudes;
         }

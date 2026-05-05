@@ -16,20 +16,22 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
         private readonly ISytelineService _syteline;
         private readonly IValidacionService _validacion;
         private readonly IMapper _mapeo;
-        private readonly IValidator<RegistrarSolicitudCommand> _fluentv;        
-
+        private readonly IValidator<RegistrarSolicitudCommand> _fluentv;
+        private readonly IUsuarioContexto _usuario;
         public RegistrarSolicitudHandler(
             IValidator<RegistrarSolicitudCommand> fluentv,
             IUnidadTrabajo unidadTrabajo,
             ISytelineService syteline,
             IValidacionService validacion,
-            IMapper mapeo)
+            IMapper mapeo,
+            IUsuarioContexto usuario)
         {
             _fluentv = fluentv;
             _unidadTrabajo = unidadTrabajo;
             _validacion = validacion;
             _syteline = syteline;
             _mapeo = mapeo;
+            _usuario = usuario;
         }
         public async Task<RegistrarSolicitudResponse> Ejecutar(RegistrarSolicitudCommand formulario)
         {
@@ -80,13 +82,14 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
             solicitud.Folio = FolioSecuencial(folio.Descripcion);
             solicitud.IdEstado = estado.Id;
             solicitud.IdTipo = tipo.Id;
-            solicitud.UsuarioReg = "Luis Palomino";
+            solicitud.UsuarioReg = _usuario.Correo;
             solicitud.FechaReg = fecActual;
 
+            int contador = 1;
             foreach (var servicio in solicitud.Servicios)
             {
                 servicio.IdSolicitud = solicitud.Id;
-                servicio.UsuarioReg = "DBO";
+                servicio.UsuarioReg = _usuario.Correo;
                 servicio.FechaReg = fecActual;
 
                 if (servicio.Fecha < DateOnly.FromDateTime(fecActual.Date))
@@ -123,11 +126,13 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
                         throw new BusinessException(StatusCodes.Status400BadRequest.ToString(), resultado.Mensaje);
                 }
                 servicio.Turno = _validacion.ObtenerTurno(horInicio);
+                servicio.Folio = $"{solicitud.Folio}-{contador.ToString().PadLeft(2, '0')}";
+                contador++;
             }
 
             var generico = await _unidadTrabajo.GenericoRepositorio.ObtenerPorId(folio.Id);
             generico.Descripcion = Convert.ToInt32(solicitud.Folio).ToString();
-            generico.UsuarioAct = "DBO";
+            generico.UsuarioAct = _usuario.Correo;
             generico.FechaAct = fecActual;
 
             await _unidadTrabajo.BeginTransactionAsync();
@@ -146,7 +151,7 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
         }
         private static string FolioSecuencial(string folio)
         {
-            string secuencial = (Convert.ToInt32(folio) + 1).ToString().PadLeft(5, '0');
+            string secuencial = (Convert.ToInt32(folio) + 1).ToString().PadLeft(6, '0');
             return secuencial;
         }
     }

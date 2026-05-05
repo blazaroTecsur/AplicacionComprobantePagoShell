@@ -4,9 +4,9 @@ using Resguardo.Domain.Entities;
 
 namespace Resguardo.Infrastructure.Data.Configuracion
 {
-    internal class ConfigConfiguracion : IEntityTypeConfiguration<Config>
+    internal class LimiteConfiguracion : IEntityTypeConfiguration<Limite>
     {
-        public void Configure(EntityTypeBuilder<Config> entidad)
+        public void Configure(EntityTypeBuilder<Limite> entidad)
         {
             entidad.ToTable("rpoconfig");
             entidad.HasKey(e => e.Id).HasName("PRIMARY");

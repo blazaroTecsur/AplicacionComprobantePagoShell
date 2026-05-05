@@ -2,6 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Resguardo.Application.Common;
+using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Exceptions;
 using Resguardo.Domain.Entities;
 using Resguardo.Domain.Interfaces;
@@ -12,15 +13,16 @@ namespace Resguardo.Application.Commands.ConfirmarServicio
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
         private readonly IValidator<ConfirmarServicioCommand> _fluentv;
-        private readonly IMapper _mapeo;
+        private readonly IMapper _mapeo;        
         public ConfirmarServicioHandler(
             IValidator<ConfirmarServicioCommand> fluentv,
             IUnidadTrabajo unidadTrabajo,
-            IMapper mapeo)
+            IMapper mapeo,
+            IUsuarioContexto usuario)
         {
             _fluentv = fluentv;
             _unidadTrabajo = unidadTrabajo;
-            _mapeo = mapeo;
+            _mapeo = mapeo;            
         }
         public async Task<bool> Ejecutar(ConfirmarServicioCommand formulario)
         {
@@ -65,7 +67,7 @@ namespace Resguardo.Application.Commands.ConfirmarServicio
 
                     foreach (var servicioProv in servicioProvs)
                     {
-                        servicioProv.Estado = Constantes.COD_ESTADO_SERVPROV_CONFIRMADO;
+                        servicioProv.Estado = Constantes.SERVPROV_CONFIRMADO;
                         if (servicioProv.Id == 0)
                             await _unidadTrabajo.ServicioProvRepositorio.Insertar(servicioProv);
                         else

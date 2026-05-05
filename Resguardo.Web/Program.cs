@@ -2,8 +2,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Identity.Client;
-using Resguardo.Application.Commands;
 using Resguardo.Application.Commands.ActualizarSolicitud;
 using Resguardo.Application.Commands.AmpliarServicio;
 using Resguardo.Application.Commands.AprobarAmplia;
@@ -19,12 +19,14 @@ using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Common.Services;
 using Resguardo.Application.Interfaces;
 using Resguardo.Application.Queries.ConsultarSolicitud;
-using Resguardo.Application.Queries.ListarConfig;
+using Resguardo.Application.Queries.ListarLimites;
 using Resguardo.Application.Queries.ListarEfectivos;
 using Resguardo.Application.Queries.ListarServicio;
 using Resguardo.Application.Queries.ListarServicioProv;
 using Resguardo.Application.Queries.ObtenerPersonal;
 using Resguardo.Application.Queries.ObtenerSolicitud;
+using Resguardo.Application.Queries.ReporteEfectivo;
+using Resguardo.Application.Queries.ReporteSolicitud;
 using Resguardo.Application.Services;
 using Resguardo.Domain.Interfaces;
 using Resguardo.Infrastructure.Data;
@@ -36,6 +38,14 @@ using Resguardo.Web.Handler;
 using Resguardo.Web.Middlewares;
 using Serilog;
 using Serilog.Events;
+using System.Security.Claims;
+using Notificacion.Infrastructure.DependencyInjection;
+using Resguardo.Application.Interfaces.Background;
+using Resguardo.Infrastructure.Background.Email;
+using Notificacion.Application;
+using Notificacion.Infrastructure.Email;
+using Notificacion.Abstractions;
+using Resguardo.Application.Queries.ObtenerConfig;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,17 +84,23 @@ builder.Services.AddDbContextFactory<DBContexto>(
         .EnableDetailedErrors()
         .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
 );
+builder.Services.AddEmail(builder.Configuration);
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<ITemplateService, TemplateService>();
+builder.Services.AddSingleton<EmailQueue>();
+builder.Services.AddSingleton<IEmailQueue>(sp => sp.GetRequiredService<EmailQueue>());
+builder.Services.AddHostedService<EmailBackgroundService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IUnidadTrabajo, UnidadTrabajo>();
 builder.Services.AddScoped(typeof(IRepositorioBase<>), typeof(RepositorioBase<>));
-builder.Services.AddScoped<IUsuarioContexto, UsuarioContexto>();
 builder.Services.AddScoped<ISolicitudQueryService, SolicitudQueryService>();
 builder.Services.AddScoped<IGenericoQueryService, GenericoQueryService>();
 builder.Services.AddScoped<IServicioQueryService, ServicioQueryService>();
 builder.Services.AddScoped<IServicioProvQueryService, ServicioProvQueryService>();
 builder.Services.AddScoped<IEfectivoQueryService, EfectivoQueryService>();
 builder.Services.AddScoped<IPersonalQueryService, PersonalQueryService>();
-builder.Services.AddScoped<IConfigQueryService, ConfigQueryService>();
+builder.Services.AddScoped<ILimiteQueryService, LimiteQueryService>();
+builder.Services.AddScoped<IReporteQueryService, ReporteQueryService>();
 builder.Services.AddScoped<IValidacionService, ValidacionService>();
 builder.Services.AddScoped<RegistrarSolicitudHandler>();
 builder.Services.AddScoped<AprobarSolicitudHandler>();
@@ -100,25 +116,26 @@ builder.Services.AddScoped<ListarEfectivoHandler>();
 builder.Services.AddScoped<AsignarEfectivoHandler>();
 builder.Services.AddScoped<CerrarServicioHandler>();
 builder.Services.AddScoped<ObtenerPersonalHandler>();
-builder.Services.AddScoped<ListarConfigHandler>();
+builder.Services.AddScoped<ListarLimitesHandler>();
+builder.Services.AddScoped<ObtenerLimitesHandler>();
 builder.Services.AddScoped<RegistrarConfigHandler>();
 builder.Services.AddScoped<CopiarConfigHandler>();
 builder.Services.AddScoped<EditarSolicitudHandler>();
 builder.Services.AddScoped<AmpliarServicioHandler>();
 builder.Services.AddScoped<AprobarAmpliaHandler>();
+builder.Services.AddScoped<ReporteSolicitudHandler>();
+builder.Services.AddScoped<ReporteEfectivoHandler>();
 builder.Services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddHttpClient<ISytelineService, SytelineService>();
 builder.Services.AddHttpClient<IMaestroService, MaestroService>();
 builder.Services.AddHttpClient<ISeguridadService, SeguridadService>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUsuarioContexto, UsuarioContexto>();
 builder.Services.AddAuthentication("Internal").AddScheme<AuthenticationSchemeOptions, InternalAuthHandler>("Internal", null);
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Permission", policy => policy.Requirements.Add(new PermissionRequirement("DUMMY")));
-});
-builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+builder.Services.AddScoped<IClaimsTransformation, PermisosClaimsTransformation>();
 builder.Services.AddMemoryCache();
 
 var app = builder.Build();
@@ -126,7 +143,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error/Error");    
+    app.UseExceptionHandler("/Error/Error");
     app.UseHsts();
 }
 
@@ -136,16 +153,47 @@ app.UseHttpsRedirection();
 app.UsePathBase("/resguardo");
 app.UseStaticFiles();
 app.UseRouting();
-app.UseAuthorization();
 app.Use(async (context, next) =>
 {
-    if (!context.Request.Headers.ContainsKey("X-User-Oid"))
+    var user = context.User;
+    if (!(user?.Identity?.IsAuthenticated ?? false))
     {
-        context.Response.StatusCode = 403;
+        context.Response.StatusCode = 401;
         return;
     }
+    //var codUsuario = user.FindFirst("oid")?.Value;
+    //var codTenant = user.FindFirst("tid")?.Value;
+    //var codApp = user.FindFirst("app")?.Value;
+    //var idSession = user.FindFirst("session_id")?.Value;
+    //if (string.IsNullOrEmpty(codUsuario) ||
+    //    string.IsNullOrEmpty(codTenant) ||
+    //    string.IsNullOrEmpty(codApp) ||
+    //    string.IsNullOrEmpty(idSession))
+    //{
+    //    context.Response.StatusCode = 401;
+    //    return;
+    //}
+
+    //var cache = context.RequestServices.GetRequiredService<IMemoryCache>();
+    //var key = $"permisos-{codApp.ToLower()}:{idSession}";
+    //if (!cache.TryGetValue(key, out List<string> permisos))
+    //{
+    //    var seguridad = context.RequestServices.GetRequiredService<ISeguridadService>();
+    //    var permisosBD = await seguridad.ObtenerPermisos(codTenant, codUsuario, codApp);
+
+    //    permisos = permisosBD?.Select(x => x.Codigo).ToList() ?? new List<string>();
+    //    cache.Set(key, permisos, new MemoryCacheEntryOptions
+    //    {
+    //        SlidingExpiration = TimeSpan.FromHours(1),
+    //        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+    //    });
+    //}
+    //var identity = (ClaimsIdentity)context.User.Identity!;
+    //identity.AddClaims(permisos.Select(p => new Claim("permission", p)));
+
     await next();
 });
+app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=SolicitudVisualizar}/{action=Consulta}/{id?}");

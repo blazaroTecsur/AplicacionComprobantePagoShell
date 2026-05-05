@@ -1,4 +1,4 @@
-﻿namespace Resguardo.Application.Commands
+﻿namespace Resguardo.Application.Common.Interfaces
 {
     public interface IUsuarioContexto
     {

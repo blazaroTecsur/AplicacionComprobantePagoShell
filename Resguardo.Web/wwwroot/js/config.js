@@ -27,7 +27,7 @@
         };
 
         CorporativoQuery.submit({
-            url: BASE_URL + "/ConfigGestionar/CopiarConfig",
+            url: BASE_URL + "/LimiteGestionar/CopiarConfig",
             type: 'POST',
             data: formulario,
             success: function (response) {

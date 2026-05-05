@@ -24,7 +24,25 @@ var CorporativoCore = (function () {
     // Normaliza tanto ApiResponse<T> como errores de red
     function parsearRespuesta(xhr) {
         try {
-            const json = typeof xhr === "string" ? JSON.parse(xhr) : xhr.responseJSON;
+            let json = null;
+
+            // 🟢 Caso 1: ya viene envuelto correctamente
+            if (xhr && xhr.responseJSON) {
+                json = xhr.responseJSON;
+            }
+            // 🟢 Caso 2: string JSON directo
+            else if (typeof xhr === "string") {
+                json = JSON.parse(xhr);
+            }
+            // 🟢 Caso 3: ya es JSON directo
+            else if (typeof xhr === "object" && xhr.success !== undefined) {
+                json = xhr;
+            }
+
+            console.log('json parseado:', json);
+
+            //const json = typeof xhr === "string" ? JSON.parse(xhr) : xhr.responseJSON;
+            //console.log('json', json);
             if (json && typeof json.success !== "undefined") return json;
 
             // Respuesta que no sigue ApiResponse<T> (ej: endpoint legacy)
@@ -50,7 +68,7 @@ var CorporativoCore = (function () {
     // options: { onValidation, onCustom, errorElement }
     function handleError(xhr, options = {}) {
         console.log('handleError', xhr);
-        const response = parsearRespuesta(xhr);        
+        const response = parsearRespuesta(xhr);
         if (!response || response.success) return;
 
         const error = response.error;
@@ -123,7 +141,7 @@ var CorporativoCore = (function () {
         `).appendTo("body");
 
         setTimeout(() => $toast.fadeOut(400, () => $toast.remove()), 10000);
-    }    
+    }
     function formatearFecha(fechaStr) {
 
         // Separa fecha y hora por "T" o por espacio
@@ -263,7 +281,7 @@ var CorporativoForm = (function () {
             console.error("Formulario no encontrado:", formSelector);
             return {};
         }
-        
+
         const disabledFields = form.find(':input:disabled').prop('disabled', false);
 
         const obj = {};
@@ -275,7 +293,7 @@ var CorporativoForm = (function () {
                 obj[item.name] = item.value;
             }
         });
-        
+
         disabledFields.prop('disabled', true);
 
         form.find("input[type=checkbox]").each(function () {
@@ -295,15 +313,15 @@ var CorporativoForm = (function () {
     }
     function construirPayload(config) {
 
-        const formulario = serializarFormulario(config.form);                
-        const tablas = obtenerDatosTablas(config.tablas);        
+        const formulario = serializarFormulario(config.form);
+        const tablas = obtenerDatosTablas(config.tablas);
         return { formulario, ...tablas };
     }
     function bloquearBoton(btn) { if (btn) $(btn).prop("disabled", true); }
     function desbloquearBoton(btn) { if (btn) $(btn).prop("disabled", false); }
     function submit(config) {
         const payload = construirPayload(config);
-        if (config.beforeSend) config.beforeSend(payload);        
+        if (config.beforeSend) config.beforeSend(payload);
         bloquearBoton(config.button);
 
         $.ajax({
@@ -327,7 +345,7 @@ var CorporativoForm = (function () {
                 }
                 if (config.success) config.success(response.data ?? response);
             },
-            error: function (xhr) {                
+            error: function (xhr) {
                 // Delega a Core — elimina manejarError duplicado
                 CorporativoCore.handleError(xhr, {
                     onValidation: config.onValidation,
@@ -345,6 +363,120 @@ var CorporativoForm = (function () {
 
     return { submit, serializarFormulario };
 
+})();
+
+var CorporativoFile = (function () {
+
+    function bloquearBoton(btn) { if (btn) $(btn).prop("disabled", true); }
+    function desbloquearBoton(btn) { if (btn) $(btn).prop("disabled", false); }
+    function procesarBlobComoJson(blob, callback) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            try {
+                const json = JSON.parse(reader.result);
+                callback(json);
+            } catch {
+                console.error("Error parseando blob:", e);
+                callback({
+                    success: false,
+                    error: {
+                        userMessage: "Error al interpretar la respuesta del servidor"
+                    }
+                });
+            }
+        };        
+        reader.readAsText(blob);
+    }
+    function submit(config) {
+
+        bloquearBoton(config.button);
+
+        $.ajax({
+            url: config.url,
+            method: config.method || "GET",
+            xhrFields: { responseType: 'blob' },
+            headers: { "RequestVerificationToken": CorporativoCore.obtenerToken() },
+            timeout: config.timeout || 60000,
+            success: function (data, status, xhr) {
+                const contentType = xhr.getResponseHeader("Content-Type") || "";
+
+                // Si viene JSON (aunque sea blob)
+                if (contentType.startsWith("application/json")) {
+                    procesarBlobComoJson(data, function (json) {
+                        if (json && json.success === false) {
+                            CorporativoCore.handleError(
+                                { responseJSON: json },
+                                {
+                                    onValidation: config.onValidation,
+                                    onCustom: config.onError,
+                                    errorElement: config.errorElement
+                                }
+                            );
+                        } else {
+                            alert("Error inesperado en respuesta JSON.");
+                        }
+                    });
+                    return;
+                }
+
+                // CASO 2: Archivo válido
+                let filename = config.file;
+
+                const disposition = xhr.getResponseHeader("Content-Disposition");
+                if (disposition && disposition.includes("filename=")) {
+                    const match = /filename="([^"]+)"/.exec(disposition);
+                    if (match) filename = match[1];
+                }
+
+                const blob = new Blob([data], { type: contentType });
+                const link = document.createElement("a");
+                link.href = window.URL.createObjectURL(blob);
+                link.download = filename;
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                if (config.success) config.success();
+            },
+            error: function (xhr) {                
+                if (xhr.response && xhr.response.type === "application/json") {                    
+                    procesarBlobComoJson(xhr.response, function (json) {
+
+                        if (json) {
+                            CorporativoCore.handleError(
+                                { responseJSON: json },
+                                {
+                                    onValidation: config.onValidation,
+                                    onCustom: config.onError,
+                                    errorElement: config.errorElement
+                                }
+                            );
+                        } else {
+                            alert("Error no controlado del servidor.");
+                        }
+                    });
+
+                    return;
+                }
+
+                // fallback
+                CorporativoCore.handleError(xhr, {
+                    onValidation: config.onValidation,
+                    onCustom: config.onError,
+                    errorElement: config.errorElement
+                });
+
+                if (config.error) config.error(xhr);
+            },
+            complete: function () {
+                desbloquearBoton(config.button);
+                if (config.complete) config.complete();
+            }
+        });
+    }
+
+    return { submit };
 })();
 
 // ============================================================

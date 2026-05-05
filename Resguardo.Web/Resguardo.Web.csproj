@@ -7,7 +7,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Folder Include="Logs\" />
+		<Folder Include="Logs\" />		
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="Templates\EditarSolicitud.html" CopyToOutputDirectory="Always" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -23,6 +27,7 @@
 	</ItemGroup>
 
 	<ItemGroup>		
+		<ProjectReference Include="..\Notificacion.Infrastructure\Notificacion.Infrastructure.csproj" />		
 		<ProjectReference Include="..\Resguardo.Application\Resguardo.Application.csproj" />		
 		<ProjectReference Include="..\Resguardo.Infrastructure\Resguardo.Infrastructure.csproj" />
 	</ItemGroup>

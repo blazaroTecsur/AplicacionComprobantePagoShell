@@ -111,11 +111,6 @@ builder.Services
     .AddInMemoryTokenCaches();
 
 builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
-//builder.Services.AddAuthorization(options =>
-//{fv
-//    options.AddPolicy("TicketAccess", policy =>
-//        policy.RequireClaim("roles", "InventarioUser"));
-//});
 builder.Services.Configure<CookieAuthenticationOptions>(
     CookieAuthenticationDefaults.AuthenticationScheme,
     options =>
@@ -151,18 +146,16 @@ app.MapReverseProxy(proxyPipeline =>
         }
 
         var usuario = context.User;
-        string ObtenerClaim(params string[] tipo) => tipo
-                .Select(t => usuario.FindFirst(t)?.Value)
-                .FirstOrDefault(v => !string.IsNullOrWhiteSpace(v)) ?? string.Empty;
-
-        string usuCorreo = ObtenerClaim("preferred_username");
-        string codTenant = ObtenerClaim("tid", "http://schemas.microsoft.com/identity/claims/tenantid");
-        string codUsuario = ObtenerClaim("oid", "http://schemas.microsoft.com/identity/claims/objectidentifier");
-        string idSesion = ObtenerClaim("session_id");
-
-        context.Request.Headers["X-User-Email"] = usuCorreo ?? "";
+        string? codTenant = usuario.FindFirst("tid")?.Value;
+        string? codUsuario = usuario.FindFirst("oid")?.Value;
+        string? nomUsuario = usuario.FindFirst("name")?.Value;
+        string? usuCorreo = usuario.FindFirst("preferred_username")?.Value;
+        string? idSesion = usuario.FindFirst("session_id")?.Value;
+        
         context.Request.Headers["X-User-Oid"] = codUsuario ?? "";
         context.Request.Headers["X-Tenant-Id"] = codTenant ?? "";
+        context.Request.Headers["X-User-Name"] = nomUsuario ?? "";
+        context.Request.Headers["X-User-Email"] = usuCorreo ?? "";
         context.Request.Headers["X-Session-Id"] = idSesion ?? "";
 
         await next();

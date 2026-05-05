@@ -17,5 +17,7 @@
         public string? UsuarioApro { get; set; }
         public DateTime? FechaApro { get; set; }
         public string? ComentApro { get; set; }
+        public bool Ampliar { get; set; }
+        public bool Aprobar { get; set; }
     }
 }

@@ -6,13 +6,13 @@ using Resguardo.Infrastructure.Repositorios;
 
 namespace Resguardo.Infrastructure.Repositories
 {
-    public class ConfigRepositorio(DBContexto contexto) : RepositorioBase<Config>(contexto), IConfigRepositorio
+    public class ConfigRepositorio(DBContexto contexto) : RepositorioBase<Limite>(contexto), IConfigRepositorio
     {
-        public async Task<IEnumerable<Config>> Listar(DateOnly fecha)
+        public async Task<IEnumerable<Limite>> Listar(DateOnly fecha)
         {
             var configs = await _entidades
                 .Where(c => c.Fecha == fecha)
-                .Select(c => new Config
+                .Select(c => new Limite
                 {
                     Fecha = c.Fecha,
                     CodDpto = c.CodDpto,

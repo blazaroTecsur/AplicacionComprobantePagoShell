@@ -19,7 +19,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>
-                <button type="button" id="config_btnGrabar" class="btn btn-primary div-new">Grabar</button>
+                @if (User.HasClaim("permission", "LIMT.COPIAR"))
+                {
+                    <button type="button" id="config_btnGrabar" class="btn btn-primary div-new">Grabar</button>
+                }
             </div>
         </div>
     </div>

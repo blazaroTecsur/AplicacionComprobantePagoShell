@@ -1,6 +1,5 @@
 ﻿using Resguardo.Application.Common;
 using Resguardo.Application.Queries.ConsultarServicio;
-using Resguardo.Application.Queries.ListarConfig;
 using Resguardo.Application.Queries.ListarServicio;
 
 namespace Resguardo.Application.Interfaces

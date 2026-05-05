@@ -15,7 +15,7 @@ namespace Resguardo.Application.Mapeos
             CreateMap<RegistrarServicioItem, Servicio>().ReverseMap();
             CreateMap<ActualizarServicioItem, Servicio>().ReverseMap();
             CreateMap<ConfirmarServicioItem, ServicioProv>().ReverseMap();
-            CreateMap<RegistrarConfigItem, Config>().ReverseMap();
+            CreateMap<RegistrarConfigItem, Limite>().ReverseMap();
         }
     }
 }

@@ -10,7 +10,11 @@ namespace Resguardo.Infrastructure.Repositories
     {
         public async Task<ServicioProv> Obtener(int id)
         {
-            var servicioProv = await _entidades.Include(s => s.Efectivos).Where(s => s.Id == id).FirstAsync();
+            var servicioProv = await _entidades
+                .Include(s => s.ServicioNav)
+                .Include(s => s.Efectivos)
+                .Where(s => s.Id == id)
+                .FirstAsync();
             return servicioProv;
         }
     }

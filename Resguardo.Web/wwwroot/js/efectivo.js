@@ -10,7 +10,9 @@
         console.log(data);
         switch (fncEfectivo.accion) {
             case "AS": titulo = "Asignar Efectivos"; break;
-            case "AH": titulo = "Ampliar Horario de Efectivos"; break;
+            case "AH": titulo = "Ampliar Horario de Efectivos";
+                $("#efectivo_btnGrabar").attr('hidden', 'hidden');
+                break;
             case "AA":
                 titulo = "Aprobar Ampliación de Horario";
                 $("#efectivo_btnGrabar").attr('hidden', 'hidden');
@@ -119,34 +121,45 @@
         } else if (fncEfectivo.accion == "AH") {
             columns =
                 [
-                    { formatter: "rownum", hozAlign: "center", width: 40 },
+                    { formatter: "rownum", hozAlign: "center", width: 40 },                    
                     { title: "DNI", field: "dni", width: 120 },
                     { title: "Nombres", field: "nombres", width: 200 },
                     { title: "Apellidos", field: "apellidos", width: 200 },
                     { title: "Celular", field: "telefono", width: 120 },
-                    { title: "H. Ampliada", field: "hraAmplia", width: 120, editor: "time" }
+                    { title: "H. Ampliada", field: "hraAmplia", width: 120, editor: "time" },
+                    {
+                        title: "", width: 50, hozAlign: "center",
+                        formatter: function (cell) {
+                            var acciones = "";
+                            var pos = cell.getRow().getPosition();
+                            if (cell._cell.row.data.ampliar == true) {
+                                acciones = acciones + "<button class='btn btn-sm btn-primary' onclick=\"fncEfectivo.aprobarAmpliacion(" + pos + ", 'H')\"><i class='bi bi-stopwatch'></i></button>";
+                            }
+                            return acciones;
+                        }
+                    }
                 ];
         } else if (fncEfectivo.accion == "AA") {
             columns =
                 [
-                    { formatter: "rownum", hozAlign: "center", width: 40 },
+                    { formatter: "rownum", hozAlign: "center", width: 40 },                    
+                    { title: "DNI", field: "dni", width: 120 },
+                    { title: "Nombres", field: "nombres", width: 200 },
+                    { title: "Apellidos", field: "apellidos", width: 200 },
+                    { title: "Celular", field: "telefono", width: 120 },
+                    { title: "H. Ampliada", field: "hraAmplia", width: 120 },
                     {
                         title: "", width: 100, hozAlign: "center",
                         formatter: function (cell) {
                             var acciones = "";
-                            var pos = cell.getRow().getPosition();                            
-                            if (cell._cell.row.data.estAmplia == "P") {
+                            var pos = cell.getRow().getPosition();
+                            if (cell._cell.row.data.aprobar) {
                                 acciones = acciones + "<button class='btn btn-sm btn-success' onclick=\"fncEfectivo.aprobarAmpliacion(" + pos + ", 'A')\"><i class='bi bi-check-circle'></i></button>&nbsp;&nbsp;";
                                 acciones = acciones + "<button class='btn btn-sm btn-danger' onclick=\"fncEfectivo.aprobarAmpliacion(" + pos + ", 'R')\"><i class='bi bi-x-circle'></i></button>";
                             }
                             return acciones;
                         }
                     },
-                    { title: "DNI", field: "dni", width: 120 },
-                    { title: "Nombres", field: "nombres", width: 200 },
-                    { title: "Apellidos", field: "apellidos", width: 200 },
-                    { title: "Celular", field: "telefono", width: 120 },
-                    { title: "H. Ampliada", field: "hraAmplia", width: 120 },
                     { title: "Comentario", field: "comentApro", editor: "textarea", width: 300 }
                 ];
         } else if (fncEfectivo.accion == "CE") {
@@ -180,6 +193,7 @@
                         }
                     },
                     { title: "H.Ampliada", field: "hraAmplia", width: 120 },
+                    { title: "Estado", field: "estAmplia", width: 100 },                
                     { title: "F.Aprobada", field: "fechaApro", width: 120 },
                     { title: "Aprobador", field: "usuarioApro", width: 120 },
                     { title: "Coment.Aprob", field: "comentApro", width: 300 },
@@ -262,16 +276,6 @@
                     telefono: $.trim(obj.telefono)
                 });
             });
-        } else if (fncEfectivo.accion == "AH") {
-            url = BASE_URL + "/ServicioOperar/AmpliarServicio";
-            $.each(tabla, function (idx, obj) {
-                if (obj.hraAmplia != null && $.trim(obj.hraAmplia) != "") {
-                    efectivos.push({
-                        idEfectivo: obj.idEfectivo,
-                        hraAmplia: $.trim(obj.hraAmplia)
-                    });
-                }
-            });
         } else if (fncEfectivo.accion == "CE") {
             url = BASE_URL + "/ServicioOperar/CerrarServicio";
             $.each(tabla, function (idx, obj) {
@@ -285,12 +289,7 @@
                 });
             });
         }
-
-        if (efectivos == null || efectivos.length == 0) {
-            CorporativoCore.mostrarToast('Los datos solicitados del efectivo no han sido completados.', 'error');
-            return;
-        }
-
+        
         var formulario = {
             idServicioProv: fncEfectivo.idServicioProv,
             efectivos: efectivos
@@ -308,31 +307,39 @@
         });
     },
     aprobarAmpliacion: function (pos, estado) {
+        
+        var row = fncEfectivo.tablaEfectivo.getRowFromPosition(pos);
+        var data = row.getData();
+        var url = "";
+        var formulario = {            
+            idEfectivo: data.idEfectivo,
+            hraAmplia: data.hraAmplia,
+            comentApro: $.trim(data.comentApro) ?? null
+        };
+        if (estado == "H") {
+            if (formulario.hraAmplia == "" || formulario.hraAmplia == null) {
+                CorporativoCore.mostrarToast("Debe ingresar la hora de ampliación.", "error");
+                return;
+            }
+            url = "/ServicioOperar/AmpliarServicio";
+        } else if (estado == "A") {
+            url = "/ServicioOperar/AprobarAmpliacion";
+        } else if (estado == "R") {
+            url = "/ServicioOperar/RechazarAmpliacion";
+        }
 
         let confirma = confirm("¿Está seguro de realizar esta operación?");
         if (!confirma) {
             return;
         }
-        var row = fncEfectivo.tablaEfectivo.getRowFromPosition(pos);
-        var data = row.getData();
-        var url = "";
-        var formulario = {
-            idServicioProv: fncEfectivo.idServicioProv,
-            idEfectivo: data.idEfectivo,
-            comentApro: $.trim(data.comentApro) ?? null
-        };
-        if (estado == "A") {
-            url = "/ServicioOperar/AprobarAmpliacion";
-        } else if (estado == "R") {
-            url = "/ServicioOperar/RechazarAmpliacion";
-        }
+
         CorporativoQuery.submit({
             url: BASE_URL + url,
             type: 'POST',
             data: formulario,
             success: function (response) {
                 CorporativoCore.mostrarToast("La operación se realizó con éxito.", "success");
-                $("#modalEfectivo").modal("hide");
+                fncEfectivo.listarEfectivos(fncEfectivo.idServicioProv);
                 $("#consulta_btnBuscar").click();
             }
         });

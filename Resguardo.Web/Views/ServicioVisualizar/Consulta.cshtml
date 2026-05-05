@@ -21,20 +21,28 @@
                 <input type="date" class="form-control" id="consulta_txtFechaFin">
             </div>
         </div>
-        <div class="col-2">
+        <div class="col-1">
             <label for="consulta_txtFolio" class="form-label">Folio</label>
             <input type="number" class="form-control" id="consulta_txtFolio">
         </div>
-        <div class="col-2 d-flex align-items-end">
-            <button type="button" class="btn btn-primary" id="consulta_btnBuscar"><i class="bi bi-search"></i> Buscar</button>        
+        <div class="col-4 d-flex align-items-end justify-content-between">
+            @if (User.HasClaim("permission", "SERV.VER"))
+            {
+                <button type="button" class="btn btn-primary" id="consulta_btnBuscar"><i class="bi bi-search"></i> Buscar</button>
+            }
+            &nbsp;&nbsp;&nbsp;
+            @if (User.HasClaim("permission", "SERV.RPT"))
+            {
+            <button type="button" class="btn btn-secondary" id="consulta_btnReporte"><i class="bi bi-file-earmark-excel"></i> Reporte</button>
+            }
         </div>
     </div>
 </div>
 <hr />
 <div id="consulta_tablaServicios" class="mt-2"></div>
-<div id="modalContainer"></div>
 
 @section Scripts {
     <script src="~/js/consulta_servicios.js"></script>
     <script src="~/js/efectivo.js"></script>
+    <script src="~/js/reporte.js"></script>
 }

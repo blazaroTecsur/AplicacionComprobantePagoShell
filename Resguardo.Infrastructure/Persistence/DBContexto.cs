@@ -13,7 +13,7 @@ public partial class DBContexto : DbContext
     {
     }
     public virtual DbSet<Aprobador> Aprobador { get; set; }
-    public virtual DbSet<Config> Config { get; set; }    
+    public virtual DbSet<Limite> Config { get; set; }    
     public virtual DbSet<Efectivo> Efectivo { get; set; }
     public virtual DbSet<Generico> Generico { get; set; }
     public virtual DbSet<Personal> Personal { get; set; }

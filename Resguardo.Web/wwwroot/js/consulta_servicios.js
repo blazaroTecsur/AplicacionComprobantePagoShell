@@ -18,8 +18,18 @@ var fncConsulta = {
             e.preventDefault();
             fncConsulta.buscarServicios();
         });
+        $("#consulta_btnReporte").click(function () {
+            fncConsulta.abrirReporte();
+        });
 
         fncConsulta.crearTabla();
+    },
+    abrirReporte: function () {
+        $("#modalContainer").load(BASE_URL + "/Reporte/Filtros", function () {
+            fncReporte.tipo = "EF";
+            fncReporte.servicio = $("#consulta_cboServicio option");
+            fncReporte.init();
+        });
     },
     buscarServicios: function () {
         fncConsulta.tablaServicio.buscar();
@@ -58,10 +68,10 @@ var fncConsulta = {
                         if (cell._cell.row.data.asignar && CorporativoCore.tienePermiso(window.ROLES, ["SERV.ASIGNAR"])) {                            
                             acciones = acciones + "<button class='btn btn-sm btn-success' title='Asignar efectivos' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'AS')\"><i class='bi bi-person-plus'></i></button>";
                         }
-                        if (cell._cell.row.data.ampliar) {
+                        if (cell._cell.row.data.ampliar && CorporativoCore.tienePermiso(window.ROLES, ["SERV.AMPLIAR"])) {
                             acciones = acciones + "<button class='btn btn-sm btn-secondary' title='Ampliar horario' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'AH')\"><i class='bi bi-clock-history'></i></button>&nbsp;&nbsp;";
                         }
-                        if (cell._cell.row.data.aprobar) {
+                        if (cell._cell.row.data.aprobar && CorporativoCore.tienePermiso(window.ROLES, ["SERV.APROBAMP"])) {
                             acciones = acciones + "<button class='btn btn-sm btn-warning' title='Aprobar amplicación' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'AA')\"><i class='bi bi-calendar-check'></i></button>&nbsp;&nbsp;";
                         }
                         if (cell._cell.row.data.cerrar && CorporativoCore.tienePermiso(window.ROLES, ["SERV.CERRAR"])) {
@@ -74,7 +84,7 @@ var fncConsulta = {
                 { title: "Id", field: "id", visible: false },
                 { title: "Proveedor", field: "proveedor", width: 200 },
                 {
-                    title: "Folio", field: "folio", width: 100, formatter: function (cell) {
+                    title: "Folio", field: "folio", width: 110, formatter: function (cell) {
                         let value = cell.getValue();
                         var pos = cell.getRow().getPosition();                        
                         return "<a title='Ver atención' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'VA'); return false;\" href='#'>" + value + "</a>";
@@ -89,6 +99,7 @@ var fncConsulta = {
                         return fecha;
                     }
                 },
+                { title: "Estado", field: "estado", width: 100 },
                 { title: "Hra. Inicio", field: "hraInicio", width: 150 },
                 { title: "Hra. Final", field: "hraFinal", width: 150 },
                 { title: "Cantidad", field: "cantidad", width: 120 },

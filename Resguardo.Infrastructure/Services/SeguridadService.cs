@@ -24,15 +24,14 @@ namespace Resguardo.Infrastructure.Services
             _httpClient = httpClient;
             _token = token;
         }
-        public async Task<IEnumerable<SeguridadRolResponse>> ObtenerPermisos(string codTenant, string codUsuario, string codApp)
+        public async Task<IEnumerable<SeguridadRolResponse>> ObtenerPermisos(
+            string codTenant, string codUsuario, string codApp)
         {            
             var token = await _token.GetTokenAsync();            
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var url = _configuration["ApiSettings:Seguridad:ObtenerPermisos"];
             url = url + $"?codUsuario={codUsuario}&codTenant={codTenant}&codApp={codApp}";
-            //var response = await _httpClient.GetAsync(url);
-            //response.EnsureSuccessStatusCode();
-            //return await response.Content.ReadFromJsonAsync<List<string>>();
+            
             var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
             var apiResponse = JsonSerializer.Deserialize<SeguridadResponse<IEnumerable<SeguridadRolResponse>>>(content,

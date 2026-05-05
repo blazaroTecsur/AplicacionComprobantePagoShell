@@ -21,6 +21,6 @@ namespace Resguardo.Infrastructure.Repositorios
                 .Where(s => s.SolicitudNav.CodDpto == codDpto && s.IdTpoServicio == idTpoServicio && s.Fecha == fecha && s.Turno == turno)
                 .SumAsync(s => s.Cantidad);
             return servicios;
-        }
+        }        
     }
 }

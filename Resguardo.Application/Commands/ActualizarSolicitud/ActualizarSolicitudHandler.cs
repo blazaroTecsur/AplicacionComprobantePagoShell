@@ -14,17 +14,20 @@ namespace Resguardo.Application.Commands.ActualizarSolicitud
         private readonly IUnidadTrabajo _unidadTrabajo;
         private readonly IValidator<ActualizarSolicitudCommand> _fluentv;
         private readonly IValidacionService _validacion;
-        private readonly IMapper _mapeo;          
+        private readonly IMapper _mapeo;
+        private readonly IUsuarioContexto _usuario;
         public ActualizarSolicitudHandler(
             IValidator<ActualizarSolicitudCommand> fluentv,
             IValidacionService validacion,
             IUnidadTrabajo unidadTrabajo,
-            IMapper mapeo)
+            IMapper mapeo,
+            IUsuarioContexto usuario)
         {
             _fluentv = fluentv;
             _validacion = validacion;
             _unidadTrabajo = unidadTrabajo;
             _mapeo = mapeo;
+            _usuario = usuario;
         }
         public async Task<int> Ejecutar(ActualizarSolicitudCommand formulario)
         {
@@ -40,7 +43,7 @@ namespace Resguardo.Application.Commands.ActualizarSolicitud
             solicitud.NomCapataz = formulario.NomCapataz;
             solicitud.Celular = formulario.Celular;
             solicitud.TpoTrabajo = formulario.TpoTrabajo;
-            solicitud.UsuarioAct = "DBO";
+            solicitud.UsuarioAct = _usuario.Correo;
             solicitud.FechaAct = fecActual;
 
             var servicios = _mapeo.Map<List<Servicio>>(formulario.Servicios);
@@ -52,12 +55,13 @@ namespace Resguardo.Application.Commands.ActualizarSolicitud
                 throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
                     $"No puede agregar más de {Constantes.CANT_MAX_X_SERV} servicios a la solicitud.");
 
+            int contador = solicitud.Servicios.Count + 1;
             foreach (var servicio in servicios)
             {
                 if (servicio.Id == 0)
                 {
                     servicio.IdSolicitud = solicitud.Id;
-                    servicio.UsuarioReg = "DBO";
+                    servicio.UsuarioReg = _usuario.Correo;
                     servicio.FechaReg = fecActual;
 
                     if (servicio.Fecha < DateOnly.FromDateTime(fecActual.Date))
@@ -98,7 +102,9 @@ namespace Resguardo.Application.Commands.ActualizarSolicitud
                             throw new BusinessException(StatusCodes.Status400BadRequest.ToString(), resultado.Mensaje);
                     }
                     servicio.Turno = _validacion.ObtenerTurno(horInicio);
+                    servicio.Folio = $"{solicitud.Folio}-{contador.ToString().PadLeft(2, '0')}";
                     solicitud.Servicios.Add(servicio);
+                    contador++;
                 }
             }
 

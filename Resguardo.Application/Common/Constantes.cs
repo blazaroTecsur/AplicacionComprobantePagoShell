@@ -20,9 +20,10 @@
         public static string COD_SERV_VIAL = "02";
         public static string RUC_EULEN = "20601088186";
         public static string RUC_SEGUMAX = "20224088186";
-        public static string COD_ESTADO_SERVPROV_CONFIRMADO = "CO";
-        public static string COD_ESTADO_SERVPROV_ASIGNADO = "AS";
-        public static string COD_ESTADO_SERVPROV_CERRADO = "CE";
+        public static string SERVPROV_CONFIRMADO = "CO";
+        public static string SERVPROV_ASIGNADO = "AS";
+        public static string SERVPROV_CERRADO = "CE";
+        public static string SERVPROV_CANCELADO = "CA";
         public static string TURNO_DIURNO = "D";
         public static string TURNO_NOCTURNO = "N";
         public static string AMPL_PENDIENTE = "P";

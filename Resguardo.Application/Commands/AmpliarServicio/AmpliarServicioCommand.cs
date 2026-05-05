@@ -1,8 +1,8 @@
 ﻿namespace Resguardo.Application.Commands.AmpliarServicio
 {
     public class AmpliarServicioCommand
-    {
-        public int IdServicioProv { get; set; }
-        public List<AmpliarServicioItem> Efectivos { get; set; } = new();
+    {        
+        public int IdEfectivo { get; set; }
+        public string HraAmplia { get; set; } = null!;
     }
 }

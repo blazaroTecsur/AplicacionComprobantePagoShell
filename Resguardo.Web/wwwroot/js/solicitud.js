@@ -1,9 +1,9 @@
-﻿var fncRegistro = {
+﻿var fncSolicitud = {
     tablaServicio: null,
     id: 0,
-    accion: null,    
+    accion: null,
     init: function () {
-        
+
         CorporativoSelect.cargar({
             url: BASE_URL + "/SolicitudVisualizar/ListarGenerico",
             filtro: 'tipo',
@@ -14,21 +14,21 @@
             ]
         });
         $("#btnAgregar").click(function () {
-            fncRegistro.agregarServicio();
+            fncSolicitud.agregarServicio();
         });
         $("#btnBuscarSro").click(function () {
-            fncRegistro.buscarSro();
+            fncSolicitud.buscarSro();
         });
         $("#btnGrabar").click(function () {
-            fncRegistro.grabarSolicitud();
+            fncSolicitud.grabarSolicitud();
         });
-        $("#btnAprobar").click(function () {                       
+        $("#btnAprobar").click(function () {
             $("#txtComentario").val("");
             var url = "/SolicitudAprobar/AprobarSolicitud";
             $("#modalTituloAprobar").html("Aprobar:");
             $("#modalAprobar").attr('url', url);
             $("#modalAprobar").modal("show");
-        });        
+        });
         $("#btnAnular").click(function () {
             $("#txtComentario").val("");
             var url = "/SolicitudAprobar/AnularSolicitud";
@@ -42,10 +42,11 @@
                 return;
             }
             var url = $("#modalAprobar").attr('url');
-            fncRegistro.aprobarSolicitud(url);
+            fncSolicitud.aprobarSolicitud(url);
         });
         $("#lnkCapataz").click(function () {
-            $("#modalContainerMaestro").load(BASE_URL + "/SolicitudVisualizar/Capataz", function () {                
+            console.log("lnkCapataz");
+            $("#modalContainerMaestro").load(BASE_URL + "/SolicitudVisualizar/Capataz", function () {
                 fncMaestro.init();
             });
         });
@@ -58,34 +59,34 @@
                 $("#modalMapa").modal("show");
             });
         });
-        
-        fncRegistro.crearTabla();
-        fncRegistro.controlarAccion();
+
+        fncSolicitud.crearTabla();
+        fncSolicitud.controlarAccion();
     },
     controlarAccion: function () {
 
         var titulo = "";
-        switch (fncRegistro.accion) {
+        switch (fncSolicitud.accion) {
             case "N":
                 titulo = "Nueva Solicitud";
                 $(".div-new").attr('hidden', 'hidden');
-                setTimeout(function () { fncRegistro.tablaServicio.showColumn("eliminar") }, 1000);
+                setTimeout(function () { fncSolicitud.tablaServicio.showColumn("eliminar") }, 1000);
                 break;
             case "V":
-                titulo = "Visualizar Solicitud";                
+                titulo = "Visualizar Solicitud";
                 $(".div-new").removeAttr('hidden');
                 $(".div-view").removeAttr('hidden');
                 $(".div-servicio").attr('hidden', 'hidden');
                 $("#txtCelular").attr('readonly', 'readonly');
-                $("#txtTpoTrabajo").attr('readonly', 'readonly'); 
+                $("#txtTpoTrabajo").attr('readonly', 'readonly');
                 $("#btnBuscarSro").attr('hidden', 'hidden');
                 $("#btnAgregar").attr('hidden', 'hidden');
                 $("#lnkCapataz").attr('hidden', 'hidden');
                 $("#btnVerMapa").attr('hidden', 'hidden');
                 $("#btnGrabar").attr('hidden', 'hidden');
                 $("#cboFlujo").attr('disabled', 'disabled');
-                $("#txtNroSro").attr('readonly', 'readonly');    
-                fncRegistro.obtenerSolicitud(fncRegistro.id);
+                $("#txtNroSro").attr('readonly', 'readonly');
+                fncSolicitud.obtenerSolicitud(fncSolicitud.id);
                 break;
             case "M":
                 titulo = "Modificar Solicitud";
@@ -94,41 +95,41 @@
                 $("#btnBuscarSro").attr('hidden', 'hidden');
                 $("#cboFlujo").attr('disabled', 'disabled');
                 $("#txtNroSro").attr('readonly', 'readonly');
-                setTimeout(function () { fncRegistro.tablaServicio.showColumn("eliminar") }, 1000);
-                fncRegistro.obtenerSolicitud(fncRegistro.id);
+                setTimeout(function () { fncSolicitud.tablaServicio.showColumn("eliminar") }, 1000);
+                fncSolicitud.obtenerSolicitud(fncSolicitud.id);
                 break;
             case "E":
                 titulo = "Editar Solicitud";
                 $(".div-new").removeAttr('hidden');
                 $(".div-view").removeAttr('hidden');
-                $(".div-servicio").attr('hidden', 'hidden'); 
+                $(".div-servicio").attr('hidden', 'hidden');
                 $("#btnBuscarSro").attr('hidden', 'hidden');
                 $("#cboFlujo").attr('disabled', 'disabled');
-                $("#txtNroSro").attr('readonly', 'readonly');                
-                fncRegistro.obtenerSolicitud(fncRegistro.id);
+                $("#txtNroSro").attr('readonly', 'readonly');
+                fncSolicitud.obtenerSolicitud(fncSolicitud.id);
                 break;
             case "A":
                 titulo = "Aprobar Solicitud";
                 $(".div-check").removeAttr('hidden');
                 $(".div-new").removeAttr('hidden');
                 $(".div-view").removeAttr('hidden');
-                $(".div-servicio").attr('hidden', 'hidden'); 
-                $("#txtCelular").attr('readonly', 'readonly'); 
-                $("#txtTpoTrabajo").attr('readonly', 'readonly'); 
+                $(".div-servicio").attr('hidden', 'hidden');
+                $("#txtCelular").attr('readonly', 'readonly');
+                $("#txtTpoTrabajo").attr('readonly', 'readonly');
                 $("#btnBuscarSro").attr('hidden', 'hidden');
                 $("#lnkCapataz").attr('hidden', 'hidden');
                 $("#btnAgregar").attr('hidden', 'hidden');
                 $("#btnVerMapa").attr('hidden', 'hidden');
                 $("#btnGrabar").attr('hidden', 'hidden');
                 $("#cboFlujo").attr('disabled', 'disabled');
-                $("#txtNroSro").attr('readonly', 'readonly');                
-                fncRegistro.obtenerSolicitud(fncRegistro.id);
+                $("#txtNroSro").attr('readonly', 'readonly');
+                fncSolicitud.obtenerSolicitud(fncSolicitud.id);
                 break;
             default:
         }
 
         $("#modalTitulo").html(titulo);
-        $("#modalSolicitud").modal("show");    
+        $("#modalSolicitud").modal("show");
     },
     buscarSro: function () {
 
@@ -164,13 +165,29 @@
             }
         });
     },
+    obtenerLimite: function (fecha, dpto) {
+
+        CorporativoQuery.submit({
+            url: BASE_URL + '/SolicitudAprobar/ObtenerLimite?fecha=' + fecha + "&dpto=" + dpto,
+            success: function (response) {
+
+                var data = response;
+                var html = "";
+                $.each(data, function (idx, obj) {
+                    html += "<li><b>" + obj.tpoServicio + "</b>: Turno diurno: " + obj.diurnoConfig + " (" + obj.diurnoSolicitado + ") y nocturno: " + obj.nocturnoConfig + " (" + obj.nocturnoSolicitado + ")</li>";
+                });
+                $("#ulConfig").html(html);
+                $("#cardLimites").removeAttr('hidden');
+            }
+        });
+    },
     crearTabla: function () {
 
-        fncRegistro.tablaServicio = new Tabulator("#tablaServicios", {
+        fncSolicitud.tablaServicio = new Tabulator("#tablaServicios", {
             height: "200px",
             headerSortElement: null,
             columns: [
-                { title: "Id", field: "id", visible: false }, 
+                { title: "Id", field: "id", visible: false },
                 {
                     title: "", field: "eliminar", width: 50, hozAlign: "center", visible: false,
                     formatter: function () {
@@ -193,17 +210,17 @@
                         return fecha;
                     }
                 },
-                { title: "Hra. Inicio", field: "hraInicio", width: 150, editor: (fncRegistro.accion == "E" ? 'time' : false) },
-                { title: "Hra. Final", field: "hraFinal", width: 150, editor: (fncRegistro.accion == "E" ? 'time' : false) },
+                { title: "Hra. Inicio", field: "hraInicio", width: 150, editor: (fncSolicitud.accion == "E" ? 'time' : false) },
+                { title: "Hra. Final", field: "hraFinal", width: 150, editor: (fncSolicitud.accion == "E" ? 'time' : false) },
                 {
                     title: "Dia Sig.", field: "diaSig", width: 100, formatter: function (cell) {
                         let value = cell.getValue();
                         var día;
-                        if (!value) día = "N"; else día = "S";                        
+                        if (!value) día = "N"; else día = "S";
                         return día;
                     }
                 },
-                { title: "Cantidad", field: "cantidad", width: 150, editor: (fncRegistro.accion == "A" ? 'number' : false) },
+                { title: "Cantidad", field: "cantidad", width: 150, editor: (fncSolicitud.accion == "A" ? 'number' : false) },
                 {
                     title: "Dirección", field: "direccion", width: 500, formatter: function (cell) {
                         let value = cell.getValue();
@@ -211,7 +228,7 @@
                         return "<a href='#' onclick='CorporativoCore.abrirGoogleMaps(\"" + coordenada + "\"); return false;'><i class='bi bi-geo-alt-fill text-danger'></i></a> " + value;
                     }
                 },
-                { title: "Coordenada", field: "coordenada", visible: false }                
+                { title: "Coordenada", field: "coordenada", visible: false }
             ]
         });
     },
@@ -224,7 +241,7 @@
         $("#chkDiaSig").prop('checked', false);
         $("#txtDireccion").val("");
         $("#txtCoordenada").val("");
-        $("#txtCantidad").val("");                
+        $("#txtCantidad").val("");
     },
     obtenerSolicitud: function (id) {
 
@@ -244,11 +261,14 @@
                     $("#txtCodCapataz").val(data.codCapataz);
                     $("#txtNomCapataz").val(data.nomCapataz);
                     $("#txtCelular").val(data.celular);
-                    $("#txtTpoTrabajo").val(data.tpoTrabajo);                    
+                    $("#txtTpoTrabajo").val(data.tpoTrabajo);
                     $("#txtCoordenada").attr('def', data.coordenada);
                     $("#txtTotHrasSolicitud").val(data.hrasSolicitadas);
                     $("#txtTotHrasAprobadas").val(data.hrasAprobadas);
-                    fncRegistro.tablaServicio.setData(data.servicios);
+                    fncSolicitud.tablaServicio.setData(data.servicios);
+                    if (fncSolicitud.accion == "A") {
+                        fncSolicitud.obtenerLimite(data.servicios[0].fecha, data.codDpto);
+                    }
                 }
             }
         });
@@ -270,25 +290,25 @@
             coordenada: $("#txtCoordenada").val(),
             cantidad: $("#txtCantidad").val(),
         };
-        fncRegistro.tablaServicio.addRow(servicio);
-        fncRegistro.limpiarServicio();
+        fncSolicitud.tablaServicio.addRow(servicio);
+        fncSolicitud.limpiarServicio();
     },
     grabarSolicitud: function () {
 
         if (!CorporativoValidator.validarFormulario("#frmSolicitud")) {
             return;
         }
-        else if (!fncRegistro.tablaServicio || fncRegistro.tablaServicio.getData() == null || fncRegistro.tablaServicio.getData().length == 0) {
+        else if (!fncSolicitud.tablaServicio || fncSolicitud.tablaServicio.getData() == null || fncSolicitud.tablaServicio.getData().length == 0) {
             CorporativoCore.mostrarToast("Debe ingresar al menos un servicio", "error");
             return;
         }
 
         var url = "";
-        if (fncRegistro.accion == "N") {
+        if (fncSolicitud.accion == "N") {
             url = "/SolicitudGestionar/RegistrarSolicitud";
-        } else if (fncRegistro.accion == "M") {
+        } else if (fncSolicitud.accion == "M") {
             url = "/SolicitudGestionar/ActualizarSolicitud";
-        } else if (fncRegistro.accion == "E") {
+        } else if (fncSolicitud.accion == "E") {
             url = "/SolicitudOperar/EditarSolicitud";
         }
 
@@ -296,7 +316,7 @@
             url: BASE_URL + url,
             form: "#frmSolicitud",
             button: "#btnGrabar",
-            tablas: [{ nombre: "servicios", tabla: fncRegistro.tablaServicio }],
+            tablas: [{ nombre: "servicios", tabla: fncSolicitud.tablaServicio }],
             beforeSend: function (payload) {
                 var resultado = {
                     ...payload.formulario,
@@ -308,7 +328,7 @@
             },
             success: function (response) {
                 var mensaje = "La operación se realizó con éxito. ";
-                if (fncRegistro.accion == "N") {
+                if (fncSolicitud.accion == "N") {
                     mensaje = mensaje + "Se ha generado el folio " + response.folio;
                 }
                 CorporativoCore.mostrarToast(mensaje, "success")
@@ -320,7 +340,7 @@
     },
     aprobarSolicitud: function (action) {
 
-        var tabla = fncRegistro.tablaServicio.getData();
+        var tabla = fncSolicitud.tablaServicio.getData();
         var servicios = [];
         $.each(tabla, function (idx, obj) {
             servicios.push({ id: obj.id, cantidad: obj.cantidad });

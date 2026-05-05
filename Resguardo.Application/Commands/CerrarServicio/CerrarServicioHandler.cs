@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Resguardo.Application.Common;
+using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Exceptions;
 using Resguardo.Domain.Interfaces;
 
@@ -10,13 +10,16 @@ namespace Resguardo.Application.Commands.CerrarServicio
     public class CerrarServicioHandler
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
-        private readonly IValidator<CerrarServicioCommand> _fluentv;        
+        private readonly IValidator<CerrarServicioCommand> _fluentv;
+        private readonly IUsuarioContexto _usuario;
         public CerrarServicioHandler(
             IValidator<CerrarServicioCommand> fluentv,
-            IUnidadTrabajo unidadTrabajo)
+            IUnidadTrabajo unidadTrabajo,
+            IUsuarioContexto usuario)
         {
             _fluentv = fluentv;
-            _unidadTrabajo = unidadTrabajo;            
+            _unidadTrabajo = unidadTrabajo;
+            _usuario = usuario;
         }
         public async Task<bool> Ejecutar(CerrarServicioCommand formulario)
         {
@@ -27,7 +30,7 @@ namespace Resguardo.Application.Commands.CerrarServicio
             var servicioProv = await _unidadTrabajo.ServicioProvRepositorio.Obtener(formulario.IdServicioProv);
             if (servicioProv is null)
                 throw new BusinessException(StatusCodes.Status400BadRequest.ToString(), "No se pudo obtener los datos del servicio.");
-            servicioProv.Estado = Constantes.COD_ESTADO_SERVPROV_CERRADO;
+            servicioProv.Estado = Constantes.SERVPROV_CERRADO;
 
             foreach (var efectivo in servicioProv.Efectivos)
             {
@@ -39,7 +42,7 @@ namespace Resguardo.Application.Commands.CerrarServicio
                     efectivo.Asistio = efectivoForm.Asistio;
                     efectivo.SroRefencia = efectivoForm.SroRefencia;
                     efectivo.Comentario = efectivoForm.Comentario;
-                    efectivo.UsuarioAct = "DBO";
+                    efectivo.UsuarioAct = _usuario.Correo;
                     efectivo.FechaAct = DateTime.Now;
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Resguardo.Application.Common;
 using Resguardo.Application.Interfaces;
 using Resguardo.Application.Queries.ListarEfectivos;
 using Resguardo.Infrastructure.Data;
@@ -17,7 +18,7 @@ namespace Resguardo.Infrastructure.QueryServices
             var efectivos = await _contexto.Efectivo
                 .Where(s => s.IdServicioProv == idServicioProv)
                 .Select(g => new ListarEfectivoResponse
-                {                    
+                {
                     IdEfectivo = g.Id,
                     Dni = g.PersonalNav.Dni,
                     Nombres = g.PersonalNav.Nombres,
@@ -32,10 +33,12 @@ namespace Resguardo.Infrastructure.QueryServices
                     EstAmplia = g.EstAmplia,
                     UsuarioApro = g.UsuarioApro,
                     FechaApro = g.FechaApro,
-                    ComentApro = g.ComentApro
+                    ComentApro = g.ComentApro,
+                    Ampliar = string.IsNullOrEmpty(g.EstAmplia) || g.EstAmplia == Constantes.AMPL_PENDIENTE,
+                    Aprobar = g.EstAmplia == Constantes.AMPL_PENDIENTE
                 }).ToListAsync();
 
             return efectivos;
-        }
+        }        
     }
 }

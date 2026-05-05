@@ -10,9 +10,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>:: @Web</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link href="~/lib/bootstrap/dist/font/bootstrap-icons.css" rel="stylesheet" />    
+    <link href="~/lib/bootstrap/dist/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="~/lib/tabulator/css/tabulator_bootstrap5.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />       
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
     <header>
@@ -27,9 +27,12 @@
         </nav>
     </header>
     <div class="container">
-        <main role="main" class="pb-3">                        
+        <main role="main" class="pb-3">
             @Html.AntiForgeryToken()
             @RenderBody()
+            <div id="modalContainer"></div>
+            <div id="modalContainerMapa"></div>
+            <div id="modalContainerMaestro"></div>
         </main>
     </div>
 
@@ -41,7 +44,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/tabulator/js/tabulator.min.js"></script>    
+    <script src="~/lib/tabulator/js/tabulator.min.js"></script>
     <script src="~/js/global.js" asp-version="true"></script>
 
     <script type="text/javascript">

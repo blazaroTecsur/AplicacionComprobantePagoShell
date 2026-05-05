@@ -3,7 +3,7 @@ using Resguardo.Application.Common;
 using Resguardo.Application.Interfaces;
 using Resguardo.Application.Queries.ConsultarServicio;
 using Resguardo.Application.Queries.ListarServicio;
-using Resguardo.Domain.Entities;
+using Resguardo.Application.Queries.ReporteSolicitud;
 using Resguardo.Infrastructure.Data;
 
 namespace Resguardo.Infrastructure.QueryServices
@@ -103,7 +103,7 @@ namespace Resguardo.Infrastructure.QueryServices
                 (x, c) => new ConsultarServicioResponse
                 {
                     Id = c.Id,
-                    Folio = x.SolicitudNav.Folio,
+                    Folio = x.Folio,
                     TpoServicio = x.TpoServicioNav.Descripcion,
                     Fecha = x.Fecha,
                     HraInicio = x.HraInicio,
@@ -114,11 +114,11 @@ namespace Resguardo.Infrastructure.QueryServices
                     Cantidad = c.Cantidad,
                     Proveedor = c.ProveedorNav.Descripcion,
                     Estado = c.Estado,
-                    Asignar = c.Estado == Constantes.COD_ESTADO_SERVPROV_CONFIRMADO,
-                    Cerrar = c.Estado == Constantes.COD_ESTADO_SERVPROV_ASIGNADO,
-                    Visual = c.Estado == Constantes.COD_ESTADO_SERVPROV_CERRADO,
-                    Ampliar = c.Estado == Constantes.COD_ESTADO_SERVPROV_ASIGNADO,
-                    Aprobar = c.Efectivos.Any(e => e.EstAmplia == Constantes.AMPL_PENDIENTE)
+                    Asignar = c.Estado == Constantes.SERVPROV_CONFIRMADO,
+                    Cerrar = c.Estado == Constantes.SERVPROV_ASIGNADO,
+                    Visual = c.Estado == Constantes.SERVPROV_CERRADO,
+                    Ampliar = c.Estado == Constantes.SERVPROV_ASIGNADO && c.Efectivos.Any(e => string.IsNullOrEmpty(e.EstAmplia) || e.EstAmplia == Constantes.AMPL_PENDIENTE),
+                    Aprobar = c.Estado == Constantes.SERVPROV_ASIGNADO && c.Efectivos.Any(e => e.EstAmplia == Constantes.AMPL_PENDIENTE)
                 }
             ).ToListAsync();
 
@@ -127,6 +127,6 @@ namespace Resguardo.Infrastructure.QueryServices
                 Data = data,
                 Total = total
             };
-        }
+        }        
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Resguardo.Application.Commands.AprobarSolicitud;
 using Resguardo.Application.Common;
+using Resguardo.Application.Queries.ObtenerConfig;
 using Resguardo.Web.Authorization;
 using Resguardo.Web.Models;
 
@@ -10,10 +11,13 @@ namespace Resguardo.Web.Controllers
     public class SolicitudAprobarController : Controller
     {
         private readonly AprobarSolicitudHandler _aprobarSolicitud;
+        private readonly ObtenerLimitesHandler _obtenerLimite;
         public SolicitudAprobarController(
-            AprobarSolicitudHandler aprobarSolicitud)
+            AprobarSolicitudHandler aprobarSolicitud,
+            ObtenerLimitesHandler obtenerLimite)
         {
             _aprobarSolicitud = aprobarSolicitud;
+            _obtenerLimite = obtenerLimite;
         }
         #region Metodos
         [HttpPost]
@@ -31,6 +35,12 @@ namespace Resguardo.Web.Controllers
             formulario.CodEstado = Constantes.COD_ESTADO_ANULADO;
             var aprobado = await _aprobarSolicitud.Ejecutar(formulario);
             return Ok(ApiResponse<bool>.Ok(aprobado));
+        }
+        [HttpGet]
+        public async Task<IActionResult> ObtenerLimite(DateOnly fecha, string dpto)
+        {
+            var limites = await _obtenerLimite.Ejecutar(new ObtenerLimitesQuery() { Fecha = fecha, CodDpto = dpto });
+            return Ok(ApiResponse<IEnumerable<ObtenerLimitesResponse>>.Ok(limites));
         }
         #endregion
     }

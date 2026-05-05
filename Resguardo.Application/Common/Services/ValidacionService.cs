@@ -12,14 +12,72 @@ namespace Resguardo.Application.Common.Services
         private static readonly int AnticpUrgencia = 4;
         private static readonly int HoraMax = 12;
         private static readonly int HoraMin = 8;
+        private static readonly int Hra_Descanso_Efectivo = 8;
+        private static readonly int Hra_Asignacion = 18;
+        private static readonly int Hra_Aprobacion = 15;
+        private static readonly int Rango_Mes_Reporte = 6;
+        private static readonly int Hra_Antic_Ampliar = 1;
+        public ValidationResult ValidarHoraAprobacion(DateOnly fechaServicio)
+        {
+            var fechaAprobacion = fechaServicio.AddDays(-1).ToDateTime(new TimeOnly(Hra_Aprobacion, 0));
+            if (DateTime.Now > fechaAprobacion)
+                return new(false,
+                    $"La aprobación solo está permitido hasta a las {Hra_Aprobacion}:00 horas del día anterior al servicio.");
+            return new(true, string.Empty);
+        }
+        public ValidationResult ValidarHoraAmpliar(DateTime fechaFinServicio)
+        {
+            var horDif = (fechaFinServicio - DateTime.Now).TotalHours;
+            if (horDif <= 0)
+                return new(false,
+                    "El servico ya finalizó.");
+            if (horDif <= Hra_Antic_Ampliar)
+                return new(false,
+                    $"La ampliación debe realizarse al menos con {Hra_Antic_Ampliar} horas de anticipación antes de finalizar el servicio.");
+            return new(true, string.Empty);
+        }
+        public ValidationResult ValidarRangoReporte(DateOnly fechaDsd, DateOnly fechaHst)
+        {
+            if (fechaHst < fechaDsd)
+                return new(false,
+                    "El rango de fechas no es válido.");
+
+            var fechaMaxima = fechaDsd.AddMonths(Rango_Mes_Reporte);
+            if (!(fechaHst <= fechaMaxima))
+            {
+                return new(false,
+                    $"El rango de fechas debe ser de máximo {Rango_Mes_Reporte} meses.");
+            }
+            return new(true, string.Empty);
+        }
+        public ValidationResult ValidarAperturaAsignacion(DateOnly fechaServicio)
+        {
+            var fechaAsignacion = fechaServicio.AddDays(-1).ToDateTime(new TimeOnly(Hra_Asignacion, 0));
+            if (DateTime.Now < fechaAsignacion)
+                return new(false,
+                    $"La asignación de efectivos solo está permitida a partir de las {Hra_Asignacion}:00 horas del día anterior al servicio.");
+            return new(true, string.Empty);
+        }
+        public ValidationResult ValidarEfectivoEnTurno(bool diaSig, string dni, DateTime fechaIniServicio, DateTime fechaEfectivo)
+        {
+            if (diaSig)
+                fechaEfectivo = fechaEfectivo.AddDays(+1);
+
+            var fechaFinServicio = fechaIniServicio.AddHours(+Hra_Descanso_Efectivo);
+            if (fechaEfectivo >= fechaIniServicio && fechaEfectivo <= fechaFinServicio)
+                return new(false, $"El efectivo con DNI {dni} ya se encuentra de turno en otro servicio.");
+
+            return new(true, string.Empty);
+        }
         public ValidationResult ValidarHorarioFijado(bool diaSig, DateTime fechaServicio, TimeSpan horInicioAct, TimeSpan horFinalAct, TimeSpan horInicioNue, TimeSpan horFinalNue)
         {
             if (!diaSig)
             {
                 if (horInicioNue > horFinalNue)
-                    return new(false, "La hora de inicio no puede ser mayor a la hora de final. De ser el caso, indique si es un servicio hasta el día siguiente.");
+                    return new(false,
+                        "La hora de inicio no puede ser mayor a la hora de final. De ser el caso, indique si es un servicio hasta el día siguiente.");
             }
-            int diaAdic = diaSig ? 1 : 0;    
+            int diaAdic = diaSig ? 1 : 0;
             DateTime fechaIniAct = fechaServicio.AddTicks(horInicioAct.Ticks);
             DateTime fechaFinAct = fechaServicio.AddDays(+diaAdic).AddTicks(horFinalAct.Ticks);
             var diferenAct = fechaFinAct.Subtract(fechaIniAct);

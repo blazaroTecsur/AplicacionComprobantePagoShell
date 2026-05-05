@@ -10,8 +10,11 @@
                 <div id="tablaServicios" class="mt-2"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>                
-                <button type="button" id="servicio_btnGrabar" class="btn btn-primary div-new">Grabar</button>
+                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>
+                @if (User.HasClaim("permission", "SOLC.CONFIRMAR"))
+                {
+                    <button type="button" id="servicio_btnGrabar" class="btn btn-primary div-new">Grabar</button>
+                }
             </div>
         </div>
     </div>

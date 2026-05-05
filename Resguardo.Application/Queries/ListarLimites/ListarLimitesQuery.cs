@@ -1,6 +1,6 @@
-﻿namespace Resguardo.Application.Queries.ListarConfig
+﻿namespace Resguardo.Application.Queries.ListarLimites
 {
-    public class ListarConfigQuery
+    public class ListarLimitesQuery
     {
         public DateOnly Fecha { get; set; }
         public string CodDpto { get; set; } = null!;

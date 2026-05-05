@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Resguardo.Application.Commands.AmpliarServicio;
-using Resguardo.Application.Commands.AprobarAmplia;
 using Resguardo.Application.Commands.AsignarEfectivo;
 using Resguardo.Application.Commands.CerrarServicio;
-using Resguardo.Application.Common;
 using Resguardo.Web.Authorization;
 using Resguardo.Web.Models;
 
@@ -13,23 +11,16 @@ namespace Resguardo.Web.Controllers
     {
         private readonly AsignarEfectivoHandler _asignarEfectivo;
         private readonly CerrarServicioHandler _cerrarEfectivo;
-        private readonly AmpliarServicioHandler _ampliarServicio;
-        private readonly AprobarAmpliaHandler _aprobarAmplia;
+        private readonly AmpliarServicioHandler _ampliarServicio;        
         public ServicioOperarController(
             AsignarEfectivoHandler asignarEfectivo,
             CerrarServicioHandler cerrarEfectivo,
-            AmpliarServicioHandler ampliarServicio,
-            AprobarAmpliaHandler aprobarAmplia)
+            AmpliarServicioHandler ampliarServicio)
         {
             _asignarEfectivo = asignarEfectivo;
             _cerrarEfectivo = cerrarEfectivo;
-            _ampliarServicio = ampliarServicio;
-            _aprobarAmplia = aprobarAmplia;
-        }
-        public IActionResult Index()
-        {
-            return View();
-        }
+            _ampliarServicio = ampliarServicio;            
+        }        
         [Permission("SERV.CERRAR")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -46,7 +37,7 @@ namespace Resguardo.Web.Controllers
             var asignado = await _asignarEfectivo.Ejecutar(formulario);
             return Ok(ApiResponse<bool>.Ok(asignado));
         }
-        //[Permission("SERV.ASIGNAR")]
+        [Permission("SERV.AMPLIAR")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AmpliarServicio([FromBody] AmpliarServicioCommand formulario)
@@ -54,23 +45,6 @@ namespace Resguardo.Web.Controllers
             var ampliar = await _ampliarServicio.Ejecutar(formulario);
             return Ok(ApiResponse<bool>.Ok(ampliar));
         }
-        //[Permission("SERV.ASIGNAR")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AprobarAmpliacion([FromBody] AprobarAmpliaCommand formulario)
-        {
-            formulario.EstAmplia = Constantes.AMPL_APROBADO;
-            var aprobar = await _aprobarAmplia.Ejecutar(formulario);
-            return Ok(ApiResponse<bool>.Ok(aprobar));
-        }
-        //[Permission("SERV.ASIGNAR")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RechazarAmpliacion([FromBody] AprobarAmpliaCommand formulario)
-        {
-            formulario.EstAmplia = Constantes.AMPL_RECHAZADO;
-            var aprobar = await _aprobarAmplia.Ejecutar(formulario);
-            return Ok(ApiResponse<bool>.Ok(aprobar));
-        }
+       
     }
 }

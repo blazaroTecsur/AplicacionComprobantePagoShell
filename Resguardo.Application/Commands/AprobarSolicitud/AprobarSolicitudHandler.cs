@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Resguardo.Application.Common;
+using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Exceptions;
 using Resguardo.Domain.Interfaces;
 
@@ -9,13 +10,19 @@ namespace Resguardo.Application.Commands.AprobarSolicitud
     public class AprobarSolicitudHandler
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
+        private readonly IValidacionService _validacion;
         private readonly IValidator<AprobarSolicitudCommand> _fluentv;
+        private readonly IUsuarioContexto _usuario;
         public AprobarSolicitudHandler(
             IValidator<AprobarSolicitudCommand> fluentv,
-            IUnidadTrabajo unidadTrabajo)
+            IUnidadTrabajo unidadTrabajo,
+            IValidacionService validacion,
+            IUsuarioContexto usuario)
         {
             _unidadTrabajo = unidadTrabajo;
             _fluentv = fluentv;
+            _validacion = validacion;
+            _usuario = usuario;
         }
         public async Task<bool> Ejecutar(AprobarSolicitudCommand formulario)
         {
@@ -30,14 +37,20 @@ namespace Resguardo.Application.Commands.AprobarSolicitud
             var estadoNuevo = await _unidadTrabajo.GenericoRepositorio.Obtener(Constantes.TIP_ESTADO, formulario.CodEstado);
             if (estadoNuevo is null)
                 throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
-                                            "No se pudo obtener el estado");            
+                                            "No se pudo obtener el estado");
             if (solicitud.EstadoNav.Codigo != Constantes.COD_ESTADO_INGRESADO)
                 throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
                                             "El estado actual de la solicitud no es válido para esta operación.");
 
+            var fechaServicio = solicitud.Servicios.Select(s => s.Fecha).First();
+            ValidationResult resultado = _validacion.ValidarHoraAprobacion(fechaServicio);
+            if (!resultado.EsValido)
+                throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
+                                            resultado.Mensaje);
+
             solicitud.IdEstado = estadoNuevo.Id;
             solicitud.Comentario = formulario.Comentario;
-            solicitud.UsuarioApro = "Fredy Crispin";
+            solicitud.UsuarioApro = _usuario.Correo;
             solicitud.FechaApro = DateTime.Now;
 
             if (formulario.CodEstado == Constantes.COD_ESTADO_APROBJEFE)

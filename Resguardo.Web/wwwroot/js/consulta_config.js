@@ -8,7 +8,7 @@ var fncConsulta = {
     init: function () {
 
         CorporativoSelect.cargar({
-            url: BASE_URL + "/ConfigVisualizar/ListarDepartamento",
+            url: BASE_URL + "/LimiteVisualizar/ListarDepartamento",
             filtro: 'tipo',
             list: [
                 { element: "#consulta_cboServicio", id: "codigo", text: "nombre" }
@@ -19,7 +19,7 @@ var fncConsulta = {
             fncConsulta.buscarConfiguracion();
         });
         $("#consulta_btnCopiar").click(function (e) {      
-            $("#modalContainer").load(BASE_URL + "/ConfigGestionar/Copiar", function () {
+            $("#modalContainer").load(BASE_URL + "/LimiteGestionar/Copiar", function () {
                 fncConfig.init();
             });            
         });
@@ -59,7 +59,7 @@ var fncConsulta = {
         fncConsulta.fechaSelect = fecha;
 
         CorporativoQuery.submit({
-            url: BASE_URL + "/ConfigVisualizar/ListarConfiguracion?fecha=" + fecha + "&dpto=" + dpto,
+            url: BASE_URL + "/LimiteVisualizar/ListarConfiguracion?fecha=" + fecha + "&dpto=" + dpto,
             success: function (response) {
                 if (response) {
                     var data = response;
@@ -87,7 +87,7 @@ var fncConsulta = {
         };
 
         CorporativoQuery.submit({
-            url: BASE_URL + "/ConfigGestionar/RegistrarConfig",
+            url: BASE_URL + "/LimiteGestionar/RegistrarConfig",
             type: 'POST',
             data: formulario,
             success: function (response) {

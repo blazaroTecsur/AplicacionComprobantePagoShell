@@ -3,6 +3,7 @@
 public partial class Servicio : EntidadBase
 {
     public int IdSolicitud { get; set; }
+    public string Folio { get; set; } = null!;
     public int IdTpoServicio { get; set; }
     public DateOnly Fecha { get; set; }
     public string HraInicio { get; set; } = null!;

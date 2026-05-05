@@ -1,6 +1,6 @@
 ﻿namespace Resguardo.Domain.Entities;
 
-public partial class Config : EntidadBase
+public partial class Limite : EntidadBase
 {
     public DateOnly Fecha { get; set; }
     public string CodDpto { get; set; } = null!;

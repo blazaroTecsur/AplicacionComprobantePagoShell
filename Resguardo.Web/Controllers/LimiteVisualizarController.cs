@@ -1,24 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Resguardo.Application.Queries.ListarConfig;
 using Resguardo.Application.Queries.ListarDepartamento;
+using Resguardo.Application.Queries.ListarLimites;
 using Resguardo.Application.Services;
 using Resguardo.Web.Authorization;
 using Resguardo.Web.Models;
 
 namespace Resguardo.Web.Controllers
 {
-    [Permission("CONF.VER")]
-    public class ConfigVisualizarController : Controller
+    [Permission("LIMT.VER")]
+    public class LimiteVisualizarController : Controller
     {
         private readonly IMaestroService _maestro;
-        private readonly ListarConfigHandler _listarConfig;
+        private readonly ListarLimitesHandler _listar;
         
-        public ConfigVisualizarController(
+        public LimiteVisualizarController(
             IMaestroService maestro,
-            ListarConfigHandler listarConfig)
+            ListarLimitesHandler listar)
         {
             _maestro = maestro;
-            _listarConfig = listarConfig;            
+            _listar = listar;            
         }
         public IActionResult Consulta()
         {
@@ -39,8 +39,8 @@ namespace Resguardo.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> ListarConfiguracion(DateOnly fecha, string dpto)
         {
-            var configs = await _listarConfig.Ejecutar(new ListarConfigQuery() { Fecha = fecha, CodDpto = dpto });
-            return Ok(ApiResponse<IEnumerable<ListarConfigResponse>>.Ok(configs));
+            var configs = await _listar.Ejecutar(new ListarLimitesQuery() { Fecha = fecha, CodDpto = dpto });
+            return Ok(ApiResponse<IEnumerable<ListarLimitesResponse>>.Ok(configs));
         }        
     }
 }

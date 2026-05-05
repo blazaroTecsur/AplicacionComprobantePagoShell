@@ -1,6 +1,6 @@
-﻿namespace Resguardo.Application.Queries.ListarConfig
+﻿namespace Resguardo.Application.Queries.ListarLimites
 {
-    public class ListarConfigResponse
+    public class ListarLimitesResponse
     {
         public int Id { get; set; }
         public DateTime Fecha { get; set; }

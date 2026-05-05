@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Exceptions;
 using Resguardo.Domain.Interfaces;
 
@@ -7,10 +8,13 @@ namespace Resguardo.Application.Commands.CopiarConfig
     public class CopiarConfigHandler
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
+        private readonly IUsuarioContexto _usuario;
         public CopiarConfigHandler(
-            IUnidadTrabajo unidadTrabajo)
+            IUnidadTrabajo unidadTrabajo,
+            IUsuarioContexto usuario)
         {
             _unidadTrabajo = unidadTrabajo;
+            _usuario = usuario;
         }
         public async Task<bool> Ejecutar(CopiarConfigCommand formulario)
         {
@@ -30,7 +34,7 @@ namespace Resguardo.Application.Commands.CopiarConfig
             {
                 config.Id = 0;
                 config.Fecha = formulario.FechaDestino;
-                config.UsuarioReg = "DBO";
+                config.UsuarioReg = _usuario.Correo;
                 config.FechaReg = DateTime.Now;
                 await _unidadTrabajo.ConfigRepositorio.Insertar(config);
             }

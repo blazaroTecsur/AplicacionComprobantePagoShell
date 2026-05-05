@@ -10,7 +10,6 @@ var fncConsulta = {
             url: BASE_URL + "/SolicitudVisualizar/ListarGenerico",
             filtro: 'tipo',
             list: [
-                { element: "#consulta_cboTipo", id: "id", text: "descripcion", type: 'TIPO' },
                 { element: "#consulta_cboFlujo", id: "id", text: "descripcion", type: 'FLUJO' },
                 { element: "#consulta_cboEstado", id: "id", text: "descripcion", type: 'ESTADO' }
             ]
@@ -22,29 +21,39 @@ var fncConsulta = {
         $("#consulta_btnNuevo").click(function () {
             fncConsulta.nuevaSolicitud();
         });
+        $("#consulta_btnReporte").click(function () {
+            fncConsulta.abrirReporte();
+        });
 
-        fncConsulta.crearTabla();        
+        fncConsulta.crearTabla();
     },
     buscarSolicitudes: function () {
         fncConsulta.tablaSolicitud.buscar();
     },
+    abrirReporte: function () {
+        $("#modalContainer").load(BASE_URL + "/Reporte/Filtros", function () {
+            fncReporte.tipo = "SO";
+            fncReporte.flujo = $("#consulta_cboFlujo option");
+            fncReporte.init();
+        });
+    },
     nuevaSolicitud: function () {
         $("#modalContainer").load(BASE_URL + "/SolicitudVisualizar/Formulario", function () {
-            fncRegistro.id = 0;
-            fncRegistro.accion = "N";
-            fncRegistro.init();
+            fncSolicitud.id = 0;
+            fncSolicitud.accion = "N";
+            fncSolicitud.init();
         });
     },
     abrirFormulario: function (id, accion) {
         $("#modalContainer").load(BASE_URL + "/SolicitudVisualizar/Formulario", function () {
-            fncRegistro.id = id;
-            fncRegistro.accion = accion;
-            fncRegistro.init();
+            fncSolicitud.id = id;
+            fncSolicitud.accion = accion;
+            fncSolicitud.init();
         });
     },
     abrirServicios: function (id, accion) {
         $("#modalContainer").load(BASE_URL + "/SolicitudVisualizar/Servicio", function () {
-            fncServicio.idSolicitud = id;            
+            fncServicio.idSolicitud = id;
             fncServicio.init();
         });
     },
@@ -58,7 +67,6 @@ var fncConsulta = {
             filtros: function () {
                 return {
                     Folio: $("#consulta_txtFolio").val() || null,
-                    IdTipo: parseInt($("#consulta_cboTipo").val()) || null,
                     IdEstado: parseInt($("#consulta_cboEstado").val()) || null,
                     IdFlujo: parseInt($("#consulta_cboFlujo").val()) || null,
                     NumSro: $("#consulta_txtNroSro").val() || null
@@ -73,21 +81,21 @@ var fncConsulta = {
                         var acciones = "";
                         if (cell._cell.row.data.modifica == true && CorporativoCore.tienePermiso(window.ROLES, ["SOLC.MODIF"])) {
                             acciones = acciones + "&nbsp;&nbsp;";
-                            acciones = acciones + "<button class='btn btn-sm btn-warning' onclick='fncConsulta.abrirFormulario(" + id + ", \"M\")'><i class='bi bi-pencil'></i></button>";
+                            acciones = acciones + "<button class='btn btn-sm btn-warning' title='Modificar solicitud' onclick='fncConsulta.abrirFormulario(" + id + ", \"M\")'><i class='bi bi-pencil'></i></button>";
                         }
                         if (cell._cell.row.data.edita == true && CorporativoCore.tienePermiso(window.ROLES, ["SOLC.EDITAR"])) {
                             acciones = acciones + "&nbsp;&nbsp;";
-                            acciones = acciones + "<button class='btn btn-sm btn-warning' onclick='fncConsulta.abrirFormulario(" + id + ", \"E\")'><i class='bi bi-pencil'></i></button>";
+                            acciones = acciones + "<button class='btn btn-sm btn-warning' title='Editar solicitud' onclick='fncConsulta.abrirFormulario(" + id + ", \"E\")'><i class='bi bi-pencil'></i></button>";
                         }
-                        if (cell._cell.row.data.aprueba == true && CorporativoCore.tienePermiso(window.ROLES, ["SOLC.APROBFULL", "SOLC.APROBAR"])) {
+                        if (cell._cell.row.data.aprueba == true && CorporativoCore.tienePermiso(window.ROLES, ["SOLC.APROBAR"])) {
                             acciones = acciones + "&nbsp;&nbsp;";
-                            acciones = acciones + "<button class='btn btn-sm btn-secondary' onclick='fncConsulta.abrirFormulario(" + id + ", \"A\")'><i class='bi bi-hand-thumbs-up'></i></button>";
+                            acciones = acciones + "<button class='btn btn-sm btn-secondary' title='Aprobar servicios' onclick='fncConsulta.abrirFormulario(" + id + ", \"A\")'><i class='bi bi-hand-thumbs-up'></i></button>";
                         }
                         if (cell._cell.row.data.confirma == true && CorporativoCore.tienePermiso(window.ROLES, ["SOLC.CONFIRMAR"])) {
                             acciones = acciones + "&nbsp;&nbsp;";
-                            acciones = acciones + "<button class='btn btn-sm btn-primary' onclick='fncConsulta.abrirServicios(" + id + ", \"C\")'><i class='bi bi-check-circle'></i></button>";
+                            acciones = acciones + "<button class='btn btn-sm btn-primary' title='Confirmar proveedor' onclick='fncConsulta.abrirServicios(" + id + ", \"C\")'><i class='bi bi-check-circle'></i></button>";
                         }
-                            return acciones;
+                        return acciones;
                     }
                 },
                 { title: "Tipo", field: "tipo", width: 120 },

@@ -1,26 +1,32 @@
-﻿using Resguardo.Application.Commands;
-using System.Security.Claims;
+﻿using Resguardo.Application.Common.Interfaces;
 
 namespace Resguardo.Web.Middlewares
 {
     public sealed class UsuarioContexto : IUsuarioContexto
     {
+        private readonly IHttpContextAccessor _contexto;
         public string CodTenant { get; }
         public string CodUsuario { get; }
         public string Correo { get; }
         public string Titulo { get; }
+        public IReadOnlyCollection<string> Permisos { get; }
+        public bool TienePermiso(string permiso) => Permisos.Contains(permiso);
         public UsuarioContexto(IHttpContextAccessor contexto)
         {
-            var usuario = contexto.HttpContext!.User;
+            _contexto = contexto;
 
-            string ObtenerClaim(params string[] tipo) => tipo
-                    .Select(t => usuario.FindFirst(t)?.Value)
-                    .FirstOrDefault(v => !string.IsNullOrWhiteSpace(v)) ?? string.Empty;
-
-            CodTenant = ObtenerClaim("tid", "http://schemas.microsoft.com/identity/claims/tenantid");
-            CodUsuario = ObtenerClaim("oid", "http://schemas.microsoft.com/identity/claims/objectidentifier");
-            Correo = usuario.Identity.Name; //ObtenerClaim("preferred_username", "email", "upn", ClaimTypes.Email);
-            Titulo = ObtenerClaim("name", ClaimTypes.Name);
+            var usuario = _contexto.HttpContext?.User;
+            if (usuario != null)
+            {
+                CodUsuario = usuario.FindFirst("oid")?.Value ?? "";
+                CodTenant = usuario.FindFirst("tid")?.Value ?? "";
+                Correo = usuario.FindFirst("email")?.Value ?? "";
+                Titulo = usuario.FindFirst("name")?.Value ?? "";
+                Permisos = usuario?
+                .FindAll("permission")
+                .Select(c => c.Value)
+                .ToList() ?? new List<string>();
+            }
         }
     }
 }

@@ -15,17 +15,17 @@
             </select>
         </div>
         <div class="col-2 d-flex align-items-end">
-            @if (User.HasClaim("permission", "CONF.VER"))
+            @if (User.HasClaim("permission", "LIMT.VER"))
             {
                 <button type="button" class="btn btn-primary" id="consulta_btnBuscar"><i class="bi bi-search"></i> Buscar</button>
             }
             &nbsp;&nbsp;
-            @if (User.HasClaim("permission", "CONF.COPIAR"))
+            @if (User.HasClaim("permission", "LIMT.COPIAR"))
             {
                 <button type="button" class="btn btn-secondary" id="consulta_btnCopiar"><i class="bi bi-copy"></i> Copiar</button>
             }
         </div>
-        @if (User.HasClaim("permission", "CONF.CREAR"))
+        @if (User.HasClaim("permission", "LIMT.CREAR"))
         {
             <div class="col-5 d-flex align-items-end justify-content-end">
                 <button type="button" class="btn btn-success" id="consulta_btnGrabar"><i class="bi bi-floppy"></i> Grabar</button>
