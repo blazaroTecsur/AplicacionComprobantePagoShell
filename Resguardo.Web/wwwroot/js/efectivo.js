@@ -1,13 +1,14 @@
 ﻿var fncEfectivo = {
     tablaEfectivo: null,
     idServicioProv: 0,
+    folio: "",
     accion: null,
     posServicio: null,
     controlarAccion: function () {
 
         var data = fncConsulta.tablaServicio.getRowFromPosition(fncEfectivo.posServicio).getData();
         var titulo = "";
-        console.log(data);
+        
         switch (fncEfectivo.accion) {
             case "AS": titulo = "Asignar Efectivos"; break;
             case "AH": titulo = "Ampliar Horario de Efectivos";
@@ -28,11 +29,13 @@
         $("#efectivo_txtFolio").val(data.folio);
         $("#efectivo_txtProveedor").val(data.proveedor);
         $("#efectivo_txtServicio").val(data.tpoServicio);
+        $("#efectivo_txtDireccion").val(data.direccion);        
         $("#efectivo_txtFecha").val(data.fecha);
         $("#efectivo_txtHraInicio").val(data.hraInicio);
         $("#efectivo_txtHraFinal").val(data.hraFinal);
 
         fncEfectivo.idServicioProv = data.id;
+        fncEfectivo.folio = data.folio;
         fncEfectivo.crearTabla();
 
         if (fncEfectivo.accion == "AS") {
@@ -44,7 +47,7 @@
         } else {
             fncEfectivo.listarEfectivos(data.id);
         }
-
+        
         $("#modalTitulo").html(titulo);
         $("#modalEfectivo").modal("show");
     },
@@ -58,6 +61,14 @@
                 fncEfectivo.tablaEfectivo = null;
             }
         });
+        $('#accordionPanel').on('shown.bs.collapse', function () {
+
+            var $this = $(this);
+            if ($this.data('loaded')) return;            
+            $this.data('loaded', true);
+            fncEfectivo.obtenerSolicitud(fncEfectivo.folio);
+        });
+
         fncEfectivo.controlarAccion();
     },
     crearTabla: function () {
@@ -208,6 +219,26 @@
             height: "300px",
             headerSortElement: null,
             columns: columns
+        });
+    },
+    obtenerSolicitud: function (folio) {
+
+        CorporativoQuery.submit({
+            url: BASE_URL + "/ServicioVisualizar/ObtenerSolicitud?folio=" + folio,
+            success: function (response) {
+                if (response) {
+                    var data = response;                    
+                    $("#efectivo_txtFlujo").val(data.flujo);
+                    $("#efectivo_txtNroSro").val(data.numSro);
+                    $("#efectivo_txtEstado").val(data.estado);                    
+                    $('#efectivo_txtDpto').val(data.dpto);
+                    $('#efectivo_txtActv').val(data.actv);
+                    $("#efectivo_txtSctta").val(data.sctta);
+                    $("#efectivo_txtCapataz").val(data.capataz);                    
+                    $("#efectivo_txtCelular").val(data.celular);
+                    $("#efectivo_txtTpoTrabajo").val(data.tpoTrabajo);                    
+                }
+            }
         });
     },
     listarEfectivos: function (id) {

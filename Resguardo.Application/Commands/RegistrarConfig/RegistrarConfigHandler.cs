@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
-using Resguardo.Application.Common.Interfaces;
+using Seguridad.Abstractions.Interfaces;
 using Resguardo.Domain.Entities;
 using Resguardo.Domain.Interfaces;
 

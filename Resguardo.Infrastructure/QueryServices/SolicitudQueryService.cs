@@ -3,6 +3,7 @@ using Resguardo.Application.Common;
 using Resguardo.Application.Interfaces;
 using Resguardo.Application.Queries.ConsultarSolicitud;
 using Resguardo.Application.Queries.ObtenerSolicitud;
+using Resguardo.Application.Queries.ObtenerSolicitudFolio;
 using Resguardo.Infrastructure.Data;
 
 namespace Resguardo.Infrastructure.QueryServices
@@ -53,13 +54,31 @@ namespace Resguardo.Infrastructure.QueryServices
 
             return solicitud;
         }
+        public async Task<ObtenerSolicitudFolioResponse?> Obtener(string folio)
+        {
+            var solicitud = await _contexto.Solicitud.Where(s => s.Folio == folio).Select(g => new ObtenerSolicitudFolioResponse
+            {
+                Folio = g.Folio,
+                Estado = $"{g.EstadoNav.Codigo} - {g.EstadoNav.Descripcion}",
+                Flujo = $"{g.FlujoNav.Codigo} - {g.FlujoNav.Descripcion}",
+                NumSro = g.NumSro,
+                Dpto = $"{g.CodDpto} - {g.NomDpto}",
+                Actv = $"{g.CodActv} - {g.NomActv}",
+                Capataz = $"{g.CodCapataz} - {g.NomCapataz}",
+                Sctta = $"{g.RucSctta} - {g.NomSctta}",
+                Celular = g.Celular,
+                TpoTrabajo = g.TpoTrabajo
+            }).FirstOrDefaultAsync();
+
+            return solicitud;
+        }
         public async Task<GridResponse<ConsultarSolicitudResponse>> Consultar(GridRequest<ConsultarSolicitudQuery> grid)
         {
             var consulta = _contexto.Solicitud.AsNoTracking().AsQueryable();
             var solicitud = grid.Filtros;
 
             if (!string.IsNullOrEmpty(solicitud.Folio))
-                consulta = consulta.Where(x => x.Folio == solicitud.Folio);            
+                consulta = consulta.Where(x => x.Folio == solicitud.Folio);
             if (solicitud.IdEstado.HasValue)
                 consulta = consulta.Where(x => x.IdEstado == solicitud.IdEstado);
             if (solicitud.IdFlujo.HasValue)
@@ -78,8 +97,8 @@ namespace Resguardo.Infrastructure.QueryServices
                     Id = x.Id,
                     Folio = x.Folio,
                     Tipo = x.TipoNav.Descripcion,
-                    Estado = x.EstadoNav.Descripcion,                    
-                    Modifica = x.EstadoNav.Codigo == Constantes.COD_ESTADO_INGRESADO ? true: false,
+                    Estado = x.EstadoNav.Descripcion,
+                    Modifica = x.EstadoNav.Codigo == Constantes.COD_ESTADO_INGRESADO ? true : false,
                     Aprueba = x.EstadoNav.Codigo == Constantes.COD_ESTADO_INGRESADO ? true : false,
                     Confirma = x.EstadoNav.Codigo == Constantes.COD_ESTADO_APROBJEFE ? true : false,
                     Edita = x.EstadoNav.Codigo == Constantes.COD_ESTADO_APROBJEFE ? true : false,
@@ -98,6 +117,6 @@ namespace Resguardo.Infrastructure.QueryServices
                 Data = data,
                 Total = total
             };
-        }        
+        }
     }
 }

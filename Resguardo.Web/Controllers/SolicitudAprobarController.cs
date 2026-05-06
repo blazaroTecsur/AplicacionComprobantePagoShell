@@ -2,7 +2,7 @@
 using Resguardo.Application.Commands.AprobarSolicitud;
 using Resguardo.Application.Common;
 using Resguardo.Application.Queries.ObtenerConfig;
-using Resguardo.Web.Authorization;
+using Seguridad.Infrastructure.Handler.Authorization;
 using Resguardo.Web.Models;
 
 namespace Resguardo.Web.Controllers

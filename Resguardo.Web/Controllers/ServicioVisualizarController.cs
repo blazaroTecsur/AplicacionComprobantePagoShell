@@ -7,8 +7,9 @@ using Resguardo.Application.Queries.ConsultarSolicitud;
 using Resguardo.Application.Queries.ListarEfectivos;
 using Resguardo.Application.Queries.ListarGenerico;
 using Resguardo.Application.Queries.ObtenerPersonal;
-using Resguardo.Web.Authorization;
+using Resguardo.Application.Queries.ObtenerSolicitudFolio;
 using Resguardo.Web.Models;
+using Seguridad.Infrastructure.Handler.Authorization;
 
 namespace Resguardo.Web.Controllers
 {
@@ -21,13 +22,15 @@ namespace Resguardo.Web.Controllers
         private readonly ListarEfectivoHandler _listarEfectivo;
         private readonly CerrarServicioHandler _cerrarEfectivo;
         private readonly ObtenerPersonalHandler _obtenerPersonal;
+        private readonly ObtenerSolicitudFolioHandler _obtenerSolicitud;
         public ServicioVisualizarController(
             ListarGenericoHandler listarGenerico,
             ConsultarServicioHandler consultarServicio,
             AsignarEfectivoHandler asignarEfectivo,
             ListarEfectivoHandler listarEfectivo,
             CerrarServicioHandler cerrarEfectivo,
-            ObtenerPersonalHandler obtenerPersonal)
+            ObtenerPersonalHandler obtenerPersonal,
+            ObtenerSolicitudFolioHandler obtenerSolicitud)
         {
             _listarGenerico = listarGenerico;
             _consultarServicio = consultarServicio;
@@ -35,6 +38,7 @@ namespace Resguardo.Web.Controllers
             _listarEfectivo = listarEfectivo;
             _cerrarEfectivo = cerrarEfectivo;
             _obtenerPersonal = obtenerPersonal;
+            _obtenerSolicitud = obtenerSolicitud;
         }
         public IActionResult Consulta()
         {
@@ -50,6 +54,13 @@ namespace Resguardo.Web.Controllers
         {
             var solicitudes = await _consultarServicio.Ejecutar(grid);
             return Ok(ApiResponse<GridResponse<ConsultarServicioResponse>>.Ok(solicitudes));
+        }
+        [HttpGet]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ObtenerSolicitud(string folio)
+        {
+            var solicitud = await _obtenerSolicitud.Ejecutar(folio);
+            return Ok(ApiResponse<ObtenerSolicitudFolioResponse>.Ok(solicitud));
         }
         [HttpGet]
         public async Task<IActionResult> ListarGenerico()

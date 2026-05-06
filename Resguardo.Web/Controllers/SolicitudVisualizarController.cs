@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Resguardo.Application.Common;
+using Resguardo.Application.DTOs.Infor;
 using Resguardo.Application.Queries.ConsultarCapataz;
 using Resguardo.Application.Queries.ConsultarSolicitud;
 using Resguardo.Application.Queries.ListarGenerico;
 using Resguardo.Application.Queries.ListarServicio;
 using Resguardo.Application.Queries.ListarServicioProv;
-using Resguardo.Application.Queries.ObtenerOrden;
 using Resguardo.Application.Queries.ObtenerSolicitud;
 using Resguardo.Application.Services;
-using Resguardo.Web.Authorization;
+using Seguridad.Infrastructure.Handler.Authorization;
 using Resguardo.Web.Models;
 
 namespace Resguardo.Web.Controllers
@@ -66,6 +66,7 @@ namespace Resguardo.Web.Controllers
 
         #region Metodos
         [HttpGet]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ObtenerSolicitud(int id)
         {
             var solicitud = await _obtenerSolicitud.Ejecutar(id);
@@ -86,18 +87,21 @@ namespace Resguardo.Web.Controllers
             return Ok(ApiResponse<GridResponse<ConsultarCapatazResponse>>.Ok(capataces));
         }
         [HttpGet]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListarServicios(int id)
         {
             var servicios = await _listarServicio.Ejecutar(id);
             return Ok(ApiResponse<IEnumerable<ListarServicioResponse>>.Ok(servicios));
         }
         [HttpGet]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> BuscarOrden(string nroSro)
         {
             var orden = await _orden.ObtenerOrden(nroSro);
             return Ok(ApiResponse<ObtenerOrdenResponse>.Ok(orden));
         }
         [HttpGet]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListarGenerico()
         {
             var genericos = await _listarGenerico.Ejecutar([

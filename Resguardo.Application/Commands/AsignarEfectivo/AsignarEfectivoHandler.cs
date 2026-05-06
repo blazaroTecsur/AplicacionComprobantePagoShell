@@ -4,6 +4,7 @@ using Resguardo.Application.Common;
 using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Exceptions;
 using Resguardo.Domain.Entities;
+using Seguridad.Abstractions.Interfaces;
 using Resguardo.Domain.Interfaces;
 
 namespace Resguardo.Application.Commands.AsignarEfectivo

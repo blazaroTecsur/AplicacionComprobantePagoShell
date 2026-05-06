@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Resguardo.Application.Common;
-using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Exceptions;
 using Resguardo.Domain.Interfaces;
+using Seguridad.Abstractions.Interfaces;
 
 namespace Resguardo.Application.Commands.AprobarAmplia
 {

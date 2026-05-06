@@ -27,9 +27,11 @@
 	</ItemGroup>
 
 	<ItemGroup>		
+		<ProjectReference Include="..\Infor.Infrastructure\Infor.Infrastructure.csproj" />		
 		<ProjectReference Include="..\Notificacion.Infrastructure\Notificacion.Infrastructure.csproj" />		
 		<ProjectReference Include="..\Resguardo.Application\Resguardo.Application.csproj" />		
-		<ProjectReference Include="..\Resguardo.Infrastructure\Resguardo.Infrastructure.csproj" />
+		<ProjectReference Include="..\Resguardo.Infrastructure\Resguardo.Infrastructure.csproj" />		
+		<ProjectReference Include="..\Seguridad.Infrastructure\Seguridad.Infrastructure.csproj" />
 	</ItemGroup>
 
 	<Target Name="BuildUI" BeforeTargets="Build">

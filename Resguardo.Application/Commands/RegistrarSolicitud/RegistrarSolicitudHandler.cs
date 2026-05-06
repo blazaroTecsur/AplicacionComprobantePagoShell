@@ -7,13 +7,14 @@ using Resguardo.Application.Exceptions;
 using Resguardo.Application.Services;
 using Resguardo.Domain.Entities;
 using Resguardo.Domain.Interfaces;
+using Seguridad.Abstractions.Interfaces;
 
 namespace Resguardo.Application.Commands.RegistrarSolicitud
 {
     public class RegistrarSolicitudHandler
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
-        private readonly IInforService _syteline;
+        private readonly IInforService _infor;
         private readonly IValidacionService _validacion;
         private readonly IMapper _mapeo;
         private readonly IValidator<RegistrarSolicitudCommand> _fluentv;
@@ -21,7 +22,7 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
         public RegistrarSolicitudHandler(
             IValidator<RegistrarSolicitudCommand> fluentv,
             IUnidadTrabajo unidadTrabajo,
-            IInforService syteline,
+            IInforService infor,
             IValidacionService validacion,
             IMapper mapeo,
             IUsuarioContexto usuario)
@@ -29,7 +30,7 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
             _fluentv = fluentv;
             _unidadTrabajo = unidadTrabajo;
             _validacion = validacion;
-            _syteline = syteline;
+            _infor = infor;
             _mapeo = mapeo;
             _usuario = usuario;
         }
@@ -60,10 +61,10 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
             if (flujo is null)
                 throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
                     "No se pudo obtener el flujo");
-            var orden = await _syteline.ObtenerOrden(solicitud.NumSro);
+            var orden = await _infor.ObtenerOrden(solicitud.NumSro);
             if (orden is null)
                 throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
-                    "No se pudo obtener el flujo");
+                    "No se pudo obtener la orden");
 
             DateTime fecActual = DateTime.Now;
             ValidationResult resultado = new(false, string.Empty);

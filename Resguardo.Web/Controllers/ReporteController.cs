@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Resguardo.Application.Queries.ReporteEfectivo;
 using Resguardo.Application.Queries.ReporteSolicitud;
-using Resguardo.Web.Authorization;
+using Seguridad.Infrastructure.Handler.Authorization;
 
 namespace Resguardo.Web.Controllers
 {

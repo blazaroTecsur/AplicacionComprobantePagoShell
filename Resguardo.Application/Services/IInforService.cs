@@ -1,4 +1,4 @@
-﻿using Resguardo.Application.Queries.ObtenerOrden;
+﻿using Resguardo.Application.DTOs.Infor;
 
 namespace Resguardo.Application.Services
 {

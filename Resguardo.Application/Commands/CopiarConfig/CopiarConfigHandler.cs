@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Resguardo.Application.Common.Interfaces;
+using Seguridad.Abstractions.Interfaces;
 using Resguardo.Application.Exceptions;
 using Resguardo.Domain.Interfaces;
 

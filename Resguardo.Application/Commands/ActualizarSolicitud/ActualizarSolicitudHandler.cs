@@ -6,6 +6,7 @@ using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Exceptions;
 using Resguardo.Domain.Entities;
 using Resguardo.Domain.Interfaces;
+using Seguridad.Abstractions.Interfaces;
 
 namespace Resguardo.Application.Commands.ActualizarSolicitud
 {

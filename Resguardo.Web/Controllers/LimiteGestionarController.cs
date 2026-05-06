@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Resguardo.Application.Commands.CopiarConfig;
 using Resguardo.Application.Commands.RegistrarConfig;
-using Resguardo.Web.Authorization;
+using Seguridad.Infrastructure.Handler.Authorization;
 using Resguardo.Web.Models;
 
 namespace Resguardo.Web.Controllers

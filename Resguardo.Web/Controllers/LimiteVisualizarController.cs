@@ -2,7 +2,7 @@
 using Resguardo.Application.Queries.ListarDepartamento;
 using Resguardo.Application.Queries.ListarLimites;
 using Resguardo.Application.Services;
-using Resguardo.Web.Authorization;
+using Seguridad.Infrastructure.Handler.Authorization;
 using Resguardo.Web.Models;
 
 namespace Resguardo.Web.Controllers

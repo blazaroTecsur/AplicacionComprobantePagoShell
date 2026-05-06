@@ -39,25 +39,39 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "comprobamte", "comprobamte"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "notificacion", "notificacion", "{5235F695-E1BD-46BF-B4CD-CE8BFA586937}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notificacion.Infrastructure", "Notificacion.Infrastructure\Notificacion.Infrastructure.csproj", "{35289F84-E969-4A2B-8DEA-276E83DC47CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notificacion.Infrastructure", "Notificacion.Infrastructure\Notificacion.Infrastructure.csproj", "{35289F84-E969-4A2B-8DEA-276E83DC47CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notificacion.Abstractions", "Notificacion.Abstractions\Notificacion.Abstractions.csproj", "{C13CDB11-D3D2-4016-A8E5-9AA137F29308}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notificacion.Abstractions", "Notificacion.Abstractions\Notificacion.Abstractions.csproj", "{C13CDB11-D3D2-4016-A8E5-9AA137F29308}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8C313CB-FC37-4727-82E1-4C80BB1C93DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComprobantePago.Application", "..\AplicacionComprobantePago\ComprobantePago\ComprobantePago.Application\ComprobantePago.Application.csproj", "{B6C39AF8-837F-1FD0-A710-721130AA8D1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComprobantePago.Application", "ComprobantePago.Application\ComprobantePago.Application.csproj", "{B6C39AF8-837F-1FD0-A710-721130AA8D1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComprobantePago.Domain", "..\AplicacionComprobantePago\ComprobantePago\ComprobantePago.Domain\ComprobantePago.Domain.csproj", "{3744922A-4C99-1CCC-AF96-D7CD0B921215}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComprobantePago.Domain", "ComprobantePago.Domain\ComprobantePago.Domain.csproj", "{3744922A-4C99-1CCC-AF96-D7CD0B921215}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComprobantePago.Infrastructure", "..\AplicacionComprobantePago\ComprobantePago\ComprobantePago.Infrastructure\ComprobantePago.Infrastructure.csproj", "{00466D2B-0C1B-E5A0-A9A9-D0C63E2546AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComprobantePago.Infrastructure", "ComprobantePago.Infrastructure\ComprobantePago.Infrastructure.csproj", "{00466D2B-0C1B-E5A0-A9A9-D0C63E2546AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComprobantePago.Web", "..\AplicacionComprobantePago\ComprobantePago\ComprobantePago.Web\ComprobantePago.Web.csproj", "{C289FBAB-6D3A-0383-D3F2-BD5BA5179C3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComprobantePago.Web", "ComprobantePago.Web\ComprobantePago.Web.csproj", "{C289FBAB-6D3A-0383-D3F2-BD5BA5179C3A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BDF733C2-EE48-451C-A15F-53F41E769122}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComprobantePago.Tests", "..\AplicacionComprobantePago\ComprobantePago\ComprobantePago.Tests\ComprobantePago.Tests.csproj", "{44870357-D1A8-C2FF-13E6-21DE79F66D11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComprobantePago.Tests", "ComprobantePago.Tests\ComprobantePago.Tests.csproj", "{44870357-D1A8-C2FF-13E6-21DE79F66D11}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "inforcloud", "inforcloud", "{3E61B425-773A-47BF-A62D-0F438D022EF6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infor.Abstractions", "Infor.Abstractions\Infor.Abstractions.csproj", "{FBF30FC9-8D02-4488-9978-4896C899D810}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infor.Infrastructure", "Infor.Infrastructure\Infor.Infrastructure.csproj", "{ABA0ECA1-43DF-4628-92EC-F3B9C411EE7C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "seguridad", "seguridad", "{8AB5E0DF-434D-4B98-98A5-3C602A4EEDFF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Seguridad.Abstractions", "Seguridad.Abstractions\Seguridad.Abstractions.csproj", "{4B90ACC3-C565-4DAE-B807-A0A6FDE6F26C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Seguridad.Infrastructure", "Seguridad.Infrastructure\Seguridad.Infrastructure.csproj", "{2544AD03-CECF-43AD-8BE5-F983E7B6A2DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tarifariomo", "tarifariomo", "{1413B7F4-D547-482A-8C59-E5CF908C9866}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,6 +131,22 @@ Global
 		{44870357-D1A8-C2FF-13E6-21DE79F66D11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44870357-D1A8-C2FF-13E6-21DE79F66D11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44870357-D1A8-C2FF-13E6-21DE79F66D11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBF30FC9-8D02-4488-9978-4896C899D810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBF30FC9-8D02-4488-9978-4896C899D810}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBF30FC9-8D02-4488-9978-4896C899D810}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBF30FC9-8D02-4488-9978-4896C899D810}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABA0ECA1-43DF-4628-92EC-F3B9C411EE7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABA0ECA1-43DF-4628-92EC-F3B9C411EE7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABA0ECA1-43DF-4628-92EC-F3B9C411EE7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABA0ECA1-43DF-4628-92EC-F3B9C411EE7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B90ACC3-C565-4DAE-B807-A0A6FDE6F26C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B90ACC3-C565-4DAE-B807-A0A6FDE6F26C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B90ACC3-C565-4DAE-B807-A0A6FDE6F26C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B90ACC3-C565-4DAE-B807-A0A6FDE6F26C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2544AD03-CECF-43AD-8BE5-F983E7B6A2DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2544AD03-CECF-43AD-8BE5-F983E7B6A2DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2544AD03-CECF-43AD-8BE5-F983E7B6A2DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2544AD03-CECF-43AD-8BE5-F983E7B6A2DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -142,6 +172,10 @@ Global
 		{C289FBAB-6D3A-0383-D3F2-BD5BA5179C3A} = {A8C313CB-FC37-4727-82E1-4C80BB1C93DE}
 		{BDF733C2-EE48-451C-A15F-53F41E769122} = {2E97B9DB-D9B4-46FF-A9EC-861888251895}
 		{44870357-D1A8-C2FF-13E6-21DE79F66D11} = {BDF733C2-EE48-451C-A15F-53F41E769122}
+		{FBF30FC9-8D02-4488-9978-4896C899D810} = {3E61B425-773A-47BF-A62D-0F438D022EF6}
+		{ABA0ECA1-43DF-4628-92EC-F3B9C411EE7C} = {3E61B425-773A-47BF-A62D-0F438D022EF6}
+		{4B90ACC3-C565-4DAE-B807-A0A6FDE6F26C} = {8AB5E0DF-434D-4B98-98A5-3C602A4EEDFF}
+		{2544AD03-CECF-43AD-8BE5-F983E7B6A2DB} = {8AB5E0DF-434D-4B98-98A5-3C602A4EEDFF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A19EDDE-A10F-4268-B1B6-EBA59F616DFB}

@@ -2,7 +2,7 @@
 using Resguardo.Application.Commands.AmpliarServicio;
 using Resguardo.Application.Commands.AsignarEfectivo;
 using Resguardo.Application.Commands.CerrarServicio;
-using Resguardo.Web.Authorization;
+using Seguridad.Infrastructure.Handler.Authorization;
 using Resguardo.Web.Models;
 
 namespace Resguardo.Web.Controllers

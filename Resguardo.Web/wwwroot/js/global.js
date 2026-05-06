@@ -1,4 +1,11 @@
-﻿
+﻿$(document).ajaxStart(function () {
+    $("#loader").show();
+});
+
+$(document).ajaxStop(function () {
+    $("#loader").hide();
+});
+
 // ============================================================
 //  CORPORATIVO CORE — Capa base. Debe cargarse primero.
 //  Habla con ApiResponse<T> del backend.

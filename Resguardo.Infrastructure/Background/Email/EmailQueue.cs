@@ -1,5 +1,5 @@
 ﻿using Notificacion.Domain.Models;
-using Resguardo.Application.Interfaces.Background;
+using Resguardo.Application.Common.Interfaces;
 using System.Threading.Channels;
 
 namespace Resguardo.Infrastructure.Background.Email

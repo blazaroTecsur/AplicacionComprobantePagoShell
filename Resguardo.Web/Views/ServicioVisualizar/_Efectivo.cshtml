@@ -7,41 +7,127 @@
             </div>
             <div class="modal-body">
                 <div id="divErrores" class="alert alert-danger d-none" role="alert"></div>
-                <div class="col-12">
-                    <div class="row">
-                        <div class="col-3">
-                            <label for="efectivo_txtFolio" class="form-label">Folio</label>
-                            <input type="text" class="form-control" id="efectivo_txtFolio" readonly>
-                        </div>
-                        <div class="col-3">
-                            <label for="efectivo_txtProveedor" class="form-label">Proveedor</label>
-                            <input type="text" class="form-control" id="efectivo_txtProveedor" readonly>
-                        </div>
-                        <div class="col-3">
-                            <label for="efectivo_txtServicio" class="form-label">Servicio</label>
-                            <input type="text" class="form-control" id="efectivo_txtServicio" readonly>
+                <div class="accordion" id="accordionPanel">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                Datos de la solicitud
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionPanel">
+                            <div class="accordion-body">
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div class="col-2">
+                                            <label for="efectivo_txtFlujo" class="form-label">Flujo</label>
+                                            <input type="text" class="form-control" id="efectivo_txtFlujo" readonly>
+                                        </div>
+                                        <div class="col-2">
+                                            <label for="efectivo_txtNroSro" class="form-label">Sro</label>
+                                            <input type="text" class="form-control" id="efectivo_txtNroSro" readonly>
+                                        </div>
+                                        <div class="col-4 offset-4">
+                                            <label for="efectivo_txtEstado" class="form-label">Estado</label>
+                                            <input type="text" class="form-control" id="efectivo_txtEstado" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <label for="efectivo_txtDpto" class="form-label">Departamento</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="efectivo_txtDpto" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="efectivo_txtActv" class="form-label">Actividad</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="efectivo_txtActv" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <label for="txtRucSctta" class="form-label">Subcontratista</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="efectivo_txtSctta" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="efectivo_txtCapataz" class="form-label">Capataz</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="efectivo_txtCapataz" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-2">
+                                            <label for="txtCelular" class="form-label">Celular</label>
+                                            <input type="text" class="form-control" id="efectivo_txtCelular" readonly>
+                                        </div>
+                                        <div class="col-10">
+                                            <label for="txtTpoTrabajo" class="form-label">Tpo. Trabajo</label>
+                                            <input type="text" class="form-control" id="efectivo_txtTpoTrabajo" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-3">
-                            <label for="efectivo_txtFecha" class="form-label">Fecha</label>
-                            <input type="text" class="form-control" id="efectivo_txtFecha" readonly>
-                        </div>
-                        <div class="col-3">
-                            <label for="efectivo_txtHraInicio" class="form-label">Hra. Inicio</label>
-                            <input type="text" class="form-control" id="efectivo_txtHraInicio" readonly>
-                        </div>
-                        <div class="col-3">
-                            <label for="efectivo_txtHraFinal" class="form-label">Hra. Fin</label>
-                            <input type="text" class="form-control" id="efectivo_txtHraFinal" readonly>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                Datos del servicio
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse show" aria-labelledby="headingTwo" data-bs-parent="#accordionPanel">
+                            <div class="accordion-body">
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <label for="efectivo_txtFolio" class="form-label">Folio</label>
+                                            <input type="text" class="form-control" id="efectivo_txtFolio" readonly>
+                                        </div>
+                                        <div class="col-3">
+                                            <label for="efectivo_txtProveedor" class="form-label">Proveedor</label>
+                                            <input type="text" class="form-control" id="efectivo_txtProveedor" readonly>
+                                        </div>
+                                        <div class="col-3">
+                                            <label for="efectivo_txtServicio" class="form-label">Servicio</label>
+                                            <input type="text" class="form-control" id="efectivo_txtServicio" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-9">
+                                            <label for="efectivo_txtDireccion" class="form-label">Dirección</label>
+                                            <input type="text" class="form-control" id="efectivo_txtDireccion" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <label for="efectivo_txtFecha" class="form-label">Fecha</label>
+                                            <input type="text" class="form-control" id="efectivo_txtFecha" readonly>
+                                        </div>
+                                        <div class="col-3">
+                                            <label for="efectivo_txtHraInicio" class="form-label">Hra. Inicio</label>
+                                            <input type="text" class="form-control" id="efectivo_txtHraInicio" readonly>
+                                        </div>
+                                        <div class="col-3">
+                                            <label for="efectivo_txtHraFinal" class="form-label">Hra. Fin</label>
+                                            <input type="text" class="form-control" id="efectivo_txtHraFinal" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
                 <div id="tablaEfectivos" class="mt-2"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Salir</button>
-                @if (User.HasClaim("permission", "SERV.ASIGNAR") ||                
+                @if (User.HasClaim("permission", "SERV.ASIGNAR") ||
                 User.HasClaim("permission", "SERV.CERRAR"))
                 {
                     <button type="button" id="efectivo_btnGrabar" class="btn btn-primary div-new">Grabar</button>

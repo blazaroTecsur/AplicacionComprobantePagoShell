@@ -5,8 +5,8 @@ using Notificacion.Domain.Models;
 using Resguardo.Application.Common;
 using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Exceptions;
-using Resguardo.Application.Interfaces.Background;
 using Resguardo.Domain.Interfaces;
+using Seguridad.Abstractions.Interfaces;
 
 namespace Resguardo.Application.Commands.AmpliarServicio
 {
