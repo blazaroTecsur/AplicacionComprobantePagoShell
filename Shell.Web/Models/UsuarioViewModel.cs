@@ -12,6 +12,5 @@
         public string? Empresa { get; set; }
         public string? Dni { get; set; }
         public ICollection<MenuViewModel> Menus { get; set; } = new List<MenuViewModel>();
-        public IReadOnlyCollection<string> Permisos { get; set; } = [];
     }
 }

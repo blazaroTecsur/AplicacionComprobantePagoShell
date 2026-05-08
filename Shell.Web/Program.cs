@@ -7,7 +7,6 @@ using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
-using Shell.Web.Filters;
 using Shell.Web.Middleware;
 using Shell.Web.Services;
 using System.Security.Claims;
@@ -43,8 +42,6 @@ if (builder.Environment.IsDevelopment())
     mvcBuilder.AddRazorRuntimeCompilation();
 
 builder.Services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
-builder.Services.AddMemoryCache();
-builder.Services.AddHttpClient<PermisosService>();
 builder.Services.AddHttpClient<ApiService>();
 builder.Services
     .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
