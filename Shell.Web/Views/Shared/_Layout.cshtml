@@ -12,6 +12,14 @@
     <link href="~/lib/ui-corporativo/corp-design-system.min.css" rel="stylesheet" />
     <link href="~/css/site-index.css" rel="stylesheet" asp-append-version="true" />
 
+    @* Variables globales para JS *@
+    <script>
+        window.BASE_URL = '@(ViewBag.BaseUrl as string ?? "")';
+        window.ROLES = @Html.Raw(
+            System.Text.Json.JsonSerializer.Serialize(
+                Model?.Permisos ?? (IReadOnlyCollection<string>)Array.Empty<string>()));
+    </script>
+
 </head>
 <body>
 
