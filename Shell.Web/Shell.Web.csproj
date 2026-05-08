@@ -5,18 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<None Remove=".npmrc" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include=".npmrc">
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-		</Content>
-	</ItemGroup>
-
+	
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.24" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.24" />
@@ -39,10 +28,5 @@
 	<ItemGroup>
 	  <Folder Include="Logs\" />
 	</ItemGroup>
-
-	<Target Name="BuildUI" BeforeTargets="Build">
-		<Exec Command="npm install" />
-		<Exec Command="npm run build-ui" />
-	</Target>
-
+	
 </Project>

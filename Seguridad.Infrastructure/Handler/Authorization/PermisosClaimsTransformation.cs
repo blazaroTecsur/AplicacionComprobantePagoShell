@@ -27,6 +27,7 @@ namespace Seguridad.Infrastructure.Handler.Authorization
             var codUsuario = identity.FindFirst("oid")?.Value;
             var codTenant = identity.FindFirst("tid")?.Value;
             var codApp = identity.FindFirst("app")?.Value;
+            var schema = identity.FindFirst("schema")?.Value;
             var sessionId = identity.FindFirst("session_id")?.Value;
             if (string.IsNullOrEmpty(codUsuario) ||
                 string.IsNullOrEmpty(codTenant) ||
@@ -37,7 +38,7 @@ namespace Seguridad.Infrastructure.Handler.Authorization
             var key = $"permisos-{codApp}:{sessionId}";
             if (!_cache.TryGetValue(key, out List<string> permisos))
             {
-                var permisosBD = await _seguridad.ObtenerPermisos(codTenant, codUsuario, codApp);
+                var permisosBD = await _seguridad.ObtenerPermisos(schema, codTenant, codUsuario, codApp);
                 permisos = permisosBD?.Select(x => x.Codigo).ToList() ?? new();
                 _cache.Set(key, permisos, new MemoryCacheEntryOptions
                 {

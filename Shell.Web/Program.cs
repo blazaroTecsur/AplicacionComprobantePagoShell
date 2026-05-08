@@ -61,6 +61,12 @@ builder.Services
             builder.Configuration.GetSection($"AzureAd:{Constante.SCHEMA_CORPORATE}"),
             builder.Configuration,
             Constante.SCHEMA_CORPORATE);
+        options.BackchannelHttpHandler =
+        new HttpClientHandler
+        {
+            UseProxy = false,
+            Proxy = null
+        };
     })
     .AddOpenIdConnect(Constante.SCHEMA_EXTERNAL, options =>
     {
@@ -69,6 +75,12 @@ builder.Services
             builder.Configuration.GetSection($"AzureAd:{Constante.SCHEMA_EXTERNAL}"),
             builder.Configuration,
             Constante.SCHEMA_EXTERNAL);
+        options.BackchannelHttpHandler =
+        new HttpClientHandler
+        {
+            UseProxy = false,
+            Proxy = null
+        };
     });
 
 builder.Services.AddHttpContextAccessor();
@@ -98,6 +110,11 @@ void ConfigureOpenId(
     options.Scope.Add("profile");
     options.Scope.Add("offline_access");
     options.Scope.Add(configuration[$"ApiSettings:Scope{schema}"]);
+    options.BackchannelHttpHandler = new HttpClientHandler
+    {
+        UseProxy = false,
+        Proxy = null
+    };
     options.TokenValidationParameters =
         new TokenValidationParameters
         {
@@ -179,12 +196,14 @@ app.MapReverseProxy(proxyPipeline =>
         string? nomUsuario = usuario.FindFirst("name")?.Value;
         string? usuCorreo = usuario.FindFirst("preferred_username")?.Value;
         string? idSesion = usuario.FindFirst("session_id")?.Value;
+        string? schema = usuario.FindFirst("auth_scheme")?.Value;
 
         context.Request.Headers["X-User-Oid"] = codUsuario ?? "";
         context.Request.Headers["X-Tenant-Id"] = codTenant ?? "";
         context.Request.Headers["X-User-Name"] = nomUsuario ?? "";
         context.Request.Headers["X-User-Email"] = usuCorreo ?? "";
         context.Request.Headers["X-Session-Id"] = idSesion ?? "";
+        context.Request.Headers["X-Schema"] = schema ?? "";
 
         await next();
     });

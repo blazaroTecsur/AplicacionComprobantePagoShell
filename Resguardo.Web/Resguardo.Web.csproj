@@ -34,9 +34,4 @@
 		<ProjectReference Include="..\Seguridad.Infrastructure\Seguridad.Infrastructure.csproj" />
 	</ItemGroup>
 
-	<Target Name="BuildUI" BeforeTargets="Build">
-		<Exec Command="npm install" />
-		<Exec Command="npm run build-ui" />
-	</Target>
-
 </Project>

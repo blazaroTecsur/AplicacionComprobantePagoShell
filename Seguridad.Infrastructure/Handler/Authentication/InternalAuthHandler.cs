@@ -26,13 +26,15 @@ namespace Seguridad.Infrastructure.Handler.Authentication
             var usuCorreo = Request.Headers["X-User-Email"].FirstOrDefault();
             var nomUsuario = Request.Headers["X-User-Name"].FirstOrDefault();
             var sessionId = Request.Headers["X-Session-Id"].FirstOrDefault();
+            var schema = Request.Headers["X-Schema"].FirstOrDefault();
             var codApp = _config["codApplication"];
-
+            
             if (string.IsNullOrEmpty(codUsuario) ||
                 string.IsNullOrEmpty(codTenant) ||
                 string.IsNullOrEmpty(codApp) ||
                 string.IsNullOrEmpty(sessionId) ||
-                string.IsNullOrEmpty(usuCorreo))
+                string.IsNullOrEmpty(usuCorreo) ||
+                string.IsNullOrEmpty(schema))
                 return AuthenticateResult.Fail("Internal Auth ha fallado.");
 
             var claims = new List<Claim>
@@ -42,7 +44,8 @@ namespace Seguridad.Infrastructure.Handler.Authentication
                 new Claim("email", usuCorreo),
                 new Claim("name", nomUsuario),
                 new Claim("session_id", sessionId),
-                new Claim("app", codApp)
+                new Claim("app", codApp),
+                new Claim("schema", schema)
             };           
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
