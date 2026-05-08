@@ -1,12 +1,15 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
+using Shell.Web.Helpers;
 using Shell.Web.Middleware;
 using Shell.Web.Services;
 using System.Security.Claims;
@@ -43,70 +46,98 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
 builder.Services.AddHttpClient<ApiService>();
-builder.Services
-    .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(options =>
-    {
-        builder.Configuration.Bind("AzureAd", options);
-        options.ResponseType = "code";
-        options.SaveTokens = true;
-        options.MapInboundClaims = false;
 
-        options.Scope.Clear();
-        options.Scope.Add("openid");
-        options.Scope.Add("profile");
-        options.Scope.Add("offline_access");
-        options.Scope.Add(builder.Configuration["ApiSettings:Scope"]);
-        options.BackchannelHttpHandler = new HttpClientHandler
-        {
-            UseProxy = false,
-            Proxy = null
-        };
-        options.TokenValidationParameters = new TokenValidationParameters
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = Constante.SCHEMA_CORPORATE;
+    })
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddOpenIdConnect(Constante.SCHEMA_CORPORATE, options =>
+    {
+        ConfigureOpenId(
+            options,
+            builder.Configuration.GetSection($"AzureAd:{Constante.SCHEMA_CORPORATE}"),
+            builder.Configuration,
+            Constante.SCHEMA_CORPORATE);
+    })
+    .AddOpenIdConnect(Constante.SCHEMA_EXTERNAL, options =>
+    {
+        ConfigureOpenId(
+            options,
+            builder.Configuration.GetSection($"AzureAd:{Constante.SCHEMA_EXTERNAL}"),
+            builder.Configuration,
+            Constante.SCHEMA_EXTERNAL);
+    });
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTokenAcquisition();
+builder.Services.AddInMemoryTokenCaches();
+
+void ConfigureOpenId(
+    OpenIdConnectOptions options,
+    IConfigurationSection section,
+    IConfiguration configuration,
+    string schema)
+{
+    options.Authority = section["Authority"];
+    options.MetadataAddress = $"{section["Authority"]}/v2.0/.well-known/openid-configuration";
+    options.ClientId = section["ClientId"];
+    options.ClientSecret = section["ClientSecret"];
+    options.CallbackPath = section["CallbackPath"];
+    options.ResponseType = "code";
+    options.ResponseMode = "form_post";
+    options.UsePkce = true;
+    options.SaveTokens = true;
+    options.GetClaimsFromUserInfoEndpoint = false;
+    options.MapInboundClaims = false;
+
+    options.Scope.Clear();
+    options.Scope.Add("openid");
+    options.Scope.Add("profile");
+    options.Scope.Add("offline_access");
+    options.Scope.Add(configuration[$"ApiSettings:Scope{schema}"]);
+    options.TokenValidationParameters =
+        new TokenValidationParameters
         {
             ValidateIssuer = false,
             NameClaimType = "name",
             RoleClaimType = "roles"
         };
 
-        options.Events = new OpenIdConnectEvents
+    options.Events = new OpenIdConnectEvents
+    {
+        OnTokenValidated = context =>
         {
-            OnTokenValidated = context =>
-            {
-                var identity = (ClaimsIdentity)context.Principal!.Identity!;
-
-                if (context.Properties.Items.TryGetValue("tenant", out var tenant))
-                    identity.AddClaim(new Claim("tenant", tenant));
-                if (!identity.HasClaim(c => c.Type == "session_id"))
-                    identity.AddClaim(new Claim("session_id", Guid.NewGuid().ToString()));
-
-                return Task.CompletedTask;
-            },
-
-            OnRedirectToIdentityProvider = context =>
-            {
-                if (context.Properties.Items.TryGetValue("tenant", out var selectedTenant)
-                 && !string.IsNullOrWhiteSpace(selectedTenant))
-                {
-                    var tenantId = builder.Configuration[$"Tenants:{selectedTenant}:TenantId"];
-
-                    context.ProtocolMessage.IssuerAddress =
-                        $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/authorize";
-                }
-
-                return Task.CompletedTask;
-            },
-
-            OnRedirectToIdentityProviderForSignOut = context =>
-            {
-                context.ProtocolMessage.PostLogoutRedirectUri = builder.Configuration["AppBaseUrl"];
-                return Task.CompletedTask;
-            }
-        };
-    })
-    .EnableTokenAcquisitionToCallDownstreamApi()
-    .AddInMemoryTokenCaches();
-
+            var identity = (ClaimsIdentity)context.Principal!.Identity!;
+            if (!identity.HasClaim(c => c.Type == "session_id"))
+                identity.AddClaim(new Claim("session_id", Guid.NewGuid().ToString()));
+            if (!identity.HasClaim(c => c.Type == "auth_scheme"))
+                identity.AddClaim(new Claim("auth_scheme", context.Scheme.Name));
+            return Task.CompletedTask;
+        },
+        OnRedirectToIdentityProviderForSignOut = context =>
+        {
+            context.ProtocolMessage.PostLogoutRedirectUri = configuration["AppBaseUrl"];
+            return Task.CompletedTask;
+        },
+        OnRedirectToIdentityProvider = context =>
+        {
+            //context.ProtocolMessage.Prompt = "login";
+            return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            context.HandleResponse();
+            context.Response.Redirect(
+                "/Home/Error?message=" +
+                Uri.EscapeDataString(
+                    context.Exception.Message));
+            return Task.CompletedTask;
+        }
+    };
+}
 builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 builder.Services.Configure<CookieAuthenticationOptions>(
     CookieAuthenticationDefaults.AuthenticationScheme,
@@ -148,7 +179,7 @@ app.MapReverseProxy(proxyPipeline =>
         string? nomUsuario = usuario.FindFirst("name")?.Value;
         string? usuCorreo = usuario.FindFirst("preferred_username")?.Value;
         string? idSesion = usuario.FindFirst("session_id")?.Value;
-        
+
         context.Request.Headers["X-User-Oid"] = codUsuario ?? "";
         context.Request.Headers["X-Tenant-Id"] = codTenant ?? "";
         context.Request.Headers["X-User-Name"] = nomUsuario ?? "";

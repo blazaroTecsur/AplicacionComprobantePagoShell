@@ -21,7 +21,7 @@ namespace Shell.Web.Controllers
             var version = assembly.GetName().Version?.ToString();
 
             var usuario = await _apiService.ObtenerUsuario();
-            ViewBag.Tenant = User.FindFirst("tenant")?.Value;             
+            ViewBag.Tenant = usuario.NomTenant;             
             ViewBag.Entorno = _env.EnvironmentName;
             ViewBag.Version = version;
             return View(usuario);

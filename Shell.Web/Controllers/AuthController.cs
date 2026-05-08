@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime;
+using Shell.Web.Helpers;
 
 namespace Shell.Web.Controllers
 {
@@ -18,26 +17,23 @@ namespace Shell.Web.Controllers
             ViewBag.Entorno = _env.EnvironmentName;
             return View();
         }
-        public IActionResult Login(string tenant)
+        public IActionResult Login(string schema)
         {
-            //var host = HttpContext.Request.Host.Host;
-            //var tenant = _settings.Tenants.FirstOrDefault(t => t.Domain.Equals(host, StringComparison.OrdinalIgnoreCase));
-            //if (tenant == null)
-            //    throw new Exception("Tenant no válido");
-
-            var host = HttpContext.Request.Host.Host;
             var properties = new AuthenticationProperties
             {
-                RedirectUri = "/Home/Index"
+                RedirectUri = "/Home/Index",
+                Items = { ["scheme"] = schema }
             };
-            properties.Items["tenant"] = tenant;
-            return Challenge(properties, OpenIdConnectDefaults.AuthenticationScheme);
-        }        
+            return Challenge(properties, schema);
+        }
         public async Task<IActionResult> Logout()
-        {            
+        {
+            var scheme = User.FindFirst("auth_scheme")?.Value;
+            scheme ??= Constante.SCHEMA_CORPORATE;
+
+            await HttpContext.SignOutAsync(scheme);
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-            return RedirectToAction("SelectTenant", "Auth");            
+            return RedirectToAction("SelectTenant", "Auth");
         }
     }
 }
