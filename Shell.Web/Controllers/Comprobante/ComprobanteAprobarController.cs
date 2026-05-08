@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shell.Web.Filters;
 
-namespace Shell.Web.Controllers.Comprobante
+namespace Shell.Web.Controllers
 {
     [Authorize]
     [Permission("COMP.APROBAR")]
