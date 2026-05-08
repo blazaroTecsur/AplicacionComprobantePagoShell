@@ -1,6 +1,6 @@
 ﻿using ComprobantePago.Application.DTOs.Responses;
 
-namespace ComprobantePago.Application.Services
+namespace ComprobantePago.Application.Interfaces.Services
 {
     public interface ISeguridadService
     {

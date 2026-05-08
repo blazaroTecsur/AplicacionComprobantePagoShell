@@ -109,7 +109,7 @@ function buscar() {
     };
 
     CorporativoQuery.ajaxPost(
-        '/Comprobante/Buscar',
+        BASE_URL+'/Comprobante/Buscar',
         filtros,
         function (data) {
             tablaComprobantes.clear().rows.add(data).draw();
@@ -230,7 +230,7 @@ function enviarASyteline() {
         .html('<span class="spinner-border spinner-border-sm me-1"></span> Enviando...');
 
     $.ajax({
-        url: '/Comprobante/EnviarCabeceraASyteline',
+        url: BASE_URL+'/Comprobante/EnviarCabeceraASyteline',
         method: 'POST',
         contentType: 'application/json',
         headers: { 'RequestVerificationToken': token },
@@ -286,7 +286,7 @@ function exportarCabecera() {
     }
 
     const folios = seleccionados.map(s => s.folio);
-    enviarFormExportar('/Comprobante/ExportarCabeceraSyteline', folios);
+    enviarFormExportar(BASE_URL+'/Comprobante/ExportarCabeceraSyteline', folios);
 }
 
 // ── Exportar imputación Syteline ──────────────
@@ -308,7 +308,7 @@ function exportarImputacion() {
     }
 
     const folios = seleccionados.map(s => s.folio);
-    enviarFormExportar('/Comprobante/ExportarDistribucionSyteline', folios);
+    enviarFormExportar(BASE_URL+'/Comprobante/ExportarDistribucionSyteline', folios);
 }
 
 // ── Enviar form dinámico para descarga ────────
@@ -357,13 +357,13 @@ function bindEventos() {
 
     // Nuevo
     $('#index_btnNuevo').on('click', function () {
-        window.location.href = '/Comprobante/Detalle';
+        window.location.href = BASE_URL+'/Comprobante/Detalle';
     });
 
     // Ver detalle
     $('#index_tblComprobantes').on('click', '.btn-ver', function () {
         const folio = $(this).data('folio');
-        window.location.href = `/Comprobante/Detalle?folio=${folio}`;
+        window.location.href = BASE_URL+`/Comprobante/Detalle?folio=${folio}`;
     });
 
     // Checkbox individual → actualizar botones

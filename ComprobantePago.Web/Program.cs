@@ -5,7 +5,6 @@ using ComprobantePago.Application.Interfaces.Repositories;
 using ComprobantePago.Application.Interfaces.Services;
 using ComprobantePago.Application.Interfaces.Services.Maestros;
 using ComprobantePago.Application.Mapping;
-using ComprobantePago.Application.Services;
 using ComprobantePago.Application.Settings;
 using ComprobantePago.Application.Validations;
 using ComprobantePago.Infrastructure.Persistence;
@@ -17,13 +16,10 @@ using ComprobantePago.Web.Authorization;
 using ComprobantePago.Web.Handler;
 using ComprobantePago.Web.Middlewares;
 using FluentValidation;
-using Mapster;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
-using Microsoft.Identity.Web;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
@@ -161,101 +157,33 @@ try
         builder.Services.AddScoped<ICuentaContableService, DbCuentaContableService>();
     }
 
-    // ── Autenticación JWT / Azure Entra ID (multi-tenant) ────────────────────
-    // Microsoft.Identity.Web valida automáticamente: firma, expiración, audiencia,
-    // emisor y nonce (requisitos 3.2 del spec OIDC/PKCE interno).
-    // En producción: completar ClientId, Audience y ValidTenants en appsettings.
-    var azureAdConfig = builder.Configuration.GetSection("AzureAd");
-    // Filtra strings vacíos para que [""] (valor por defecto en dev) se trate igual que [].
-    var validTenants  = (azureAdConfig.GetSection("ValidTenants").Get<string[]>() ?? [])
-                        .Where(t => !string.IsNullOrWhiteSpace(t))
-                        .ToArray();
-    var esDesarrollo  = validTenants.Length == 0;
+    // ── Autenticación interna (headers del shell/reverse proxy) ──────────────
+    builder.Services.AddAuthentication("Internal")
+        .AddScheme<AuthenticationSchemeOptions, InternalAuthHandler>("Internal", null);
 
+    // ── Autorización basada en permisos ───────────────────────────────────────
+    builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
+    builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+    builder.Services.AddScoped<IClaimsTransformation, PermisosClaimsTransformation>();
+    builder.Services.AddAuthorization();
+
+    // ── Cache en memoria (requerido por PermisosClaimsTransformation) ─────────
+    builder.Services.AddMemoryCache();
+
+    // ── MSAL: token de cliente para llamar a la API de seguridad ─────────────
+    builder.Services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
+    builder.Services.AddSingleton<TokenSeguridadService>();
+    builder.Services.AddHttpClient<ISeguridadService, SeguridadService>();
+
+    // ── HttpContextAccessor + UsuarioContexto ─────────────────────────────────
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<IUsuarioContexto, UsuarioContexto>();
 
-    // AddMicrosoftIdentityWebApiAuthentication lee la sección "AzureAd" y configura
-    // JwtBearer con toda la validación OIDC requerida por el spec 3.2.
-    // En desarrollo (ValidTenants vacío / ClientId sin configurar) se registra
-    // un JwtBearer mínimo sin validación para no bloquear el arranque local.
-    //if (esDesarrollo)
-    //{
-    //    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    //        .AddJwtBearer();
-    //}
-    //else
-    //{
-    //    builder.Services.AddMicrosoftIdentityWebApiAuthentication(
-    //        builder.Configuration, configSectionName: "AzureAd");
-
-    //    // Control de tenants (spec 3.3): en producción solo se aceptan los GUIDs
-    //    // de tenant configurados en ValidTenants.
-    //    builder.Services.PostConfigure<JwtBearerOptions>(
-    //        JwtBearerDefaults.AuthenticationScheme,
-    //        options =>
-    //        {
-    //            var anteriorOnTokenValidated = options.Events?.OnTokenValidated;
-    //            options.Events ??= new JwtBearerEvents();
-    //            options.Events.OnTokenValidated = async ctx =>
-    //            {
-    //                // Encadenar el handler que Microsoft.Identity.Web ya registró
-    //                if (anteriorOnTokenValidated is not null)
-    //                    await anteriorOnTokenValidated(ctx);
-
-    //                var tid = ctx.Principal?.FindFirst("tid")?.Value
-    //                       ?? ctx.Principal?.FindFirst(
-    //                              "http://schemas.microsoft.com/identity/claims/tenantid")?.Value;
-
-    //                if (string.IsNullOrEmpty(tid) || !validTenants.Contains(tid))
-    //                    ctx.Fail($"Tenant no autorizado: {tid}");
-    //            };
-    //        });
-    //}
-
-    //// ── Autorización basada en App Roles de Azure Entra ID ───────────────────
-    //// Roles definidos en el manifest de la app registrada:
-    ////   Digitador · Autorizador · Aprobador · Anulador
-    ////
-    //// En desarrollo (ValidTenants vacío) todas las políticas se resuelven como
-    //// autorizadas automáticamente para no bloquear el flujo local sin token JWT.
-    //builder.Services.AddAuthorization(options =>
-    //{
-    //    if (esDesarrollo)
-    //    {
-    //        var todoPermitido = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-    //            .RequireAssertion(_ => true)
-    //            .Build();
-    //        options.DefaultPolicy  = todoPermitido;
-    //        options.FallbackPolicy = null;
-    //        options.AddPolicy("RequiereDigitador",   todoPermitido);
-    //        options.AddPolicy("RequiereAutorizador", todoPermitido);
-    //        options.AddPolicy("RequiereAprobador",   todoPermitido);
-    //        options.AddPolicy("RequiereAnulador",    todoPermitido);
-    //    }
-    //    else
-    //    {
-    //        // Producción: el token JWT debe incluir el claim "roles" con el valor correcto.
-    //        options.AddPolicy("RequiereDigitador",   p => p.RequireAuthenticatedUser()
-    //            .RequireClaim("roles", "Digitador"));
-    //        options.AddPolicy("RequiereAutorizador", p => p.RequireAuthenticatedUser()
-    //            .RequireClaim("roles", "Autorizador"));
-    //        options.AddPolicy("RequiereAprobador",   p => p.RequireAuthenticatedUser()
-    //            .RequireClaim("roles", "Aprobador"));
-    //        options.AddPolicy("RequiereAnulador",    p => p.RequireAuthenticatedUser()
-    //            .RequireClaim("roles", "Anulador"));
-    //    }
-    //});
-
-    // ── Infor Syteline IDO REST API ───────────────────────────────────────────
     builder.Services.Configure<InforSettings>(
         builder.Configuration.GetSection(InforSettings.Section));
 
-    // HttpClient nombrado para el token service (sin typed client para permitir Singleton)
     builder.Services.AddHttpClient(nameof(InforTokenService));
 
-    // Singleton: el caché del token (SemaphoreSlim + campo privado) debe vivir
-    // durante toda la vida de la aplicación para reutilizarse entre requests.
     builder.Services.AddSingleton<IInforTokenService>(sp =>
         new InforTokenService(
             sp.GetRequiredService<IHttpClientFactory>()
@@ -263,11 +191,9 @@ try
             sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<InforSettings>>(),
             sp.GetRequiredService<ILogger<InforTokenService>>()));
 
-    // Typed HttpClient para el servicio IDO (resuelve IInforTokenService desde DI)
     builder.Services.AddHttpClient<ISytelineIdoService, SytelineIdoService>();
     builder.Services.AddScoped<ISytelineEnvioService, SytelineEnvioService>();
 
-    // ── Servicios de aplicación ───────────────────────────────────────────────
     builder.Services.AddScoped<XmlComprobanteService>();
     builder.Services.AddScoped<PdfComprobanteService>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -276,18 +202,9 @@ try
     builder.Services.AddScoped<IMaestrosQueryService, MaestrosQueryService>();
     builder.Services.AddScoped<IComprobanteRepository, ComprobanteRepository>();
     builder.Services.AddScoped<IExcelSytelineService, ExcelSytelineService>();
-    builder.Services.AddSingleton<TokenSeguridadService>();
-    builder.Services.AddAuthentication("Internal").AddScheme<AuthenticationSchemeOptions, InternalAuthHandler>("Internal", null);
-    builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
-    builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
-    builder.Services.AddScoped<IClaimsTransformation, PermisosClaimsTransformation>();
-    builder.Services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
-    builder.Services.AddHttpClient<ISeguridadService, SeguridadService>();
-
 
     var app = builder.Build();
 
-    // ── Columnas pendientes de BD (idempotente, IF NOT EXISTS) ────────────────
     try
     {
         using var scope = app.Services.CreateScope();
@@ -304,28 +221,15 @@ try
             "Se reintentará en el siguiente arranque.");
     }
 
-    // ── Pipeline de middlewares ───────────────────────────────────────────────
-    // 1. Manejo global de excepciones (primero, captura todo)
     app.UseMiddleware<ExceptionMiddleware>();
-
-    // 2. CorrelationId: inyecta CorrelationId, RequestId y UserId en LogContext
-    //    antes de que cualquier log de la petición sea emitido.
     app.UseMiddleware<CorrelationIdMiddleware>();
 
-    // 3. Serilog request logging (ya enriquecido con CorrelationId / UserId)
     app.UseSerilogRequestLogging(opts =>
     {
         opts.MessageTemplate =
             "HTTP {RequestMethod} {RequestPath} respondió {StatusCode} en {Elapsed:0.0000} ms";
     });
 
-    if (!app.Environment.IsDevelopment())
-    {
-        app.UseExceptionHandler("/Home/Error");
-        app.UseHsts();
-    }
-
-    // 3. Swagger UI (disponible en todos los entornos)
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
@@ -333,10 +237,11 @@ try
         c.RoutePrefix = "swagger";
     });
 
-    app.UseHttpsRedirection();
     app.UsePathBase("/comprobante");
     app.UseStaticFiles();
     app.UseRouting();
+    app.UseAuthentication();
+
     app.Use(async (context, next) =>
     {
         var user = context.User;
@@ -347,10 +252,8 @@ try
         }
         await next();
     });
-    //app.UseAuthentication();
-    app.UseAuthorization();
 
-    // 4. AuditMiddleware: audita POST críticos DESPUÉS de autenticar al usuario
+    app.UseAuthorization();
     app.UseMiddleware<AuditMiddleware>();
 
     app.MapControllerRoute(

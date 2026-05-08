@@ -35,7 +35,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shell.Web", "Shell.Web\Shel
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "recupero", "recupero", "{8CAD5349-016E-44FB-8C6B-A53D9AF7365B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "comprobamte", "comprobamte", "{2E97B9DB-D9B4-46FF-A9EC-861888251895}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "comprobante", "comprobante", "{2E97B9DB-D9B4-46FF-A9EC-861888251895}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "notificacion", "notificacion", "{5235F695-E1BD-46BF-B4CD-CE8BFA586937}"
 EndProject

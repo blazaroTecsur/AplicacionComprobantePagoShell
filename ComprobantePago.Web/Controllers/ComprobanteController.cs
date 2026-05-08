@@ -1,3 +1,4 @@
+using ComprobantePago.Web.Authorization;
 using ComprobantePago.Application.Commands.Comprobante;
 using ComprobantePago.Application.Commands.Imputacion;
 using ComprobantePago.Application.Common;
@@ -157,7 +158,7 @@ namespace ComprobantePago.Web.Controllers
         /// <summary>Registra o actualiza un comprobante.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequiereDigitador")]
+        [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> Guardar([FromBody] RegistrarComprobanteCommand command)
         {
             var validacion = await _comprobanteValidator.ValidateAsync(command.Comprobante);
@@ -175,7 +176,7 @@ namespace ComprobantePago.Web.Controllers
         /// <summary>Envía el comprobante al siguiente estado.</summary>x
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequiereDigitador")]
+        [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> Enviar([FromBody] EnviarComprobanteCommand command)
         {
             var validacion = await _accionValidator.ValidateAsync(command.Comprobante);
@@ -188,7 +189,7 @@ namespace ComprobantePago.Web.Controllers
         /// <summary>Firma (autoriza) el comprobante.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequiereAutorizador")]
+        [Permission("COMP.AUTORIZAR")]
         public async Task<IActionResult> Firmar([FromBody] FirmarComprobanteCommand command)
         {
             var validacion = await _accionValidator.ValidateAsync(command.Comprobante);
@@ -201,7 +202,7 @@ namespace ComprobantePago.Web.Controllers
         /// <summary>Aprueba el comprobante.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequiereAprobador")]
+        [Permission("COMP.APROBAR")]
         public async Task<IActionResult> Aprobar([FromBody] AprobarComprobanteCommand command)
         {
             var validacion = await _accionValidator.ValidateAsync(command.Comprobante);
@@ -214,7 +215,7 @@ namespace ComprobantePago.Web.Controllers
         /// <summary>Anula el comprobante.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequiereAnulador")]
+        [Permission("COMP.ANULAR")]
         public async Task<IActionResult> Anular([FromBody] AnularComprobanteCommand command)
         {
             var validacion = await _accionValidator.ValidateAsync(command.Comprobante);
@@ -227,7 +228,7 @@ namespace ComprobantePago.Web.Controllers
         /// <summary>Deriva el comprobante.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequiereAutorizador")]
+        [Permission("COMP.AUTORIZAR")]
         public async Task<IActionResult> Derivar([FromBody] DerivarComprobanteCommand command)
         {
             var validacion = await _accionValidator.ValidateAsync(command.Comprobante);
@@ -479,7 +480,7 @@ namespace ComprobantePago.Web.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "RequiereAprobador")]
+        [Permission("COMP.APROBAR")]
         public async Task<IActionResult> EnviarCabeceraASyteline(
             [FromBody] List<string> folios,
             CancellationToken ct)

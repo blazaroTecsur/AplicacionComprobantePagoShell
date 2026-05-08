@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
-using ComprobantePago.Application.Services;
+using ComprobantePago.Application.Interfaces.Services;
 
 namespace ComprobantePago.Web.Handler
 {

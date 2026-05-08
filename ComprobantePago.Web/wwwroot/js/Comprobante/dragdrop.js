@@ -74,7 +74,7 @@ function validarXmlSunat(archivo) {
 
     CorporativoCore.showLoading();
     $.ajax({
-        url: '/Comprobante/ValidarXmlSunat',
+        url: BASE_URL+'/Comprobante/ValidarXmlSunat',
         type: 'POST',
         data: formData,
         processData: false,
@@ -107,7 +107,7 @@ function validarZipSunat(archivo) {
 
     CorporativoCore.showLoading();
     $.ajax({
-        url: '/Comprobante/ValidarZipSunat',
+        url: BASE_URL+'/Comprobante/ValidarZipSunat',
         type: 'POST',
         data: formData,
         processData: false,
@@ -182,7 +182,7 @@ function _subirDocumentoConFolio(archivo, folio, subTipo) {
 
     CorporativoCore.showLoading();
     $.ajax({
-        url: '/Comprobante/SubirDocumentos',
+        url: BASE_URL+'/Comprobante/SubirDocumentos',
         type: 'POST',
         data: formData,
         processData: false,
@@ -229,7 +229,7 @@ function eliminarDocumento(idDocumento) {
 
         CorporativoCore.showLoading();
         $.ajax({
-            url: '/Comprobante/EliminarDocumento',
+            url: BASE_URL+'/Comprobante/EliminarDocumento',
             type: 'POST',
             data: JSON.stringify(idDocumento),
             contentType: 'application/json',
@@ -266,7 +266,7 @@ function eliminarDocumento(idDocumento) {
 function cargarDocumentosElectronicos(folio) {
     if (!folio) return;
     $.ajax({
-        url: '/Comprobante/DocumentosElectronicos',
+        url: BASE_URL+'/Comprobante/DocumentosElectronicos',
         type: 'GET',
         data: { folio: folio },
         success: function (docs) {
@@ -332,7 +332,7 @@ function renderizarPanelDerecho(subTipo, docs) {
                     <i class="bi ${icono} fs-1" style="color:${colorIcono}"></i>
                 </div>
                 <div class="mt-3 d-flex gap-2">
-                    <a href="/Comprobante/DescargarDocumento?id=${doc.idDocumento}"
+                    <a href="${BASE_URL}/Comprobante/DescargarDocumento?id=${doc.idDocumento}"
                        class="btn btn-success btn-sm" target="_blank">
                         <i class="bi bi-download"></i> Descargar
                     </a>

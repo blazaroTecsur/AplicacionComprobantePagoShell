@@ -54,7 +54,7 @@ function cargarCombos() {
 }
 
 function cargarTipoDocumento() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerTiposDocumento',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerTiposDocumento',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(t =>
@@ -64,7 +64,7 @@ function cargarTipoDocumento() {
 }
 
 function cargarTipoSunat() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerTiposSunat',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerTiposSunat',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(t =>
@@ -74,7 +74,7 @@ function cargarTipoSunat() {
 }
 
 function cargarMoneda() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerMonedas',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerMonedas',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(m =>
@@ -84,7 +84,7 @@ function cargarMoneda() {
 }
 
 function cargarLugarPago() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerLugaresPago',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerLugaresPago',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(l =>
@@ -94,7 +94,7 @@ function cargarLugarPago() {
 }
 
 function cargarTipoDetraccion() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerTiposDetraccion',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerTiposDetraccion',
         function (data) {
             const combo = $('#ddlTipoDetraccion');
             combo.empty().append(
@@ -110,7 +110,7 @@ function cargarTipoDetraccion() {
 }
 
 function cargarTipoDocumentoAsociado() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerTiposDocumento',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerTiposDocumento',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(t =>
@@ -122,7 +122,7 @@ function cargarTipoDocumentoAsociado() {
 // ── Cargar comprobante existente ──────────────
 function cargarComprobante(folio) {
     CorporativoQuery.ajaxGet(
-        `/Comprobante/ObtenerDetalle?folio=${folio}`,
+        BASE_URL+`/Comprobante/ObtenerDetalle?folio=${folio}`,
         function (data) {
             if (!data) {
                 CorporativoCore.notificarError(
@@ -372,7 +372,7 @@ function guardarComprobante() {
     }
 
     CorporativoQuery.ajaxPost(
-        '/Comprobante/Guardar',
+        BASE_URL+'/Comprobante/Guardar',
         { comprobante: obtenerDatosCabecera() },
         function (response) {
             if (response.exito) {
@@ -647,7 +647,7 @@ function obtenerParametroUrl(nombre) {
 
 // ── Buscar empleado (modal) ───────────────────
 function buscarEmpleado() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerEmpleados',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerEmpleados',
         function (data) {
             if (!data || data.length === 0) {
                 CorporativoCore.notificarInfo('No hay empleados disponibles.');
@@ -712,7 +712,7 @@ function bindEventos() {
     $('#btnAtras').on('click', async function () {
         const ok = await CorporativoCore.confirmar(
             '¿Desea salir sin guardar?');
-        if (ok) window.location.href = '/Comprobante/Index';
+        if (ok) window.location.href = BASE_URL+'/Comprobante/Index';
     });
 
     // Anular
@@ -841,7 +841,7 @@ function bindEventos() {
     $('#btnImprimirComprobante').on('click', function () {
         const folio = $('#hdnFolio').val();
         if (!folio) return;
-        window.open(`/Comprobante/ObtenerPdf?folio=${folio}&descargar=true`, '_blank');
+        window.open(BASE_URL+`/Comprobante/ObtenerPdf?folio=${folio}&descargar=true`, '_blank');
     });
 
     // Vista previa PDF
@@ -850,13 +850,13 @@ function bindEventos() {
         if (folio) {
             $('a[href="#tabImpresion"]').tab('show');
             $('#pdfComprobante').attr('src',
-                `/Comprobante/ObtenerPdf?folio=${folio}`);
+                BASE_URL+`/Comprobante/ObtenerPdf?folio=${folio}`);
         }
     });
 
     // ── Proveedor ─────────────────────────────
     $('#btnBuscarProveedorPrincipal').on('click', function () {
-        CorporativoQuery.ajaxGet('/Comprobante/ObtenerProveedores',
+        CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerProveedores',
             function (data) {
                 if (!data || data.length === 0) {
                     CorporativoCore.notificarInfo('No hay proveedores disponibles.');
@@ -937,7 +937,7 @@ function _accionComprobante(url, estadoDestino, mensajeExito, redirigir = false)
             if (response.exito) {
                 if (redirigir) {
                     CorporativoCore.notificarExito(mensajeExito);
-                    setTimeout(() => window.location.href = '/Comprobante/Index', 1500);
+                    setTimeout(() => window.location.href = BASE_URL+'/Comprobante/Index', 1500);
                 } else {
                     mostrarBotonesSegunEstado(estadoDestino);
                     CorporativoCore.notificarExito(mensajeExito);
@@ -950,23 +950,23 @@ function _accionComprobante(url, estadoDestino, mensajeExito, redirigir = false)
 }
 
 function enviarComprobante() {
-    _accionComprobante('/Comprobante/Enviar', 'ENVIADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Enviar', 'ENVIADO',
         'Comprobante enviado correctamente.', true);
 }
 function firmarComprobante() {
-    _accionComprobante('/Comprobante/Firmar', 'AUTORIZADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Firmar', 'AUTORIZADO',
         'Comprobante autorizado correctamente.', true);
 }
 function aprobarComprobante() {
-    _accionComprobante('/Comprobante/Aprobar', 'APROBADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Aprobar', 'APROBADO',
         'Comprobante aprobado correctamente.', true);
 }
 function anularComprobante() {
-    _accionComprobante('/Comprobante/Anular', 'ANULADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Anular', 'ANULADO',
         'Comprobante anulado correctamente.', true);
 }
 function derivarComprobante() {
-    _accionComprobante('/Comprobante/Derivar', 'REGISTRADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Derivar', 'REGISTRADO',
         'Comprobante derivado correctamente.');
 }
 
@@ -1004,7 +1004,7 @@ function _subirFormData(url, formData, mensajeExito, mensajeError) {
 function subirArchivoSunat(archivo) {
     const fd = new FormData();
     fd.append('file', archivo);
-    _subirFormData('/Comprobante/ValidarSunat', fd,
+    _subirFormData(BASE_URL+'/Comprobante/ValidarSunat', fd,
         'Validación SUNAT completada.',
         'Error al procesar el archivo SUNAT.');
 }
@@ -1012,7 +1012,7 @@ function subirArchivoSunat(archivo) {
 function subirImputacionMasiva(archivo) {
     const fd = new FormData();
     fd.append('file', archivo);
-    _subirFormData('/Comprobante/CargarImputacionMasiva', fd,
+    _subirFormData(BASE_URL+'/Comprobante/CargarImputacionMasiva', fd,
         'Imputación cargada correctamente.',
         'Error al cargar el archivo de imputación.');
 }

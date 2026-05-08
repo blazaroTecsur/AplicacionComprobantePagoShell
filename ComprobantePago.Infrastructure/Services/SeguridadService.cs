@@ -1,6 +1,6 @@
 ﻿using ComprobantePago.Application.DTOs.Response;
 using ComprobantePago.Application.DTOs.Responses;
-using ComprobantePago.Application.Services;
+using ComprobantePago.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -40,7 +40,7 @@ namespace ComprobantePago.Infrastructure.Services
             if (apiResponse == null)
                 throw new NotFoundException("PERMISOS");
             if (!apiResponse.Success)
-                throw new BusinessException(StatusCodes.Status400BadRequest.ToString(), apiResponse.Error?.UserMessage);
+                throw new BusinessException(StatusCodes.Status400BadRequest.ToString(), apiResponse.Error?.UserMessage ?? "Error al obtener permisos.");
 
             return apiResponse.Data;
         }
