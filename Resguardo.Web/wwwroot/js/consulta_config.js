@@ -19,7 +19,7 @@ var fncConsulta = {
             fncConsulta.buscarConfiguracion();
         });
         $("#consulta_btnCopiar").click(function (e) {      
-            $("#modalContainer").load(BASE_URL + "/LimiteGestionar/Copiar", function () {
+            $("#modalContainer").load(BASE_URL + "/LimiteVisualizar/Copiar", function () {
                 fncConfig.init();
             });            
         });

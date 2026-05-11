@@ -12,6 +12,7 @@
 
 	<ItemGroup>
 		<None Include="Templates\EditarSolicitud.html" CopyToOutputDirectory="Always" />
+		<None Include="Templates\AmpliarServicio.html" CopyToOutputDirectory="Always" />
 	</ItemGroup>
 
 	<ItemGroup>

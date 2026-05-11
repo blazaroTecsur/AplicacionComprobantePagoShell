@@ -18,9 +18,9 @@ namespace Resguardo.Application.Commands.CopiarConfig
         }
         public async Task<bool> Ejecutar(CopiarConfigCommand formulario)
         {
-            var configs = await _unidadTrabajo.ConfigRepositorio.Listar(formulario.FechaOrigen);
+            var configOrigen = await _unidadTrabajo.ConfigRepositorio.Listar(formulario.FechaOrigen);
 
-            if (configs is null || configs.Count() == 0)
+            if (configOrigen is null || configOrigen.Count() == 0)
                 throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
                         $"No existe una configuración con fecha de {formulario.FechaOrigen.ToString("dd/MM/yyyy")}");
             else if (DateOnly.FromDateTime(DateTime.Now.Date) > formulario.FechaDestino)
@@ -30,13 +30,22 @@ namespace Resguardo.Application.Commands.CopiarConfig
                 throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
                         $"Las fechas no deben ser iguales");
 
-            foreach (var config in configs)
+            var configDestino = await _unidadTrabajo.ConfigRepositorio.Listar(formulario.FechaDestino);
+            bool existeConfig = false;
+            foreach (var config in configOrigen)
             {
+                if (configDestino is not null)
+                    existeConfig = configDestino.Where(x => x.IdTpoServicio == config.IdTpoServicio &&
+                                                            x.CodDpto == config.CodDpto).Any();
+                if (existeConfig)
+                    continue;
+
                 config.Id = 0;
                 config.Fecha = formulario.FechaDestino;
                 config.UsuarioReg = _usuario.Correo;
                 config.FechaReg = DateTime.Now;
                 await _unidadTrabajo.ConfigRepositorio.Insertar(config);
+                existeConfig = false;
             }
             await _unidadTrabajo.SaveChangesAsync();
 

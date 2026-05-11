@@ -11,8 +11,7 @@ public partial class DBContexto : DbContext
     }
     public DBContexto(DbContextOptions<DBContexto> options) : base(options)
     {
-    }
-    public virtual DbSet<Aprobador> Aprobador { get; set; }
+    }    
     public virtual DbSet<Limite> Config { get; set; }    
     public virtual DbSet<Efectivo> Efectivo { get; set; }
     public virtual DbSet<Generico> Generico { get; set; }

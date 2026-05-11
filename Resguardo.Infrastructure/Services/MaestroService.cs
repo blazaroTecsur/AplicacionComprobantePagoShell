@@ -26,7 +26,7 @@ namespace Resguardo.Infrastructure.Services
                 {
                     CodCapataz = $"CAP{i.ToString().PadLeft(3, '0')}",
                     DniCapataz = "12345678",
-                    NomCapataz = "Juan Pérez"
+                    NomCapataz = $"Juan Pérez {i.ToString().PadLeft(3, '0')}"
                 });
             }
 
