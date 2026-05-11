@@ -40,7 +40,7 @@ namespace ComprobantePago.Web.Controllers
 
         // ── Guardar ──────────────────────────────────────────────
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> Guardar([FromBody] RegistrarComprobanteCommand command)
@@ -59,7 +59,7 @@ namespace ComprobantePago.Web.Controllers
 
         // ── Enviar ───────────────────────────────────────────────
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.ENVIAR")]
         public async Task<IActionResult> Enviar([FromBody] EnviarComprobanteCommand command)
@@ -73,7 +73,7 @@ namespace ComprobantePago.Web.Controllers
 
         // ── Anular ───────────────────────────────────────────────
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.ANULAR")]
         public async Task<IActionResult> Anular([FromBody] AnularComprobanteCommand command)
@@ -87,7 +87,7 @@ namespace ComprobantePago.Web.Controllers
 
         // ── Imputaciones ─────────────────────────────────────────
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> AgregarImputacion([FromBody] AgregarImputacionCommand command)
@@ -104,7 +104,7 @@ namespace ComprobantePago.Web.Controllers
             return Ok(new { exito = true, imputacion });
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> EditarImputacion([FromBody] EditarImputacionCommand command)
@@ -121,7 +121,7 @@ namespace ComprobantePago.Web.Controllers
             return Ok(new { exito = true, imputacion });
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> EliminarImputacion([FromBody] EliminarImputacionCommand command)
@@ -130,7 +130,7 @@ namespace ComprobantePago.Web.Controllers
             return Ok(BaseResponse.Ok());
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> CargarImputacionMasiva(IFormFile file)
@@ -141,7 +141,7 @@ namespace ComprobantePago.Web.Controllers
 
         // ── Documentos adjuntos ──────────────────────────────────
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> SubirDocumentos(
@@ -168,7 +168,7 @@ namespace ComprobantePago.Web.Controllers
             return Ok(new { exito = true, documentos = docs });
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> EliminarDocumento([FromBody] int id)
@@ -179,7 +179,7 @@ namespace ComprobantePago.Web.Controllers
 
         // ── Validación SUNAT ─────────────────────────────────────
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> ValidarXmlSunat(IFormFile archivo)
@@ -189,7 +189,7 @@ namespace ComprobantePago.Web.Controllers
             return Ok(await _repository.ValidarXmlSunatAsync(archivo));
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> ValidarPdfSunat(IFormFile archivo)
@@ -199,7 +199,7 @@ namespace ComprobantePago.Web.Controllers
             return Ok(await _repository.ValidarPdfSunatAsync(archivo));
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> ValidarZipSunat(IFormFile archivo)
