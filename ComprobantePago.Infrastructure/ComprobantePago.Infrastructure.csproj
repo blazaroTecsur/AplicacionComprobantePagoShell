@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ComprobantePago.Application\ComprobantePago.Application.csproj" />
     <ProjectReference Include="..\ComprobantePago.Domain\ComprobantePago.Domain.csproj" />
+    <ProjectReference Include="..\Infor.Infrastructure\Infor.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
