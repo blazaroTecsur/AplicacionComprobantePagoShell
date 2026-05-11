@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ComprobantePago.Domain\ComprobantePago.Domain.csproj" />
+    <ProjectReference Include="..\Seguridad.Abstractions\Seguridad.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

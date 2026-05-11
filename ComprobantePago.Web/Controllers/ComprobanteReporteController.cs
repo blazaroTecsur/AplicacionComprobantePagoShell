@@ -1,4 +1,4 @@
-using ComprobantePago.Web.Authorization;
+using Seguridad.Infrastructure.Handler.Authorization;
 using ComprobantePago.Application.Interfaces.QueryServices;
 using ComprobantePago.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;

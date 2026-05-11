@@ -12,14 +12,10 @@ using ComprobantePago.Infrastructure.QueryServices;
 using ComprobantePago.Infrastructure.Repositories;
 using ComprobantePago.Infrastructure.Services;
 using ComprobantePago.Infrastructure.Services.Maestros;
-using ComprobantePago.Web.Authorization;
-using ComprobantePago.Web.Handler;
 using ComprobantePago.Web.Middlewares;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
+using Seguridad.Infrastructure.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
@@ -33,30 +29,21 @@ Log.Logger = new LoggerConfiguration()
         LogEventLevel.Warning)
     .Enrich.FromLogContext()
     .Enrich.WithMachineName()
-
-    // Consola: texto legible para desarrollo
     .WriteTo.Console(
         outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}] [{CorrelationId}] {UserId} | {Message:lj}{NewLine}{Exception}")
-
-    // Archivo texto: historial legible en producción
     .WriteTo.File(
         path: "logs/comprobante-.log",
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 30,
         outputTemplate:
         "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{CorrelationId}] {UserId} | {Message:lj}{NewLine}{Exception}")
-
-    // Archivo JSON estructurado: consumible por sistemas de observabilidad
-    // (Seq, Elastic, Splunk, etc.). Incluye RequestId, CorrelationId, UserId automáticamente.
     .WriteTo.File(
         formatter: new CompactJsonFormatter(),
         path: "logs/comprobante-json-.log",
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 30,
         restrictedToMinimumLevel: LogEventLevel.Information)
-
-    // Archivo JSON solo para auditoría (filtro por propiedad AuditLog=true)
     .WriteTo.Logger(lc => lc
         .Filter.ByIncludingOnly(e =>
             e.Properties.ContainsKey("AuditLog") &&
@@ -66,7 +53,6 @@ Log.Logger = new LoggerConfiguration()
             path: "logs/audit-.log",
             rollingInterval: RollingInterval.Day,
             retainedFileCountLimit: 90))
-
     .CreateLogger();
 
 try
@@ -119,8 +105,6 @@ try
         .ConfigurePrimaryHttpMessageHandler(() =>
         {
             var handler = new HttpClientHandler { UseProxy = false };
-            // Omitir validación SSL solo en desarrollo (SUNAT Beta usa cert autofirmado).
-            // En producción se valida el certificado normalmente.
             if (builder.Environment.IsDevelopment())
             {
                 handler.ServerCertificateCustomValidationCallback =
@@ -157,28 +141,12 @@ try
         builder.Services.AddScoped<ICuentaContableService, DbCuentaContableService>();
     }
 
-    // ── Autenticación interna (headers del shell/reverse proxy) ──────────────
-    builder.Services.AddAuthentication("Internal")
-        .AddScheme<AuthenticationSchemeOptions, InternalAuthHandler>("Internal", null);
-
-    // ── Autorización basada en permisos ───────────────────────────────────────
-    builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
-    builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
-    builder.Services.AddScoped<IClaimsTransformation, PermisosClaimsTransformation>();
-    builder.Services.AddAuthorization();
-
-    // ── Cache en memoria (requerido por PermisosClaimsTransformation) ─────────
+    // ── Seguridad: autenticación, autorización y permisos ────────────────────
     builder.Services.AddMemoryCache();
-
-    // ── MSAL: token de cliente para llamar a la API de seguridad ─────────────
-    builder.Services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
-    builder.Services.AddSingleton<TokenSeguridadService>();
-    builder.Services.AddHttpClient<ISeguridadService, SeguridadService>();
-
-    // ── HttpContextAccessor + UsuarioContexto ─────────────────────────────────
     builder.Services.AddHttpContextAccessor();
-    builder.Services.AddScoped<IUsuarioContexto, UsuarioContexto>();
+    builder.Services.AddSeguridad(builder.Configuration);
 
+    // ── Infor / Syteline ──────────────────────────────────────────────────────
     builder.Services.Configure<InforSettings>(
         builder.Configuration.GetSection(InforSettings.Section));
 
@@ -194,6 +162,7 @@ try
     builder.Services.AddHttpClient<ISytelineIdoService, SytelineIdoService>();
     builder.Services.AddScoped<ISytelineEnvioService, SytelineEnvioService>();
 
+    // ── Servicios de dominio ──────────────────────────────────────────────────
     builder.Services.AddScoped<XmlComprobanteService>();
     builder.Services.AddScoped<PdfComprobanteService>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -258,7 +227,7 @@ try
 
     app.MapControllerRoute(
         name: "default",
-        pattern: "{controller=Comprobante}/{action=Index}/{id?}");
+        pattern: "{controller=ComprobanteConsultar}/{action=Index}/{id?}");
 
     app.Run();
 }

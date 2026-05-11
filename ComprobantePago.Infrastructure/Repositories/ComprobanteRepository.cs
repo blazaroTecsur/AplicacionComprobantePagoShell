@@ -5,6 +5,7 @@ using ComprobantePago.Application.Exceptions;
 using ComprobantePago.Application.Interfaces;
 using ComprobantePago.Application.Interfaces.Repositories;
 using ComprobantePago.Application.Interfaces.Services;
+using Seguridad.Abstractions.Interfaces;
 using ComprobantePago.Domain.Entities;
 using ComprobantePago.Infrastructure.Persistence;
 using ComprobantePago.Infrastructure.Services;

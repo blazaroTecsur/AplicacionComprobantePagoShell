@@ -13,7 +13,6 @@
       Microsoft.Identity.Web incluye JwtBearer internamente y gestiona la
       validación OIDC/Azure AD: firma, expiración, audiencia, emisor y nonce.
     -->
-	<PackageReference Include="Microsoft.Identity.Client" Version="4.79.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.71" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
@@ -27,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ComprobantePago.Application\ComprobantePago.Application.csproj" />
     <ProjectReference Include="..\ComprobantePago.Infrastructure\ComprobantePago.Infrastructure.csproj" />
+    <ProjectReference Include="..\Seguridad.Infrastructure\Seguridad.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-using ComprobantePago.Web.Authorization;
+using Seguridad.Infrastructure.Handler.Authorization;
 using ComprobantePago.Application.Commands.Comprobante;
 using ComprobantePago.Application.Commands.Imputacion;
 using ComprobantePago.Application.Common;
