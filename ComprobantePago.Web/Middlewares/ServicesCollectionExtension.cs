@@ -5,6 +5,7 @@ using ComprobantePago.Application.Interfaces.Repositories;
 using ComprobantePago.Application.Interfaces.Services;
 using ComprobantePago.Application.Interfaces.Services.Maestros;
 using ComprobantePago.Application.Mapping;
+using ComprobantePago.Application.Settings;
 using ComprobantePago.Application.Validations;
 using ComprobantePago.Infrastructure.Persistence;
 using ComprobantePago.Infrastructure.QueryServices;

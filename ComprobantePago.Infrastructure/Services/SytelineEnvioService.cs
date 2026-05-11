@@ -1,4 +1,6 @@
+using ComprobantePago.Application.DTOs.Infor;
 using ComprobantePago.Application.DTOs.Responses;
+using ComprobantePago.Application.Interfaces.Services;
 using Infor.Abstractions.DTOs;
 using Infor.Abstractions.Interfaces;
 using Infor.Infrastructure.Services;
