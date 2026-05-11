@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ComprobantePago.Web.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Permission("COMP.VER")]
     [Route("Comprobante")]
     public class ComprobanteConsultarController : Controller
