@@ -129,8 +129,8 @@ namespace Resguardo.Web.Middlewares
             services.AddScoped<ReporteSolicitudHandler>();
             services.AddScoped<ReporteEfectivoHandler>();
             services.AddScoped<ObtenerSolicitudFolioHandler>();
-            services.AddInfor(config);
             services.AddSeguridad(config);
+            services.AddInfor(config);            
             services.AddScoped<IInforService, InforService>();
             services.AddHttpClient<IMaestroService, MaestroService>();
             services.AddMemoryCache();

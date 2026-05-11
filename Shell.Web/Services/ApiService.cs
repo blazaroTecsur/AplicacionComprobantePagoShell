@@ -10,21 +10,26 @@ namespace Shell.Web.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<ApiService> _logger;
 
         public ApiService(
             IHttpContextAccessor httpContextAccessor,
             IConfiguration configuration,
-            HttpClient httpClient)
+            HttpClient httpClient,
+            ILogger<ApiService> logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public async Task<UsuarioViewModel> ObtenerUsuario()
         {
             var context = _httpContextAccessor.HttpContext;
             var token = await context.GetTokenAsync("access_token");
+
+            _logger.LogInformation($"token: {token}");
 
             if (string.IsNullOrWhiteSpace(token))
                 throw new Exception("No se encontró access_token");

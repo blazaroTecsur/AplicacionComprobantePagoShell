@@ -10,8 +10,21 @@ namespace Notificacion.Infrastructure.DependencyInjection
         public static IServiceCollection AddInfor(this IServiceCollection services, IConfiguration config)
         {
             services.Configure<InforSettings>(config.GetSection("ApiSettings:Infor"));
-            services.AddScoped<IInforTokenService, InforTokenService>();
-            services.AddScoped<IInforIdoService, InforIdoService>();
+            services.AddHttpClient<IInforTokenService, InforTokenService>()
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    UseProxy = false,
+                    Proxy = null
+                });
+            services.AddHttpClient<IInforIdoService, InforIdoService>()
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    UseProxy = false,
+                    Proxy = null
+                });
+
             return services;
         }
     }
