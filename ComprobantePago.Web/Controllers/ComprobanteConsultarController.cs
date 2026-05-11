@@ -36,8 +36,10 @@ namespace ComprobantePago.Web.Controllers
 
         // ── Vistas MVC ──────────────────────────────────────────
 
+        [HttpGet("Index")]
         public IActionResult Index() => View();
 
+        [HttpGet("Detalle")]
         public IActionResult Detalle() => View();
 
         // ── Combos ──────────────────────────────────────────────
