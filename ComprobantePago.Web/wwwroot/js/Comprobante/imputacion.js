@@ -85,7 +85,7 @@ function inicializarTablaImputacion() {
 
 // ── Cargar imputaciones del comprobante ───────
 function cargarImputaciones(folio) {
-    CorporativoQuery.ajaxGet(`/Comprobante/ObtenerImputaciones?folio=${folio}`, function (data) {
+    CorporativoQuery.ajaxGet(BASE_URL+`/Comprobante/ObtenerImputaciones?folio=${folio}`, function (data) {
         listaImputaciones = data;
         refrescarTabla();
         calcularTotales();
@@ -174,7 +174,7 @@ function agregarImputacion() {
 
     const datos = obtenerDatosFormulario();
 
-    CorporativoQuery.ajaxPost('/Comprobante/AgregarImputacion',
+    CorporativoQuery.ajaxPost(BASE_URL+'/Comprobante/AgregarImputacion',
         { imputacion: datos },
         function (response) {
             if (response.exito) {
@@ -196,7 +196,7 @@ function guardarEdicionImputacion() {
 
     const datos = obtenerDatosFormulario();
 
-    CorporativoQuery.ajaxPost('/Comprobante/EditarImputacion',
+    CorporativoQuery.ajaxPost(BASE_URL+'/Comprobante/EditarImputacion',
         { imputacion: datos },
         function (response) {
             if (response.exito) {
@@ -222,7 +222,7 @@ async function eliminarImputacion(secuencia) {
 
     const folio = $('#hdnFolio').val();
 
-    CorporativoQuery.ajaxPost('/Comprobante/EliminarImputacion',
+    CorporativoQuery.ajaxPost(BASE_URL+'/Comprobante/EliminarImputacion',
         { folio, secuencia },
         function (response) {
             if (response.exito) {
@@ -404,7 +404,7 @@ function procesarImputacionMasiva(archivo) {
 
     CorporativoCore.showLoading();
     $.ajax({
-        url: '/Comprobante/CargarImputacionMasiva',
+        url: BASE_URL+'/Comprobante/CargarImputacionMasiva',
         type: 'POST',
         data: formData,
         processData: false,
@@ -436,7 +436,7 @@ function procesarImputacionMasiva(archivo) {
 
 // ── Descargar plantilla ───────────────────────
 function descargarPlantillaImputacion() {
-    window.location.href = '/Comprobante/DescargarPlantillaImputacion';
+    window.location.href = BASE_URL+'/Comprobante/DescargarPlantillaImputacion';
 }
 
 // ════════════════════════════════════════════
@@ -455,7 +455,7 @@ function ocultarCodigosUnidad(campo) {
 }
 
 function buscarCuentaContable() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerCuentasContables',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerCuentasContables',
         function (data) {
             if (!data || data.length === 0) {
                 CorporativoCore.notificarInfo('No hay cuentas contables disponibles.');
@@ -469,7 +469,7 @@ function buscarCuentaContable() {
 function buscarCodigoUnidad(campo, unidad, inputId) {
     const codigoOrigen = $('#txtCuentaContable').val();
     CorporativoQuery.ajaxGet(
-        `/Comprobante/ObtenerCodigosUnidad?campo=${campo}&unidad=${unidad}&codigo=${codigoOrigen}`,
+        BASE_URL+`/Comprobante/ObtenerCodigosUnidad?campo=${campo}&unidad=${unidad}&codigo=${codigoOrigen}`,
         function (data) {
             if (!data || data.length === 0) {
                 CorporativoCore.notificarInfo('No hay códigos de unidad disponibles.');

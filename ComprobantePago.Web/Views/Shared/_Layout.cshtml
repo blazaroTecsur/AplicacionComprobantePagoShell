@@ -1,6 +1,8 @@
-﻿@{
+﻿@using System.Security.Claims
+@{
     string Web = "Registro de Comprobantes de Pago";
 }
+<base href="~/">
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,7 +28,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="nav-link" asp-controller="Comprobante" asp-action="Index">
+                <a class="nav-link" asp-controller="ComprobanteConsultar" asp-action="Index">
                     <i class="bi bi-file-earmark-text"></i> @Web
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -37,7 +39,7 @@
                 @*<div class="collapse navbar-collapse">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Comprobante" asp-action="Index">
+                            <a class="nav-link" asp-controller="ComprobanteConsultar" asp-action="Index">
                                 <i class="bi bi-receipt"></i> Comprobantes
                             </a>
                         </li>
@@ -88,6 +90,14 @@
     <script src="~/js/global.js" asp-append-version="true"></script>
 
     <!-- Scripts por vista -->
+    <script type="text/javascript">
+        const BASE_URL = '@Url.Content("~")';
+        window.ROLES = @Html.Raw(Json.Serialize(
+                        User.Claims
+                        .Where(c => c.Type == "permission")
+                        .Select(c => c.Value)
+                        ));
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
