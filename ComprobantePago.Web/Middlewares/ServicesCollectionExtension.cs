@@ -5,7 +5,6 @@ using ComprobantePago.Application.Interfaces.Repositories;
 using ComprobantePago.Application.Interfaces.Services;
 using ComprobantePago.Application.Interfaces.Services.Maestros;
 using ComprobantePago.Application.Mapping;
-using ComprobantePago.Application.Settings;
 using ComprobantePago.Application.Validations;
 using ComprobantePago.Infrastructure.Persistence;
 using ComprobantePago.Infrastructure.QueryServices;
@@ -14,6 +13,7 @@ using ComprobantePago.Infrastructure.Services;
 using ComprobantePago.Infrastructure.Services.Maestros;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Notificacion.Infrastructure.DependencyInjection;
 using Seguridad.Infrastructure.DependencyInjection;
 using Serilog;
 using Serilog.Events;
@@ -99,7 +99,6 @@ namespace ComprobantePago.Web.Middlewares
             services.Configure<SunatSettings>(config.GetSection("Sunat"));
             services.Configure<EmpresaSettings>(config.GetSection(EmpresaSettings.Section));
             services.Configure<ApiMaestrosSettings>(config.GetSection(ApiMaestrosSettings.Section));
-            services.Configure<InforSettings>(config.GetSection(InforSettings.Section));
 
             // HttpClient SUNAT
             services.AddHttpClient<ISunatService, SunatService>()
@@ -136,13 +135,7 @@ namespace ComprobantePago.Web.Middlewares
             services.AddSeguridad(config);
 
             // Infor / Syteline
-            services.AddHttpClient(nameof(InforTokenService));
-            services.AddSingleton<IInforTokenService>(sp =>
-                new InforTokenService(
-                    sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(InforTokenService)),
-                    sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<InforSettings>>(),
-                    sp.GetRequiredService<ILogger<InforTokenService>>()));
-            services.AddHttpClient<ISytelineIdoService, SytelineIdoService>();
+            services.AddInfor(config);
             services.AddScoped<ISytelineEnvioService, SytelineEnvioService>();
 
             // Servicios de dominio

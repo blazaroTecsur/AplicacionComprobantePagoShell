@@ -1,7 +1,7 @@
-using ComprobantePago.Application.DTOs.Infor;
 using ComprobantePago.Application.DTOs.Responses;
-using ComprobantePago.Application.Interfaces.Services;
-using ComprobantePago.Application.Settings;
+using Infor.Abstractions.DTOs;
+using Infor.Abstractions.Interfaces;
+using Infor.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
@@ -13,12 +13,12 @@ namespace ComprobantePago.Infrastructure.Services
     /// </summary>
     public sealed class SytelineEnvioService : ISytelineEnvioService
     {
-        private readonly ISytelineIdoService             _ido;
+        private readonly IInforIdoService                _ido;
         private readonly InforSettings                   _settings;
         private readonly ILogger<SytelineEnvioService>  _logger;
 
         public SytelineEnvioService(
-            ISytelineIdoService            ido,
+            IInforIdoService               ido,
             IOptions<InforSettings>        settings,
             ILogger<SytelineEnvioService>  logger)
         {
