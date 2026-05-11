@@ -27,7 +27,7 @@ namespace ComprobantePago.Web.Controllers
             _logger          = logger;
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [Permission("COMP.RPT")]
         public async Task<IActionResult> ExportarDistribucionSyteline(
             [FromForm] List<string> folios,
@@ -50,7 +50,7 @@ namespace ComprobantePago.Web.Controllers
                 $"Distribucion_Syteline_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [Permission("COMP.RPT")]
         public async Task<IActionResult> ExportarCabeceraSyteline(
             [FromForm] List<string> folios,

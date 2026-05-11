@@ -28,7 +28,7 @@ namespace ComprobantePago.Web.Controllers
             _logger          = logger;
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Firmar([FromBody] FirmarComprobanteCommand command)
         {
@@ -39,7 +39,7 @@ namespace ComprobantePago.Web.Controllers
             return Ok(BaseResponse.Ok());
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Derivar([FromBody] DerivarComprobanteCommand command)
         {

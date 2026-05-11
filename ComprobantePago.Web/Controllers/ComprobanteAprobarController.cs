@@ -36,7 +36,7 @@ namespace ComprobantePago.Web.Controllers
             _logger          = logger;
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Aprobar([FromBody] AprobarComprobanteCommand command)
         {
@@ -47,7 +47,7 @@ namespace ComprobantePago.Web.Controllers
             return Ok(BaseResponse.Ok());
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EnviarCabeceraASyteline(
             [FromBody] List<string> folios,

@@ -44,49 +44,49 @@ namespace ComprobantePago.Web.Controllers
 
         // ── Combos ──────────────────────────────────────────────
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerTiposDocumento()
             => Ok(await _maestrosService.ObtenerTiposDocumentoAsync());
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerTiposSunat()
             => Ok(await _maestrosService.ObtenerTiposSunatAsync());
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerMonedas()
             => Ok(await _maestrosService.ObtenerMonedasAsync());
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerLugaresPago()
             => Ok(await _maestrosService.ObtenerLugaresPagoAsync());
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerTiposDetraccion()
             => Ok(await _maestrosService.ObtenerTiposDetraccionAsync());
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerTipos()
             => Ok(await _maestrosService.ObtenerTiposDocumentoAsync());
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerEstados()
             => Ok(await _maestrosService.ObtenerEstadosAsync());
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerEmpleados([FromQuery] string filtro = "")
             => Ok(await _maestrosService.ObtenerEmpleadosAsync(filtro));
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerProveedores([FromQuery] string filtro = "")
             => Ok(await _proveedorService.ObtenerProveedoresAsync(filtro));
 
         // ── Consultas comprobante ────────────────────────────────
 
-        [HttpPost]
+        [HttpPost("[action]")]
         public async Task<IActionResult> Buscar([FromBody] BuscarComprobanteDto filtros)
             => Ok(await _queryService.BuscarAsync(filtros));
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerDetalle([FromQuery] string folio)
         {
             var data = await _queryService.ObtenerDetalleAsync(folio);
@@ -95,7 +95,7 @@ namespace ComprobantePago.Web.Controllers
                 : Ok(data);
         }
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerPdf([FromQuery] string folio, [FromQuery] bool descargar = false)
         {
             var pdf = await _queryService.ObtenerPdfAsync(folio);
@@ -106,26 +106,26 @@ namespace ComprobantePago.Web.Controllers
                 : File(pdf, "application/pdf");
         }
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> DocumentosElectronicos([FromQuery] string folio)
             => Ok(await _queryService.ObtenerDocumentosElectronicosAsync(folio));
 
         // ── Imputaciones / catálogos lectura ─────────────────────
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerImputaciones([FromQuery] string folio)
             => Ok(await _queryService.ObtenerImputacionesAsync(folio));
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerCuentasContables([FromQuery] string filtro = "")
             => Ok(await _maestrosService.ObtenerCuentasContablesAsync(filtro));
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> ObtenerCodigosUnidad(
             string campo, int unidad, string codigo, string filtro = "")
             => Ok(await _maestrosService.ObtenerCodigosUnidadAsync(campo, unidad, codigo, filtro));
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> DescargarPlantillaImputacion()
         {
             var archivo = await _queryService.ObtenerPlantillaImputacionAsync();
@@ -134,7 +134,7 @@ namespace ComprobantePago.Web.Controllers
                 "PlantillaImputacion.xlsx");
         }
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> DescargarDocumento([FromQuery] int id)
         {
             var doc = await _repository.DescargarDocumentoAsync(id);
