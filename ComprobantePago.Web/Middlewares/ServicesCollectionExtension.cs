@@ -25,6 +25,16 @@ namespace ComprobantePago.Web.Middlewares
 {
     public static class ServicesCollectionExtension
     {
+        public static WebApplicationBuilder AddSettings(this WebApplicationBuilder builder)
+        {
+            builder.Configuration
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
+            return builder;
+        }
+
         public static WebApplicationBuilder AddSeriLog(this WebApplicationBuilder builder)
         {
             Log.Logger = new LoggerConfiguration()
