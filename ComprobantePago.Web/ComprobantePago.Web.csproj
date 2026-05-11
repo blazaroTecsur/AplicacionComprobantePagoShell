@@ -32,7 +32,6 @@
 
   <ItemGroup>
     <Content Include="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="appsettings.Production.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
