@@ -12,20 +12,20 @@ namespace ComprobantePago.Web.Controllers
     [Authorize]
     [Permission("COMP.VER")]
     [Route("Comprobante")]
-    public class ComprobanteConsultarController : Controller
+    public class ComprobanteController : Controller
     {
         private readonly IComprobanteQueryService _queryService;
         private readonly IMaestrosQueryService    _maestrosService;
         private readonly IProveedorService        _proveedorService;
         private readonly IComprobanteRepository   _repository;
-        private readonly ILogger<ComprobanteConsultarController> _logger;
+        private readonly ILogger<ComprobanteController> _logger;
 
-        public ComprobanteConsultarController(
+        public ComprobanteController(
             IComprobanteQueryService queryService,
             IMaestrosQueryService   maestrosService,
             IProveedorService       proveedorService,
             IComprobanteRepository  repository,
-            ILogger<ComprobanteConsultarController> logger)
+            ILogger<ComprobanteController> logger)
         {
             _queryService     = queryService;
             _maestrosService  = maestrosService;
@@ -37,10 +37,10 @@ namespace ComprobantePago.Web.Controllers
         // ── Vistas MVC ──────────────────────────────────────────
 
         [HttpGet("Index")]
-        public IActionResult Index() => View("~/Views/Comprobante/Index.cshtml");
+        public IActionResult Index() => View();
 
         [HttpGet("Detalle")]
-        public IActionResult Detalle() => View("~/Views/Comprobante/Detalle.cshtml");
+        public IActionResult Detalle() => View();
 
         // ── Combos ──────────────────────────────────────────────
 

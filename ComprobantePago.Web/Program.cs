@@ -227,7 +227,7 @@ try
 
     app.MapControllerRoute(
         name: "default",
-        pattern: "{controller=ComprobanteConsultar}/{action=Index}/{id?}");
+        pattern: "{controller=Comprobante}/{action=Index}/{id?}");
 
     app.Run();
 }
