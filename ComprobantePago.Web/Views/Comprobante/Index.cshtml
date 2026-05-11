@@ -1,4 +1,10 @@
-﻿<div class="panel-contenedor">
+@{
+    bool puedeGuardar = User.HasClaim("permission", "COMP.GUARDAR");
+    bool puedeAprobar = User.HasClaim("permission", "COMP.APROBAR");
+    bool puedeReporte = User.HasClaim("permission", "COMP.RPT");
+}
+
+<div class="panel-contenedor">
 
     <!-- Header -->
     <div class="panel-principal">
@@ -36,25 +42,34 @@
                         id="index_btnBuscar">
                     <i class="bi bi-search"></i> Buscar
                 </button>
-                <button type="button" class="btn btn-primary btn-sm flex-fill justify-content-center"
-                        id="index_btnNuevo">
-                    <i class="bi bi-file-earmark-plus"></i> Nuevo
-                </button>
-                <button type="button" class="btn btn-info btn-sm flex-fill justify-content-center"
-                        id="index_btnEnviarSyteline" disabled
-                        title="Enviar cabecera al IDO SLAptrxs de Infor Syteline">
-                    <i class="bi bi-send"></i> Enviar a Syteline
-                </button>
-                <button type="button" class="btn btn-success btn-sm d-none"
-                        id="index_btnExportarCabecera"
-                        title="Exportar cabecera en Excel (respaldo)">
-                    <i class="bi bi-file-excel"></i> Excel Cabecera
-                </button>
-                <button type="button" class="btn btn-success btn-sm d-none"
-                        id="index_btnExportarImputacion"
-                        title="Exportar imputación en Excel (respaldo)">
-                    <i class="bi bi-file-excel"></i> Excel Imputación
-                </button>
+                @if (puedeGuardar)
+                {
+                    <button type="button" class="btn btn-primary btn-sm flex-fill justify-content-center"
+                            id="index_btnNuevo">
+                        <i class="bi bi-file-earmark-plus"></i> Nuevo
+                    </button>
+                }
+                @if (puedeAprobar)
+                {
+                    <button type="button" class="btn btn-info btn-sm flex-fill justify-content-center"
+                            id="index_btnEnviarSyteline" disabled
+                            title="Enviar cabecera al IDO SLAptrxs de Infor Syteline">
+                        <i class="bi bi-send"></i> Enviar a Syteline
+                    </button>
+                }
+                @if (puedeReporte)
+                {
+                    <button type="button" class="btn btn-success btn-sm d-none"
+                            id="index_btnExportarCabecera"
+                            title="Exportar cabecera en Excel (respaldo)">
+                        <i class="bi bi-file-excel"></i> Excel Cabecera
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm d-none"
+                            id="index_btnExportarImputacion"
+                            title="Exportar imputación en Excel (respaldo)">
+                        <i class="bi bi-file-excel"></i> Excel Imputación
+                    </button>
+                }
                 <span id="lblSeleccionados" class="badge bg-secondary d-none align-self-center"></span>
                 </div>
             </div>

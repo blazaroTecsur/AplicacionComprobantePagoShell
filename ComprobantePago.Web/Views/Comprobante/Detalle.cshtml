@@ -1,5 +1,11 @@
-﻿@{
+@{
     ViewData["Titulo"] = "Registro de Comprobantes de Pago";
+
+    bool puedeGuardar   = User.HasClaim("permission", "COMP.GUARDAR");
+    bool puedeEnviar    = User.HasClaim("permission", "COMP.ENVIAR");
+    bool puedeAutorizar = User.HasClaim("permission", "COMP.AUTORIZAR");
+    bool puedeAprobar   = User.HasClaim("permission", "COMP.APROBAR");
+    bool puedeAnular    = User.HasClaim("permission", "COMP.ANULAR");
 }
 
 <!-- Campos hidden de estado global -->
@@ -30,7 +36,7 @@
 <input type="hidden" id="hdnIdDocumentoFirma" />
 <input type="hidden" id="hdnIndImputableTodosCRs" />
 <input type="hidden" id="hdnHabilitaEditarMontos" value="N" />
-<input type="hidden" id="hdnHabSegAprob" value="N" />
+<input type="hidden" id="hdnHabSegAprob" value="@(puedeAprobar ? "S" : "N")" />
 <input type="hidden" id="hdnPerdida" value="1" />
 <input type="hidden" id="hdnMontoRedondeo" />
 <input type="hidden" id="hdnSentidoDocumento" />
@@ -93,27 +99,42 @@
 
     <!-- Barra de acciones -->
     <div class="barra-acciones" id="barraAcciones">
-        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnLimpiar">
-            <i class="bi bi-brush"></i> Limpiar
-        </button>
+        @if (puedeGuardar)
+        {
+            <button type="button" class="btn btn-secondary btn-sm d-none" id="btnLimpiar">
+                <i class="bi bi-brush"></i> Limpiar
+            </button>
+        }
         <button type="button" class="btn btn-secondary btn-sm d-none" id="btnLeerDetalle">
             <i class="bi bi-search"></i> Leer
         </button>
-        <button type="button" class="btn btn-primary btn-sm d-none" id="btnRegistrar">
-            <i class="bi bi-floppy"></i> Guardar
-        </button>
-        <button type="button" class="btn btn-primary btn-sm d-none" id="btnEnviar">
-            <i class="bi bi-check2-square"></i> Enviar
-        </button>
-        <button type="button" class="btn btn-primary btn-sm d-none" id="btnAutorizarDetalle">
-            <i class="bi bi-pen"></i> Firmar
-        </button>
-        <button type="button" class="btn btn-primary btn-sm d-none" id="btnAprobarDetalle">
-            <i class="bi bi-check-circle"></i> Aprobar
-        </button>
-        <button type="button" class="btn btn-primary btn-sm d-none" id="btnDerivar">
-            <i class="bi bi-arrow-right-circle"></i> Derivar
-        </button>
+        @if (puedeGuardar)
+        {
+            <button type="button" class="btn btn-primary btn-sm d-none" id="btnRegistrar">
+                <i class="bi bi-floppy"></i> Guardar
+            </button>
+        }
+        @if (puedeEnviar)
+        {
+            <button type="button" class="btn btn-primary btn-sm d-none" id="btnEnviar">
+                <i class="bi bi-check2-square"></i> Enviar
+            </button>
+        }
+        @if (puedeAutorizar)
+        {
+            <button type="button" class="btn btn-primary btn-sm d-none" id="btnAutorizarDetalle">
+                <i class="bi bi-pen"></i> Firmar
+            </button>
+            <button type="button" class="btn btn-primary btn-sm d-none" id="btnDerivar">
+                <i class="bi bi-arrow-right-circle"></i> Derivar
+            </button>
+        }
+        @if (puedeAprobar)
+        {
+            <button type="button" class="btn btn-primary btn-sm d-none" id="btnAprobarDetalle">
+                <i class="bi bi-check-circle"></i> Aprobar
+            </button>
+        }
         <button type="button" class="btn btn-secondary btn-sm d-none" id="btnImprimirComprobante">
             <i class="bi bi-file-pdf"></i> Descargar Imputación
         </button>
@@ -136,16 +157,22 @@
             <i class="bi bi-shield-check"></i> Validación SUNAT
         </button>
         <input type="file" id="inpFileValSunat" accept=".xlsx" style="display:none" />
-        <button type="button" class="btn btn-primary btn-sm d-none" id="btnModoImputacion">
-            <i class="bi bi-bookmark"></i> Modo Digitación
-        </button>
-        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnGenerarCargo">
-            <i class="bi bi-list-ul"></i> Generar Cargo
-        </button>
+        @if (puedeGuardar)
+        {
+            <button type="button" class="btn btn-primary btn-sm d-none" id="btnModoImputacion">
+                <i class="bi bi-bookmark"></i> Modo Digitación
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm d-none" id="btnGenerarCargo">
+                <i class="bi bi-list-ul"></i> Generar Cargo
+            </button>
+        }
         <span class="mx-1"></span>
-        <button type="button" class="btn btn-danger btn-sm d-none" id="btnAnular">
-            <i class="bi bi-ban"></i> Anular
-        </button>
+        @if (puedeAnular)
+        {
+            <button type="button" class="btn btn-danger btn-sm d-none" id="btnAnular">
+                <i class="bi bi-ban"></i> Anular
+            </button>
+        }
         <span class="mx-1"></span>
         <button type="button" class="btn btn-secondary btn-sm d-none" id="btnAtras">
             <i class="bi bi-arrow-counterclockwise"></i> Salir
@@ -192,19 +219,22 @@
             <!-- Tab 2: Imputación Contable -->
             <div class="tab-pane fade" id="tabImputacion">
 
-                <!-- Barra botones imputación -->
-                <div class="barra-imputacion d-none" id="barraOpcionesImputacion">
-                    <button type="button" class="btn btn-secondary btn-sm" id="btnLimpiarImputacion">
-                        <i class="bi bi-brush"></i> Limpiar Imputación
-                    </button>
-                    <input type="file" id="inpFile" accept=".xlsx" style="display:none" />
-                    <button type="button" class="btn btn-primary btn-sm" id="btnExplorar">
-                        <i class="bi bi-folder2-open"></i> Cargar Imputación Masiva
-                    </button>
-                    <button type="button" class="btn btn-primary btn-sm" id="btnDescargarPlantillaImputacion">
-                        <i class="bi bi-file-earmark-excel"></i> Descargar Plantilla
-                    </button>
-                </div>
+                @if (puedeGuardar)
+                {
+                    <!-- Barra botones imputación -->
+                    <div class="barra-imputacion d-none" id="barraOpcionesImputacion">
+                        <button type="button" class="btn btn-secondary btn-sm" id="btnLimpiarImputacion">
+                            <i class="bi bi-brush"></i> Limpiar Imputación
+                        </button>
+                        <input type="file" id="inpFile" accept=".xlsx" style="display:none" />
+                        <button type="button" class="btn btn-primary btn-sm" id="btnExplorar">
+                            <i class="bi bi-folder2-open"></i> Cargar Imputación Masiva
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm" id="btnDescargarPlantillaImputacion">
+                            <i class="bi bi-file-earmark-excel"></i> Descargar Plantilla
+                        </button>
+                    </div>
+                }
 
                 <!-- Tabla imputación -->
                 <div class="table-responsive mt-2">
@@ -249,95 +279,98 @@
                     </div>
                 </div>
 
-                <!-- Botones agregar/editar imputación -->
-                <div class="barra-imputacion mt-2 d-none" id="barraAccionesImputacion">
-                    <button type="button" class="btn btn-primary btn-sm" id="btnAgregarDetalle">
-                        <i class="bi bi-file-earmark-plus"></i> Nueva Imputación
-                    </button>
-                    <button type="button" class="btn btn-primary btn-sm d-none" id="btnAgregarNuevaImputacion">
-                        <i class="bi bi-plus-square"></i> Agregar
-                    </button>
-                    <button type="button" class="btn btn-danger btn-sm d-none" id="btnEliminarDetalle">
-                        <i class="bi bi-dash-square"></i> Eliminar Imputación
-                    </button>
-                    <button type="button" class="btn btn-primary btn-sm d-none" id="btnEditarDetalle">
-                        <i class="bi bi-floppy"></i> Guardar Imputación
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm d-none" id="btnActivoFijo">
-                        <i class="bi bi-display"></i> Activo Fijo
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm d-none" id="btnCancelarDetalle">
-                        <i class="bi bi-x-circle"></i> Cancelar
-                    </button>
-                </div>
-
-                <!-- Panel formulario nueva imputación -->
-                <div id="pnlDetalleImputacion" class="seccion-panel mt-3 d-none">
-                    <div class="seccion-header d-flex align-items-center gap-2">
-                        <strong>Detalle Imputación</strong>
-                        <span id="lblLineaImputacion" class="badge bg-info d-none"></span>
+                @if (puedeGuardar)
+                {
+                    <!-- Botones agregar/editar imputación -->
+                    <div class="barra-imputacion mt-2 d-none" id="barraAccionesImputacion">
+                        <button type="button" class="btn btn-primary btn-sm" id="btnAgregarDetalle">
+                            <i class="bi bi-file-earmark-plus"></i> Nueva Imputación
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm d-none" id="btnAgregarNuevaImputacion">
+                            <i class="bi bi-plus-square"></i> Agregar
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm d-none" id="btnEliminarDetalle">
+                            <i class="bi bi-dash-square"></i> Eliminar Imputación
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm d-none" id="btnEditarDetalle">
+                            <i class="bi bi-floppy"></i> Guardar Imputación
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnActivoFijo">
+                            <i class="bi bi-display"></i> Activo Fijo
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm d-none" id="btnCancelarDetalle">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </button>
                     </div>
-                    <div class="seccion-body">
-                        <input type="hidden" id="txtSecuencia" />
 
-                        <!-- Cuenta contable -->
-                        <div class="row g-2 mb-2">
-                            <div class="col-md-8">
-                                <label class="form-label">Cuenta</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" class="form-control" id="txtAliasCuenta" readonly placeholder="Alias" />
-                                    <input type="hidden" id="txtCuentaContable" />
-                                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarCuentaContable">
-                                        <i class="bi bi-search"></i>
-                                    </button>
-                                    <input type="text" class="form-control" id="txtDescripcionCuenta" readonly placeholder="Descripción" />
-                                </div>
-                                <div id="divCodigosUnidadCuenta" class="d-none mt-2">
-                                    <div class="row g-1">
-                                        <div class="col-md-4">
-                                            <label class="form-label">Cód. Unidad 1</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control" id="txtCodUnidad1Cuenta" />
-                                                <button class="btn btn-outline-secondary" type="button" id="btnBuscarCodUnidad1Cuenta"><i class="bi bi-search"></i></button>
+                    <!-- Panel formulario nueva imputación -->
+                    <div id="pnlDetalleImputacion" class="seccion-panel mt-3 d-none">
+                        <div class="seccion-header d-flex align-items-center gap-2">
+                            <strong>Detalle Imputación</strong>
+                            <span id="lblLineaImputacion" class="badge bg-info d-none"></span>
+                        </div>
+                        <div class="seccion-body">
+                            <input type="hidden" id="txtSecuencia" />
+
+                            <!-- Cuenta contable -->
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-8">
+                                    <label class="form-label">Cuenta</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" id="txtAliasCuenta" readonly placeholder="Alias" />
+                                        <input type="hidden" id="txtCuentaContable" />
+                                        <button class="btn btn-outline-secondary" type="button" id="btnBuscarCuentaContable">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        <input type="text" class="form-control" id="txtDescripcionCuenta" readonly placeholder="Descripción" />
+                                    </div>
+                                    <div id="divCodigosUnidadCuenta" class="d-none mt-2">
+                                        <div class="row g-1">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Cód. Unidad 1</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control" id="txtCodUnidad1Cuenta" />
+                                                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarCodUnidad1Cuenta"><i class="bi bi-search"></i></button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Cód. Unidad 3</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control" id="txtCodUnidad3Cuenta" />
-                                                <button class="btn btn-outline-secondary" type="button" id="btnBuscarCodUnidad3Cuenta"><i class="bi bi-search"></i></button>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Cód. Unidad 3</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control" id="txtCodUnidad3Cuenta" />
+                                                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarCodUnidad3Cuenta"><i class="bi bi-search"></i></button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Cód. Unidad 4</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control" id="txtCodUnidad4Cuenta" />
-                                                <button class="btn btn-outline-secondary" type="button" id="btnBuscarCodUnidad4Cuenta"><i class="bi bi-search"></i></button>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Cód. Unidad 4</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control" id="txtCodUnidad4Cuenta" />
+                                                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarCodUnidad4Cuenta"><i class="bi bi-search"></i></button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Monto</label>
+                                    <input type="text" class="form-control form-control-sm text-end" id="txtMonto" value="0.00" />
+                                </div>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label">Monto</label>
-                                <input type="text" class="form-control form-control-sm text-end" id="txtMonto" value="0.00" />
-                            </div>
-                        </div>
 
-                        <!-- Proyecto y Descripción -->
-                        <div class="row g-2 mb-2">
-                            <div class="col-md-4">
-                                <label class="form-label">Proyecto</label>
-                                <input type="text" class="form-control form-control-sm" id="txtProyecto" placeholder="Código de proyecto" />
+                            <!-- Proyecto y Descripción -->
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4">
+                                    <label class="form-label">Proyecto</label>
+                                    <input type="text" class="form-control form-control-sm" id="txtProyecto" placeholder="Código de proyecto" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Descripción</label>
+                                    <input type="text" class="form-control form-control-sm" id="txtDescripcion" />
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Descripción</label>
-                                <input type="text" class="form-control form-control-sm" id="txtDescripcion" />
-                            </div>
-                        </div>
 
+                        </div>
                     </div>
-                </div>
+                }
 
             </div>
 
