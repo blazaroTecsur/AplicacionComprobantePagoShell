@@ -34,7 +34,7 @@ namespace Resguardo.Infrastructure.Services
             {
                 Data = capataces,
                 Total = total
-            };          
+            };
 
             //var token = await _tokenAcquisition.GetAccessTokenForUserAsync(new[] { scope });
             //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "toke_prueba");
@@ -45,13 +45,13 @@ namespace Resguardo.Infrastructure.Services
         }
         public async Task<IEnumerable<ListarDptoResponse>> ListarDepartamento()
         {
-            int total = 15;
+            int total = 9;
             List<ListarDptoResponse> dptos = new List<ListarDptoResponse>();
             for (int i = 1; i <= total; i++)
             {
                 dptos.Add(new ListarDptoResponse
                 {
-                    Codigo = $"40{i.ToString().PadLeft(2, '0')}",
+                    Codigo = $"4{(i * 100).ToString().PadLeft(3, '0')}",
                     Nombre = $"DPTO OP {i.ToString().PadLeft(2, '0')}"
                 });
             }
