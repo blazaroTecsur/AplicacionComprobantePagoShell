@@ -11,7 +11,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
 
         public async Task<IEnumerable<ComboDto>> ObtenerCuentasContablesAsync(string filtro = "")
         {
-            var query = _contexto.CuentasContables.Where(x => x.Activo);
+            var query = _contexto.CuentasContables.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filtro))
                 query = query.Where(x =>

@@ -13,6 +13,7 @@ namespace ComprobantePago.Infrastructure.Persistence.Configurations
             builder.HasKey(x => x.IdCuentaContable);
             builder.Property(x => x.Codigo).HasColumnName("Cuenta").HasMaxLength(20).IsRequired();
             builder.Property(x => x.Descripcion).HasMaxLength(200).IsRequired();
+            builder.Ignore(x => x.Activo);
             builder.Property(x => x.UsuarioReg).HasMaxLength(50).IsRequired();
         }
     }
