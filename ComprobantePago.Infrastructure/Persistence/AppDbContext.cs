@@ -17,6 +17,7 @@ namespace ComprobantePago.Infrastructure.Persistence
         public DbSet<Proveedor> Proveedores { get; set; }
         public DbSet<CuentaContable> CuentasContables { get; set; }
         public DbSet<CodigoUnidad1> CodigosUnidad1 { get; set; }
+        public DbSet<CodigoUnidad2> CodigosUnidad2 { get; set; }
         public DbSet<CodigoUnidad3> CodigosUnidad3 { get; set; }
         public DbSet<CodigoUnidad4> CodigosUnidad4 { get; set; }
 

@@ -111,6 +111,7 @@ namespace ComprobantePago.Infrastructure.Services
                         {
                             row.ConstantItem(75).Text("Cuenta").Bold();
                             row.ConstantItem(75).Text("Cód. Unid. 1").Bold();
+                            row.ConstantItem(55).Text("Cód. Unid. 2").Bold();
                             row.ConstantItem(55).Text("Cód. Unid. 3").Bold();
                             row.ConstantItem(55).Text("Cód. Unid. 4").Bold();
                             row.ConstantItem(60).AlignRight().Text("Monto").Bold();
@@ -127,6 +128,7 @@ namespace ComprobantePago.Infrastructure.Services
                             {
                                 row.ConstantItem(75).Text(imp.CuentaContable);
                                 row.ConstantItem(75).Text(imp.CodUnidad1Cuenta);
+                                row.ConstantItem(55).Text(imp.CodUnidad2Cuenta);
                                 row.ConstantItem(55).Text(imp.CodUnidad3Cuenta);
                                 row.ConstantItem(55).Text(imp.CodUnidad4Cuenta);
                                 row.ConstantItem(60).AlignRight().Text(FormatMonto(imp.Monto));

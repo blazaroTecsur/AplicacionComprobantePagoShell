@@ -113,7 +113,8 @@ namespace ComprobantePago.Infrastructure.QueryServices
                                         ?? string.Empty,
                     CtaCPUnid1 = primeraImp?.CodUnidad1Cuenta
                                         ?? string.Empty,
-                    CtaCPUnid2 = string.Empty,
+                    CtaCPUnid2 = primeraImp?.CodUnidad2Cuenta
+                                        ?? string.Empty,
                     CtaCPUnid3 = primeraImp?.CodUnidad3Cuenta
                                         ?? string.Empty,
                     CtaCPUnid4 = primeraImp?.CodUnidad4Cuenta
@@ -286,6 +287,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
                         CuentaContable    = imp.CuentaContable ?? string.Empty,
                         DescripcionCuenta = imp.DescripcionCuenta ?? string.Empty,
                         CodUnidad1        = imp.CodUnidad1Cuenta ?? string.Empty,
+                        CodUnidad2        = imp.CodUnidad2Cuenta ?? string.Empty,
                         CodUnidad3        = imp.CodUnidad3Cuenta ?? string.Empty,
                         CodUnidad4        = imp.CodUnidad4Cuenta ?? string.Empty,
                         EsLineaPrincipal     = idx == 0,

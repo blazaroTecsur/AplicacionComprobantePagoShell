@@ -171,6 +171,7 @@ namespace ComprobantePago.Infrastructure.Services
                     DistSeq     = distSeq,
                     Acct        = linea.CuentaContable[..Math.Min(12, linea.CuentaContable.Length)],
                     AcctUnit1   = linea.CodUnidad1.Length > 0 ? linea.CodUnidad1[..Math.Min(4, linea.CodUnidad1.Length)] : "",
+                    AcctUnit2   = linea.CodUnidad2.Length > 0 ? linea.CodUnidad2[..Math.Min(4, linea.CodUnidad2.Length)] : "",
                     AcctUnit3   = linea.CodUnidad3.Length > 0 ? linea.CodUnidad3[..Math.Min(4, linea.CodUnidad3.Length)] : "",
                     AcctUnit4   = linea.CodUnidad4.Length > 0 ? linea.CodUnidad4[..Math.Min(4, linea.CodUnidad4.Length)] : "",
                     Amount      = linea.Importe,
@@ -199,6 +200,7 @@ namespace ComprobantePago.Infrastructure.Services
                     DistSeq   = distSeq,
                     Acct      = lineaIgv.CuentaContable[..Math.Min(12, lineaIgv.CuentaContable.Length)],
                     AcctUnit1 = lineaIgv.CodUnidad1.Length > 0 ? lineaIgv.CodUnidad1[..Math.Min(4, lineaIgv.CodUnidad1.Length)] : "",
+                    AcctUnit2 = lineaIgv.CodUnidad2.Length > 0 ? lineaIgv.CodUnidad2[..Math.Min(4, lineaIgv.CodUnidad2.Length)] : "",
                     AcctUnit3 = lineaIgv.CodUnidad3.Length > 0 ? lineaIgv.CodUnidad3[..Math.Min(4, lineaIgv.CodUnidad3.Length)] : "",
                     AcctUnit4 = lineaIgv.CodUnidad4.Length > 0 ? lineaIgv.CodUnidad4[..Math.Min(4, lineaIgv.CodUnidad4.Length)] : "",
                     Amount    = lineaIgv.Importe,
@@ -222,6 +224,7 @@ namespace ComprobantePago.Infrastructure.Services
                     DistSeq  = distSeq,
                     Acct     = lineaExento.CuentaContable[..Math.Min(12, lineaExento.CuentaContable.Length)],
                     AcctUnit1 = lineaExento.CodUnidad1.Length > 0 ? lineaExento.CodUnidad1[..Math.Min(4, lineaExento.CodUnidad1.Length)] : "",
+                    AcctUnit2 = lineaExento.CodUnidad2.Length > 0 ? lineaExento.CodUnidad2[..Math.Min(4, lineaExento.CodUnidad2.Length)] : "",
                     AcctUnit3 = lineaExento.CodUnidad3.Length > 0 ? lineaExento.CodUnidad3[..Math.Min(4, lineaExento.CodUnidad3.Length)] : "",
                     AcctUnit4 = lineaExento.CodUnidad4.Length > 0 ? lineaExento.CodUnidad4[..Math.Min(4, lineaExento.CodUnidad4.Length)] : "",
                     Amount    = lineaExento.Importe,
@@ -268,6 +271,7 @@ namespace ComprobantePago.Infrastructure.Services
             // Cuenta A/P
             ApAcct      = c.CtaCP[..Math.Min(12, c.CtaCP.Length)],
             ApAcctUnit1 = c.CtaCPUnid1[..Math.Min(4, c.CtaCPUnid1.Length)],
+            ApAcctUnit2 = c.CtaCPUnid2[..Math.Min(4, c.CtaCPUnid2.Length)],
             ApAcctUnit3 = c.CtaCPUnid3[..Math.Min(4, c.CtaCPUnid3.Length)],
             ApAcctUnit4 = c.CtaCPUnid4[..Math.Min(4, c.CtaCPUnid4.Length)],
 

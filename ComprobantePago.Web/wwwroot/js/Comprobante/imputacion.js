@@ -43,6 +43,7 @@ function inicializarTablaImputacion() {
             },
             { data: 'proyecto' },
             { data: 'codUnidad1Cuenta' },
+            { data: 'codUnidad2Cuenta' },
             { data: 'codUnidad3Cuenta' },
             { data: 'codUnidad4Cuenta' },
             {
@@ -134,6 +135,7 @@ function mostrarFormularioEditar(secuencia) {
     if (imp.cuentaContable) {
         mostrarCodigosUnidad('Cuenta');
         $('#txtCodUnidad1Cuenta').val(imp.codUnidad1Cuenta);
+        $('#txtCodUnidad2Cuenta').val(imp.codUnidad2Cuenta);
         $('#txtCodUnidad3Cuenta').val(imp.codUnidad3Cuenta);
         $('#txtCodUnidad4Cuenta').val(imp.codUnidad4Cuenta);
     }
@@ -163,6 +165,7 @@ function obtenerDatosFormulario() {
         monto: CorporativoCore.limpiarMonto($('#txtMonto').val()),
         proyecto: $('#txtProyecto').val(),
         codUnidad1Cuenta: $('#txtCodUnidad1Cuenta').val(),
+        codUnidad2Cuenta: $('#txtCodUnidad2Cuenta').val(),
         codUnidad3Cuenta: $('#txtCodUnidad3Cuenta').val(),
         codUnidad4Cuenta: $('#txtCodUnidad4Cuenta').val(),
     };
@@ -370,6 +373,7 @@ function construirFilasPendientes() {
             descripcion:       l.desc,
             proyecto:          '',
             codUnidad1Cuenta:  '',
+            codUnidad2Cuenta:  '',
             codUnidad3Cuenta:  '',
             codUnidad4Cuenta:  '',
             estado:            'pendiente'
@@ -458,6 +462,7 @@ function mostrarCodigosUnidad(campo) {
 function ocultarCodigosUnidad(campo) {
     $(`#divCodigosUnidad${campo}`).addClass('d-none');
     $(`#txtCodUnidad1${campo}`).val('');
+    $(`#txtCodUnidad2${campo}`).val('');
     $(`#txtCodUnidad3${campo}`).val('');
     $(`#txtCodUnidad4${campo}`).val('');
 }
@@ -602,6 +607,7 @@ function bindEventosImputacion() {
     });
 
     $('#btnBuscarCodUnidad1Cuenta').on('click', () => buscarCodigoUnidad('Cuenta', 1, '#txtCodUnidad1Cuenta'));
+    $('#btnBuscarCodUnidad2Cuenta').on('click', () => buscarCodigoUnidad('Cuenta', 2, '#txtCodUnidad2Cuenta'));
     $('#btnBuscarCodUnidad3Cuenta').on('click', () => buscarCodigoUnidad('Cuenta', 3, '#txtCodUnidad3Cuenta'));
     $('#btnBuscarCodUnidad4Cuenta').on('click', () => buscarCodigoUnidad('Cuenta', 4, '#txtCodUnidad4Cuenta'));
 

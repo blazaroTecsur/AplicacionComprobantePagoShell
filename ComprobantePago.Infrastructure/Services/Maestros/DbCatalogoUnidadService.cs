@@ -36,6 +36,14 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
                     .Select(x => new ComboDto { Codigo = x.Codigo, Descripcion = x.Descripcion })
                     .ToListAsync(),
 
+                2 => await _contexto.CodigosUnidad2
+                    .Where(x => x.Activo &&
+                        (!filtrarEmpresa || x.Empresa == empresa) &&
+                        (!tieneFiltro || x.Codigo.Contains(filtro) || x.Descripcion.Contains(filtro)))
+                    .OrderBy(x => x.Codigo)
+                    .Select(x => new ComboDto { Codigo = x.Codigo, Descripcion = x.Descripcion })
+                    .ToListAsync(),
+
                 // Unidad 4 no tiene empresa — global para todas
                 4 => await _contexto.CodigosUnidad4
                     .Where(x => x.Activo &&

@@ -38,6 +38,7 @@ namespace ComprobantePago.Application.DTOs.Responses
         public string CuentaContable     { get; init; } = string.Empty;
         public string DescripcionCuenta  { get; init; } = string.Empty;
         public string CodUnidad1         { get; init; } = string.Empty;
+        public string CodUnidad2         { get; init; } = string.Empty;
         public string CodUnidad3         { get; init; } = string.Empty;
         public string CodUnidad4         { get; init; } = string.Empty;
         public bool EsLineaPrincipal     { get; init; }

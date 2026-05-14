@@ -473,6 +473,7 @@ namespace ComprobantePago.Infrastructure.Repositories
             entidad.Descripcion      = dto.Descripcion;
             entidad.Proyecto         = dto.Proyecto;
             entidad.CodUnidad1Cuenta = dto.CodUnidad1Cuenta;
+            entidad.CodUnidad2Cuenta = dto.CodUnidad2Cuenta;
             entidad.CodUnidad3Cuenta = dto.CodUnidad3Cuenta;
             entidad.CodUnidad4Cuenta = dto.CodUnidad4Cuenta;
             entidad.UsuarioAct       = _usuario.Correo;

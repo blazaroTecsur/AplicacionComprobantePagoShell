@@ -11,6 +11,7 @@ namespace ComprobantePago.Application.DTOs.Comprobante.Response
         public string Descripcion       { get; init; } = string.Empty;
         public string Proyecto          { get; init; } = string.Empty;
         public string CodUnidad1Cuenta  { get; init; } = string.Empty;
+        public string CodUnidad2Cuenta  { get; init; } = string.Empty;
         public string CodUnidad3Cuenta  { get; init; } = string.Empty;
         public string CodUnidad4Cuenta  { get; init; } = string.Empty;
     }

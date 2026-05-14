@@ -24,6 +24,7 @@ namespace ComprobantePago.Application.Mapping
                 .Map(d => d.Descripcion,      s => s.Descripcion      ?? string.Empty)
                 .Map(d => d.Proyecto,         s => s.Proyecto         ?? string.Empty)
                 .Map(d => d.CodUnidad1Cuenta, s => s.CodUnidad1Cuenta ?? string.Empty)
+                .Map(d => d.CodUnidad2Cuenta, s => s.CodUnidad2Cuenta ?? string.Empty)
                 .Map(d => d.CodUnidad3Cuenta, s => s.CodUnidad3Cuenta ?? string.Empty)
                 .Map(d => d.CodUnidad4Cuenta, s => s.CodUnidad4Cuenta ?? string.Empty);
 

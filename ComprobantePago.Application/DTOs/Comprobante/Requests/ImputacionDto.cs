@@ -11,6 +11,7 @@ namespace ComprobantePago.Application.DTOs.Comprobante.Requests
         public decimal Monto { get; set; }
         public string Proyecto { get; set; } = string.Empty;
         public string CodUnidad1Cuenta { get; set; } = string.Empty;
+        public string CodUnidad2Cuenta { get; set; } = string.Empty;
         public string CodUnidad3Cuenta { get; set; } = string.Empty;
         public string CodUnidad4Cuenta { get; set; } = string.Empty;
     }
