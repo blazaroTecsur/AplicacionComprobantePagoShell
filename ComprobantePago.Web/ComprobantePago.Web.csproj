@@ -31,10 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="wwwroot\lib\datatables.net\i18n\" />
   </ItemGroup>
 
