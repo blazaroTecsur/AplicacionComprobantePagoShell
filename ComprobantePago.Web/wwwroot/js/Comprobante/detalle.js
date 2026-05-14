@@ -333,6 +333,11 @@ function mostrarBotonesSegunEstado(estado) {
             break;
         case 'APROBADO':
             bloquearTodosLosCampos();
+            $('#btnPagar, #btnImprimirComprobante, #btnVistaPrevia')
+                .removeClass('d-none');
+            break;
+        case 'PAGADO':
+            bloquearTodosLosCampos();
             $('#btnImprimirComprobante, #btnVistaPrevia')
                 .removeClass('d-none');
             break;
@@ -743,6 +748,13 @@ function bindEventos() {
         if (ok) aprobarComprobante();
     });
 
+    // Pagar
+    $('#btnPagar').on('click', async function () {
+        const ok = await CorporativoCore.confirmar(
+            '¿Desea marcar el comprobante como PAGADO?');
+        if (ok) pagarComprobante();
+    });
+
     // Derivar
     $('#btnDerivar').on('click', async function () {
         const ok = await CorporativoCore.confirmar(
@@ -964,6 +976,10 @@ function aprobarComprobante() {
 function anularComprobante() {
     _accionComprobante(BASE_URL+'/Comprobante/Anular', 'ANULADO',
         'Comprobante anulado correctamente.', true);
+}
+function pagarComprobante() {
+    _accionComprobante(BASE_URL+'/Comprobante/Pagar', 'PAGADO',
+        'Comprobante marcado como PAGADO correctamente.', true);
 }
 function derivarComprobante() {
     _accionComprobante(BASE_URL+'/Comprobante/Derivar', 'REGISTRADO',

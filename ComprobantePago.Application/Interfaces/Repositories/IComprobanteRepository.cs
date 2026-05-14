@@ -15,8 +15,14 @@ namespace ComprobantePago.Application.Interfaces.Repositories
             EnviarComprobanteCommand command);
         Task FirmarAsync(
             FirmarComprobanteCommand command);
+        Task FirmarMasivoAsync(
+            IEnumerable<string> folios, string usuarioCorreo);
         Task AprobarAsync(
             AprobarComprobanteCommand command);
+        Task AprobarMasivoAsync(
+            IEnumerable<string> folios, string usuarioCorreo);
+        Task PagarAsync(
+            string folio, string usuarioCorreo);
         Task AnularAsync(
             AnularComprobanteCommand command);
         Task DerivarAsync(

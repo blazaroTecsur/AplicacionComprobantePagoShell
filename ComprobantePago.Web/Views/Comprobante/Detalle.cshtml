@@ -6,6 +6,7 @@
     bool puedeAutorizar = User.HasClaim("permission", "COMP.AUTORIZAR");
     bool puedeAprobar   = User.HasClaim("permission", "COMP.APROBAR");
     bool puedeAnular    = User.HasClaim("permission", "COMP.ANULAR");
+    bool puedePagar     = User.HasClaim("permission", "COMP.PAGAR");
 }
 
 <!-- Campos hidden de estado global -->
@@ -133,6 +134,12 @@
         {
             <button type="button" class="btn btn-primary btn-sm d-none" id="btnAprobarDetalle">
                 <i class="bi bi-check-circle"></i> Aprobar
+            </button>
+        }
+        @if (puedePagar)
+        {
+            <button type="button" class="btn btn-dark btn-sm d-none" id="btnPagar">
+                <i class="bi bi-currency-dollar"></i> Pagar
             </button>
         }
         <button type="button" class="btn btn-secondary btn-sm d-none" id="btnImprimirComprobante">

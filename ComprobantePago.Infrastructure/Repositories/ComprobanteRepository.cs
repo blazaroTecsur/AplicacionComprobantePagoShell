@@ -211,6 +211,54 @@ namespace ComprobantePago.Infrastructure.Repositories
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // ── Firmar masivo (Autorizador) ───────────
+        public async Task FirmarMasivoAsync(IEnumerable<string> folios, string usuarioCorreo)
+        {
+            var lista = folios.ToList();
+            var comprobantes = await _contexto.Comprobantes
+                .Where(x => lista.Contains(x.Folio) && x.CodigoEstado == "ENVIADO")
+                .ToListAsync();
+
+            foreach (var c in comprobantes)
+            {
+                c.CodigoEstado      = "AUTORIZADO";
+                c.RolAutorizacion   = usuarioCorreo;
+                c.FechaAutorizacion = DateTime.Now;
+                c.UsuarioAct        = usuarioCorreo;
+                c.FechaAct          = DateTime.Now;
+            }
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        // ── Aprobar masivo (Aprobador) ────────────
+        public async Task AprobarMasivoAsync(IEnumerable<string> folios, string usuarioCorreo)
+        {
+            var lista = folios.ToList();
+            var comprobantes = await _contexto.Comprobantes
+                .Where(x => lista.Contains(x.Folio) && x.CodigoEstado == "AUTORIZADO")
+                .ToListAsync();
+
+            foreach (var c in comprobantes)
+            {
+                c.CodigoEstado    = "APROBADO";
+                c.RolAprobacion   = usuarioCorreo;
+                c.FechaAprobacion = DateTime.Now;
+                c.UsuarioAct      = usuarioCorreo;
+                c.FechaAct        = DateTime.Now;
+            }
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        // ── Pagar ─────────────────────────────────
+        public async Task PagarAsync(string folio, string usuarioCorreo)
+        {
+            var c = await ObtenerPorFolioAsync(folio);
+            c.CodigoEstado = "PAGADO";
+            c.UsuarioAct   = usuarioCorreo;
+            c.FechaAct     = DateTime.Now;
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         // ── Anular ────────────────────────────────
         public async Task AnularAsync(AnularComprobanteCommand command)
         {
@@ -375,25 +423,32 @@ namespace ComprobantePago.Infrastructure.Repositories
 
         /// <summary>
         /// Construye la secuencia de montos esperados para las imputaciones de un comprobante.
-        /// Índice 0 = seq 1 (cabecera, sin validación de monto).
-        /// Índice 1 = seq 2 → MontoNeto.
-        /// Índice 2 = seq 3 → IGV Crédito Fiscal.
-        /// Índice 3 = seq 4 → MontoExento  (solo si > 0).
-        /// Índice 3/4 = seq 4/5 → MontoRetencion (solo si > 0).
+        /// Facturación solo exenta (neto=0, igv=0): seq 1 Cabecera + seq 2 Exento (2 líneas).
+        /// Caso normal: seq 1 Cabecera + seq 2 Neto + seq 3 IGV [+ seq 4 Exento] [+ seq 4/5 Retención].
         /// </summary>
         private static IReadOnlyList<(decimal Monto, string Descripcion)> LineasEsperadas(
             Comprobante c)
         {
             var lista = new List<(decimal, string)>
             {
-                (0m,                "cabecera SyteLine"),    // seq 1 – sin validación
-                (c.MontoNeto,       "monto neto"),           // seq 2
-                (c.MontoIGVCredito, "IGV crédito fiscal"),   // seq 3
+                (0m, "cabecera SyteLine"), // seq 1 – sin validación
             };
-            if (c.MontoExento > 0)
-                lista.Add((c.MontoExento,    "monto exento/exonerado")); // seq 4
-            if (c.MontoRetencion > 0)
-                lista.Add((c.MontoRetencion, "monto de retención"));     // seq 4 ó 5
+
+            bool soloExento = c.MontoNeto == 0m && c.MontoIGVCredito == 0m && c.MontoExento > 0m;
+            if (soloExento)
+            {
+                lista.Add((c.MontoExento, "monto exento/exonerado")); // seq 2
+            }
+            else
+            {
+                lista.Add((c.MontoNeto,       "monto neto"));           // seq 2
+                lista.Add((c.MontoIGVCredito, "IGV crédito fiscal"));   // seq 3
+                if (c.MontoExento > 0)
+                    lista.Add((c.MontoExento,    "monto exento/exonerado")); // seq 4
+                if (c.MontoRetencion > 0)
+                    lista.Add((c.MontoRetencion, "monto de retención"));     // seq 4 ó 5
+            }
+
             return lista.AsReadOnly();
         }
 

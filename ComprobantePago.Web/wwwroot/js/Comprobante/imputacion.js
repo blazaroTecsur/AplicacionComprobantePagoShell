@@ -324,13 +324,21 @@ function obtenerLineasEsperadas() {
     const exento    = CorporativoCore.limpiarMonto($('#txtMontoExento').val());
     const retencion = CorporativoCore.limpiarMonto($('#txtMontoRetencion').val());
 
+    // Facturación solo exenta: neto=0 e igv=0 → solo 2 afectaciones (Cabecera + Exento)
+    const soloExento = neto === 0 && igv === 0 && exento > 0;
+
     const lineas = [
-        { monto: null,     desc: 'Cabecera SyteLine',      afectacion: 'CABECERA'   }, // seq 1
-        { monto: neto,     desc: 'Monto Neto',             afectacion: 'GRAVADO'    }, // seq 2
-        { monto: igv,      desc: 'IGV Crédito Fiscal',     afectacion: 'IGV'        }, // seq 3
+        { monto: null, desc: 'Cabecera SyteLine', afectacion: 'CABECERA' }, // seq 1
     ];
-    if (exento > 0)    lineas.push({ monto: exento,    desc: 'Monto Exento / Exonerado', afectacion: 'EXONERADO' });
-    if (retencion > 0) lineas.push({ monto: retencion, desc: 'Retención',                afectacion: 'RETENCIÓN' });
+
+    if (soloExento) {
+        lineas.push({ monto: exento, desc: 'Monto Exento / Exonerado', afectacion: 'EXONERADO' }); // seq 2
+    } else {
+        lineas.push({ monto: neto, desc: 'Monto Neto',         afectacion: 'GRAVADO' }); // seq 2
+        lineas.push({ monto: igv,  desc: 'IGV Crédito Fiscal', afectacion: 'IGV'     }); // seq 3
+        if (exento > 0)    lineas.push({ monto: exento,    desc: 'Monto Exento / Exonerado', afectacion: 'EXONERADO' });
+        if (retencion > 0) lineas.push({ monto: retencion, desc: 'Retención',                afectacion: 'RETENCIÓN' });
+    }
 
     return lineas;
 }

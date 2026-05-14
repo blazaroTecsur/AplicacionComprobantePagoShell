@@ -8,6 +8,7 @@ using ComprobantePago.Application.Interfaces.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Seguridad.Abstractions.Interfaces;
 
 namespace ComprobantePago.Web.Controllers
 {
@@ -16,23 +17,26 @@ namespace ComprobantePago.Web.Controllers
     [Route("Comprobante")]
     public class ComprobanteAprobarController : Controller
     {
-        private readonly IComprobanteRepository          _repository;
-        private readonly ISytelineQueryService           _sytelineService;
-        private readonly ISytelineEnvioService           _sytelineEnvio;
+        private readonly IComprobanteRepository           _repository;
+        private readonly ISytelineQueryService            _sytelineService;
+        private readonly ISytelineEnvioService            _sytelineEnvio;
         private readonly IValidator<AccionComprobanteDto> _accionValidator;
+        private readonly IUsuarioContexto                 _usuario;
         private readonly ILogger<ComprobanteAprobarController> _logger;
 
         public ComprobanteAprobarController(
-            IComprobanteRepository          repository,
-            ISytelineQueryService           sytelineService,
-            ISytelineEnvioService           sytelineEnvio,
+            IComprobanteRepository           repository,
+            ISytelineQueryService            sytelineService,
+            ISytelineEnvioService            sytelineEnvio,
             IValidator<AccionComprobanteDto> accionValidator,
+            IUsuarioContexto                 usuario,
             ILogger<ComprobanteAprobarController> logger)
         {
             _repository      = repository;
             _sytelineService = sytelineService;
             _sytelineEnvio   = sytelineEnvio;
             _accionValidator = accionValidator;
+            _usuario         = usuario;
             _logger          = logger;
         }
 
@@ -111,6 +115,19 @@ namespace ComprobantePago.Web.Controllers
                 detalle  = resultados,
                 fallos   = errores
             });
+        }
+
+        [HttpPost("[action]")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AprobarMasivo([FromBody] List<string> folios)
+        {
+            if (folios is null || folios.Count == 0)
+                return BadRequest(new { error = "Debe seleccionar al menos un comprobante." });
+
+            await _repository.AprobarMasivoAsync(folios, _usuario.Correo);
+            _logger.LogInformation("Aprobación masiva de {Count} comprobantes por {Usuario}",
+                folios.Count, _usuario.Correo);
+            return Ok(BaseResponse.Ok($"Se aprobaron {folios.Count} comprobante(s)."));
         }
     }
 }

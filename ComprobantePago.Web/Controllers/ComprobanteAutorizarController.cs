@@ -6,6 +6,7 @@ using ComprobantePago.Application.Interfaces.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Seguridad.Abstractions.Interfaces;
 
 namespace ComprobantePago.Web.Controllers
 {
@@ -14,17 +15,20 @@ namespace ComprobantePago.Web.Controllers
     [Route("Comprobante")]
     public class ComprobanteAutorizarController : Controller
     {
-        private readonly IComprobanteRepository          _repository;
+        private readonly IComprobanteRepository           _repository;
         private readonly IValidator<AccionComprobanteDto> _accionValidator;
+        private readonly IUsuarioContexto                 _usuario;
         private readonly ILogger<ComprobanteAutorizarController> _logger;
 
         public ComprobanteAutorizarController(
-            IComprobanteRepository          repository,
+            IComprobanteRepository           repository,
             IValidator<AccionComprobanteDto> accionValidator,
+            IUsuarioContexto                 usuario,
             ILogger<ComprobanteAutorizarController> logger)
         {
             _repository      = repository;
             _accionValidator = accionValidator;
+            _usuario         = usuario;
             _logger          = logger;
         }
 
@@ -48,6 +52,19 @@ namespace ComprobantePago.Web.Controllers
                 return BadRequest(new { errores = validacion.Errors.Select(e => e.ErrorMessage) });
             await _repository.DerivarAsync(command);
             return Ok(BaseResponse.Ok());
+        }
+
+        [HttpPost("[action]")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AutorizarMasivo([FromBody] List<string> folios)
+        {
+            if (folios is null || folios.Count == 0)
+                return BadRequest(new { error = "Debe seleccionar al menos un comprobante." });
+
+            await _repository.FirmarMasivoAsync(folios, _usuario.Correo);
+            _logger.LogInformation("Autorización masiva de {Count} comprobantes por {Usuario}",
+                folios.Count, _usuario.Correo);
+            return Ok(BaseResponse.Ok($"Se autorizaron {folios.Count} comprobante(s)."));
         }
     }
 }
