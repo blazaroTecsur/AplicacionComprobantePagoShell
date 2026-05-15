@@ -139,6 +139,10 @@ function cargarComprobante(folio) {
                 } else {
                     habilitarCamposManual();
                 }
+                // Cargar imputaciones en memoria para que la validación de guardar sea correcta
+                if (typeof cargarImputaciones === 'function') {
+                    cargarImputaciones(folio);
+                }
             }, 500);
         });
 }
