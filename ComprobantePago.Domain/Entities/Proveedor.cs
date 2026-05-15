@@ -6,7 +6,7 @@ namespace ComprobantePago.Domain.Entities
     public class Proveedor
     {
         public int IdProveedor { get; set; }
-        public int IdProveedorExternal { get; set; }
+        public string? IdProveedorExternal { get; set; }
         public string? NombreProveedor { get; set; }
         public string TipoPersona { get; set; } = string.Empty;
         public string? Direccion1 { get; set; }

@@ -11,20 +11,20 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
 
         public async Task<IEnumerable<ComboDto>> ObtenerEmpleadosAsync(string filtro = "")
         {
-            var query = _contexto.Empleados
-                .Where(x => x.Estado == null || x.Estado.ToUpper() != "INACTIVO");
+            var query = _contexto.Proveedores
+                .Where(x => x.TipoPersona == "1" && x.Estado.ToUpper() != "INACTIVO");
 
             if (!string.IsNullOrWhiteSpace(filtro))
                 query = query.Where(x =>
-                    x.Codigo.Contains(filtro) ||
-                    x.NombreCompleto.Contains(filtro));
+                    x.Ruc.Contains(filtro) ||
+                    (x.NombreProveedor != null && x.NombreProveedor.Contains(filtro)));
 
             return await query
-                .OrderBy(x => x.NombreCompleto)
+                .OrderBy(x => x.NombreProveedor)
                 .Select(x => new ComboDto
                 {
-                    Codigo = x.Codigo,
-                    Descripcion = $"{x.Codigo} - {x.NombreCompleto}"
+                    Codigo      = x.Ruc,
+                    Descripcion = $"{x.Ruc} - {x.NombreProveedor}"
                 })
                 .ToListAsync();
         }

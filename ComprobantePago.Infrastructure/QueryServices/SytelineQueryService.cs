@@ -27,30 +27,17 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 .OrderBy(x => x.FechaAprobacion)
                 .ToListAsync();
 
-            // Índice RUC → IdProveedorExternal para resolver VendNum de proveedores
+            // Índice RUC → IdProveedorExternal para todos (proveedores y empleados).
+            // Empleados se identifican por EmpleadoCodigo (= Ruc en tmaproveedor, TipoPersona = "1").
             var rucs = comprobantes
-                .Where(c => !c.EsEmpleado)
-                .Select(c => c.RucReceptor)
+                .Select(c => c.EsEmpleado ? (c.EmpleadoCodigo ?? string.Empty) : c.RucReceptor)
+                .Where(r => !string.IsNullOrEmpty(r))
                 .Distinct()
                 .ToList();
 
             var vendNums = await _contexto.Proveedores
-                .Where(p => rucs.Contains(p.Ruc))
-                .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal.ToString());
-
-            // Índice Codigo → IdEmpleadoExternal para resolver VendNum de empleados
-            var empleadoCodigos = comprobantes
-                .Where(c => c.EsEmpleado && c.EmpleadoCodigo != null)
-                .Select(c => c.EmpleadoCodigo!)
-                .Distinct()
-                .ToList();
-
-            var empleadoExternals = empleadoCodigos.Count > 0
-                ? await _contexto.Empleados
-                    .Where(e => empleadoCodigos.Contains(e.Codigo)
-                             && !string.IsNullOrEmpty(e.IdEmpleadoExternal))
-                    .ToDictionaryAsync(e => e.Codigo, e => e.IdEmpleadoExternal)
-                : new Dictionary<string, string>();
+                .Where(p => rucs.Contains(p.Ruc) && !string.IsNullOrEmpty(p.IdProveedorExternal))
+                .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal!);
 
             var result = new List<SytelineCabeceraDto>();
 
@@ -71,13 +58,8 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 // VendNum: empleados → IdEmpleadoExternal de tmaempleado;
                 // proveedores → IdProveedorExternal de tmaproveedor (0 = no sincronizado,
                 // se devuelve vacío para que el envío falle con mensaje claro).
-                var vendNum = c.EsEmpleado
-                    ? (c.EmpleadoCodigo != null &&
-                       empleadoExternals.TryGetValue(c.EmpleadoCodigo, out var extId)
-                           ? extId : string.Empty)
-                    : vendNums.TryGetValue(c.RucReceptor, out var vn) && vn != "0"
-                        ? vn
-                        : string.Empty;
+                var rucLookup = c.EsEmpleado ? (c.EmpleadoCodigo ?? string.Empty) : c.RucReceptor;
+                var vendNum = vendNums.TryGetValue(rucLookup, out var vn) ? vn : string.Empty;
 
                 result.Add(new SytelineCabeceraDto
                 {
@@ -170,8 +152,8 @@ namespace ComprobantePago.Infrastructure.QueryServices
 
             var empleadoVendNums = empleadoRucs.Count > 0
                 ? await _contexto.Proveedores
-                    .Where(p => empleadoRucs.Contains(p.Ruc) && p.IdProveedorExternal != 0)
-                    .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal.ToString())
+                    .Where(p => empleadoRucs.Contains(p.Ruc) && !string.IsNullOrEmpty(p.IdProveedorExternal))
+                    .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal!)
                 : new Dictionary<string, string>();
 
             var resultado = new List<SytelineDistribucionDto>();
