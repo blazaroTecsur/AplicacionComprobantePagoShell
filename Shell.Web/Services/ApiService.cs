@@ -29,17 +29,10 @@ namespace Shell.Web.Services
             if (string.IsNullOrWhiteSpace(token))
                 throw new Exception("No se encontró access_token");
 
-            return await ObtenerUsuario(token);
-        }
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        public async Task<UsuarioViewModel> ObtenerUsuario(string accessToken)
-        {
             var url = _configuration["ApiSettings:Autenticar"];
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            var response = await _httpClient.SendAsync(request);
+            var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -48,7 +41,10 @@ namespace Shell.Web.Services
                 throw new Exception("API retornó contenido vacío");
 
             var apiResponse = JsonSerializer.Deserialize<ApiResponse<UsuarioViewModel>>(content,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
             if (apiResponse == null)
                 throw new Exception("Respuesta inválida");

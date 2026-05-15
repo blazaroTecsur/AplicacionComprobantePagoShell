@@ -15,7 +15,10 @@ using ComprobantePago.Infrastructure.Services.Maestros;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Notificacion.Infrastructure.DependencyInjection;
+using ComprobantePago.Web.Auth;
+using Seguridad.Abstractions.Interfaces;
 using Seguridad.Infrastructure.DependencyInjection;
+using Seguridad.Infrastructure.Handler.Authentication;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
@@ -144,6 +147,15 @@ namespace ComprobantePago.Web.Middlewares
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
             services.AddSeguridad(config);
+            // Decorador que resuelve Empresa desde appsettings (TenantEmpresas)
+            // sin tocar Shell ni Seguridad.Infrastructure.
+            services.AddScoped<IUsuarioContexto>(sp =>
+            {
+                var inner   = sp.GetRequiredService<UsuarioContexto>();
+                var http    = sp.GetRequiredService<IHttpContextAccessor>();
+                var cfg     = sp.GetRequiredService<IConfiguration>();
+                return new ComprobanteUsuarioContexto(inner, http, cfg);
+            });
 
             // Infor / Syteline
             services.AddInfor(config);
