@@ -125,14 +125,28 @@ void ConfigureOpenId(
 
     options.Events = new OpenIdConnectEvents
     {
-        OnTokenValidated = context =>
+        OnTokenValidated = async context =>
         {
             var identity = (ClaimsIdentity)context.Principal!.Identity!;
             if (!identity.HasClaim(c => c.Type == "session_id"))
                 identity.AddClaim(new Claim("session_id", Guid.NewGuid().ToString()));
             if (!identity.HasClaim(c => c.Type == "auth_scheme"))
                 identity.AddClaim(new Claim("auth_scheme", context.Scheme.Name));
-            return Task.CompletedTask;
+
+            // Obtener NomTenant desde la API y guardarlo como claim empresa en la cookie.
+            // Esto evita hardcodear tenant→empresa en los módulos del shell.
+            try
+            {
+                var accessToken = context.TokenEndpointResponse?.AccessToken;
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    var api = context.HttpContext.RequestServices.GetRequiredService<ApiService>();
+                    var usuario = await api.ObtenerUsuario(accessToken);
+                    if (!string.IsNullOrEmpty(usuario.NomTenant))
+                        identity.AddClaim(new Claim("empresa", usuario.NomTenant));
+                }
+            }
+            catch { /* no bloquear el login si la API falla */ }
         },
         OnRedirectToIdentityProviderForSignOut = context =>
         {
@@ -198,12 +212,15 @@ app.MapReverseProxy(proxyPipeline =>
         string? idSesion = usuario.FindFirst("session_id")?.Value;
         string? schema = usuario.FindFirst("auth_scheme")?.Value;
 
+        var empresa = usuario.FindFirst("empresa")?.Value;
+
         context.Request.Headers["X-User-Oid"] = codUsuario ?? "";
         context.Request.Headers["X-Tenant-Id"] = codTenant ?? "";
         context.Request.Headers["X-User-Name"] = nomUsuario ?? "";
         context.Request.Headers["X-User-Email"] = usuCorreo ?? "";
         context.Request.Headers["X-Session-Id"] = idSesion ?? "";
         context.Request.Headers["X-Schema"] = schema ?? "";
+        context.Request.Headers["X-Empresa"] = empresa ?? "";
 
         await next();
     });

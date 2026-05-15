@@ -37,10 +37,7 @@ namespace Seguridad.Infrastructure.Handler.Authentication
                 string.IsNullOrEmpty(schema))
                 return AuthenticateResult.Fail("Internal Auth ha fallado.");
 
-            // Empresa: primero X-Empresa header, luego por TenantId, luego por schema
-            var empresa = Request.Headers["X-Empresa"].FirstOrDefault()
-                ?? ResolverEmpresaPorTenant(codTenant)
-                ?? ResolverEmpresaPorSchema(schema);
+            var empresa = Request.Headers["X-Empresa"].FirstOrDefault() ?? string.Empty;
 
             var claims = new List<Claim>
             {
@@ -59,23 +56,5 @@ namespace Seguridad.Infrastructure.Handler.Authentication
             return AuthenticateResult.Success(ticket);
         }
 
-        private static string? ResolverEmpresaPorTenant(string? tenantId) =>
-            tenantId?.ToLowerInvariant() switch
-            {
-                "7ecba007-e8b5-42f7-adf2-cb304774d5b5" => "TECSUR",
-                "ea36777b-8a93-473e-b167-49df65d90598" => "GCI",
-                "32d770cb-4949-4e2c-b3a2-3c89a9bdb74f" => "LOS ANDES",
-                _ => null
-            };
-
-        private static string ResolverEmpresaPorSchema(string schema) =>
-            schema.ToUpperInvariant() switch
-            {
-                "GCI"       => "GCI",
-                "LOSANDES"  => "LOS ANDES",
-                "LOS_ANDES" => "LOS ANDES",
-                "TECSUR"    => "TECSUR",
-                _           => schema.ToUpperInvariant()
-            };
     }
 }
