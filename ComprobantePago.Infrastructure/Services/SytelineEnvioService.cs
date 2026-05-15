@@ -1,9 +1,11 @@
 using ComprobantePago.Application.DTOs.Infor;
 using ComprobantePago.Application.DTOs.Responses;
 using ComprobantePago.Application.Interfaces.Services;
+using ComprobantePago.Infrastructure.Persistence;
 using Infor.Abstractions.DTOs;
 using Infor.Abstractions.Interfaces;
 using Infor.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
@@ -18,15 +20,18 @@ namespace ComprobantePago.Infrastructure.Services
         private readonly IInforIdoService                _ido;
         private readonly InforSettings                   _settings;
         private readonly ILogger<SytelineEnvioService>  _logger;
+        private readonly AppDbContext                    _contexto;
 
         public SytelineEnvioService(
             IInforIdoService               ido,
             IOptions<InforSettings>        settings,
-            ILogger<SytelineEnvioService>  logger)
+            ILogger<SytelineEnvioService>  logger,
+            AppDbContext                   contexto)
         {
             _ido      = ido;
             _settings = settings.Value;
             _logger   = logger;
+            _contexto = contexto;
         }
 
         // ── Insertar una cabecera ─────────────────────────────────────────────
@@ -114,6 +119,14 @@ namespace ComprobantePago.Infrastructure.Services
 
         public async Task<int> ObtenerSiguienteVoucherAsync(CancellationToken ct = default)
         {
+            // MAX de VoucherSyteline en nuestra BD (cubre vouchers ya asentados/derivados
+            // que desaparecen de SLAptrxs al ser contabilizados en Syteline)
+            var maxLocal = await _contexto.Comprobantes
+                .Where(c => c.VoucherSyteline != null && c.VoucherSyteline > 0)
+                .MaxAsync(c => (int?)c.VoucherSyteline, ct) ?? 0;
+
+            // MAX de Voucher en SLAptrxs (pendientes de asentar en Syteline)
+            int maxSyteline = 0;
             try
             {
                 var resultado = await _ido.LoadAsync(
@@ -125,18 +138,18 @@ namespace ComprobantePago.Infrastructure.Services
                     ct:        ct);
 
                 _logger.LogInformation("SLAptrxs MaxVoucher: {Body}", resultado.GetRawText());
-
-                var max = ExtraerVoucherDeItems(resultado);
-                var siguiente = max + 1;
-
-                _logger.LogInformation("Próximo Voucher a usar: {Voucher}", siguiente);
-                return siguiente;
+                maxSyteline = ExtraerVoucherDeItems(resultado);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "No se pudo obtener el último Voucher de SLAptrxs. Se usará 1.");
-                return 1;
+                _logger.LogWarning(ex, "No se pudo consultar SLAptrxs para el MAX Voucher; se usará el registro local.");
             }
+
+            var siguiente = Math.Max(maxLocal, maxSyteline) + 1;
+            _logger.LogInformation(
+                "Próximo Voucher: {Voucher} (maxLocal={Local}, maxSyteline={Syteline})",
+                siguiente, maxLocal, maxSyteline);
+            return siguiente;
         }
 
         // ── Insertar distribución (SLAptrxds) ─────────────────────────────────
