@@ -3,38 +3,38 @@ using Seguridad.Abstractions.Interfaces;
 
 namespace ComprobantePago.Web.Auth
 {
-    /// <summary>
-    /// Decora IUsuarioContexto para resolver Empresa desde appsettings.json
-    /// usando X-Tenant-Id, sin depender del shell ni de Seguridad.Infrastructure.
-    /// </summary>
+    // Lee claims directamente del HttpContext (igual que UsuarioContexto) y sobreescribe
+    // Empresa desde appsettings[TenantEmpresas], sin depender del tipo concreto de Seguridad.
     public sealed class ComprobanteUsuarioContexto : IUsuarioContexto
     {
-        private readonly IUsuarioContexto _inner;
-
-        public string CodTenant    => _inner.CodTenant;
-        public string CodUsuario   => _inner.CodUsuario;
-        public string Correo       => _inner.Correo;
-        public string Titulo       => _inner.Titulo;
-        public string Puesto       => _inner.Puesto;
-        public string Departamento => _inner.Departamento;
-        public string Dni          => _inner.Dni;
+        public string CodTenant    { get; }
+        public string CodUsuario   { get; }
+        public string Correo       { get; }
+        public string Titulo       { get; }
+        public string Puesto       { get; }
+        public string Departamento { get; }
+        public string Dni          { get; }
         public string Empresa      { get; }
 
         public ComprobanteUsuarioContexto(
-            IUsuarioContexto inner,
             IHttpContextAccessor httpContextAccessor,
             IConfiguration configuration)
         {
-            _inner = inner;
+            var user = httpContextAccessor.HttpContext?.User;
 
-            var tenantId = httpContextAccessor.HttpContext?
-                .Request.Headers["X-Tenant-Id"].FirstOrDefault()
-                ?? inner.CodTenant;
+            CodUsuario   = user?.FindFirst("oid")?.Value   ?? "";
+            CodTenant    = user?.FindFirst("tid")?.Value   ?? "";
+            Correo       = user?.FindFirst("email")?.Value ?? "";
+            Titulo       = user?.FindFirst("name")?.Value  ?? "";
+            Puesto       = user?.FindFirst("puesto")?.Value       ?? "";
+            Departamento = user?.FindFirst("departamento")?.Value ?? "";
+            Dni          = user?.FindFirst("dni")?.Value          ?? "";
 
-            var empresa = configuration
-                .GetSection("TenantEmpresas")[tenantId];
+            var tenantId      = CodTenant;
+            var empresaConfig = configuration.GetSection("TenantEmpresas")[tenantId];
+            var empresaClaim  = user?.FindFirst("empresa")?.Value ?? "";
 
-            Empresa = !string.IsNullOrEmpty(empresa) ? empresa : inner.Empresa;
+            Empresa = !string.IsNullOrEmpty(empresaConfig) ? empresaConfig : empresaClaim;
         }
     }
 }
