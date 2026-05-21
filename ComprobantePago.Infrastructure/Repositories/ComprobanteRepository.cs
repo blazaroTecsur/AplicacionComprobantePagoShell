@@ -263,6 +263,9 @@ namespace ComprobantePago.Infrastructure.Repositories
         public async Task AnularAsync(AnularComprobanteCommand command)
         {
             var c = await ObtenerPorFolioAsync(command.Comprobante.Folio);
+            if (c.CodigoEstado != "AUTORIZADO")
+                throw new InvalidOperationException(
+                    $"Solo se puede anular un comprobante en estado AUTORIZADO. Estado actual: {c.CodigoEstado}.");
             c.CodigoEstado   = "ANULADO";
             c.RolAnulacion   = _usuario.Correo;
             c.FechaAnulacion = DateTime.Now;

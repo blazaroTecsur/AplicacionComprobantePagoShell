@@ -81,8 +81,15 @@ namespace ComprobantePago.Web.Controllers
             var validacion = await _accionValidator.ValidateAsync(command.Comprobante);
             if (!validacion.IsValid)
                 return BadRequest(new { errores = validacion.Errors.Select(e => e.ErrorMessage) });
-            await _repository.AnularAsync(command);
-            return Ok(BaseResponse.Ok());
+            try
+            {
+                await _repository.AnularAsync(command);
+                return Ok(BaseResponse.Ok());
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { errores = new[] { ex.Message } });
+            }
         }
 
         // ── Imputaciones ─────────────────────────────────────────

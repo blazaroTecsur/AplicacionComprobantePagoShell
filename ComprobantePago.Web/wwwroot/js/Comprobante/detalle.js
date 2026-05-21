@@ -317,16 +317,14 @@ function mostrarBotonesSegunEstado(estado) {
         case 'REGISTRADO':
             $('#btnRegistrar, #btnEnviar, #btnLimpiar')
                 .removeClass('d-none');
-            $('#btnImprimirComprobante, #btnVistaPrevia')
-                .removeClass('d-none');
-            $('#btnAnular, #btnModoImputacion')
+            $('#btnImprimirComprobante, #btnVistaPrevia, #btnModoImputacion')
                 .removeClass('d-none');
             break;
         case 'ENVIADO':
             bloquearTodosLosCampos();
             $('#btnAutorizarDetalle, #btnImprimirComprobante')
                 .removeClass('d-none');
-            $('#btnVistaPrevia, #btnAnular').removeClass('d-none');
+            $('#btnVistaPrevia').removeClass('d-none');
             break;
         case 'AUTORIZADO':
             bloquearTodosLosCampos();
