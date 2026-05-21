@@ -167,55 +167,32 @@ namespace ComprobantePago.Infrastructure.QueryServices
 
                 if (!imputaciones.Any()) continue;
 
-                var tieneExento = c.MontoExento > 0;
-                var cantDist    = tieneExento ? 3 : 2;
+                var imputacionesDistribucion = imputaciones.Skip(1).ToList();
+                if (!imputacionesDistribucion.Any()) continue;
 
-                var imputacionesDistribucion = imputaciones.Skip(1).Take(cantDist).ToList();
-                if (imputacionesDistribucion.Count < 2) continue;
+                // Líneas de distribución según montos no cero del comprobante:
+                // cada entrada = (sistImpst, codImp, descCodImp, baseImp, importe)
+                var distLines = new List<(string sistImpst, string codImp, string descCodImp, decimal baseImp, decimal importe)>();
+                if (c.MontoNeto > 0)
+                    distLines.Add(("", "", "", 0, c.MontoNeto));
+                if (c.MontoIGVCredito > 0)
+                    distLines.Add(("2", "IGV18", "IGV 18%", c.MontoNeto, c.MontoIGVCredito));
+                if (c.MontoExento > 0)
+                    distLines.Add(("", "EXO", "Exento", c.MontoExento, c.MontoExento));
+
+                if (!distLines.Any()) continue;
 
                 var fechaDist = c.FechaRecepcion.HasValue
                     ? c.FechaRecepcion.Value.ToString("dd/MM/yyyy")
                     : c.FechaEmision.ToString("dd/MM/yyyy");
 
-                for (int idx = 0; idx < imputacionesDistribucion.Count; idx++)
+                var totalLineas = Math.Min(distLines.Count, imputacionesDistribucion.Count);
+                for (int idx = 0; idx < totalLineas; idx++)
                 {
                     var imp = imputacionesDistribucion[idx];
                     int secDist = (idx + 1) * 5;
 
-                    string sistImpst, codImp, descCodImp;
-                    decimal baseImp, importe;
-
-                    switch (idx)
-                    {
-                        case 0:
-                            sistImpst  = string.Empty;
-                            codImp     = string.Empty;
-                            descCodImp = string.Empty;
-                            baseImp    = 0;
-                            importe    = c.MontoNeto;
-                            break;
-                        case 1:
-                            sistImpst  = "2";
-                            codImp     = "IGV18";
-                            descCodImp = "IGV 18%";
-                            baseImp    = c.MontoNeto;
-                            importe    = c.MontoIGVCredito;
-                            break;
-                        case 2:
-                            sistImpst  = string.Empty;
-                            codImp     = "EXO";
-                            descCodImp = "Exento";
-                            baseImp    = c.MontoExento;
-                            importe    = c.MontoExento;
-                            break;
-                        default:
-                            sistImpst  = string.Empty;
-                            codImp     = string.Empty;
-                            descCodImp = string.Empty;
-                            baseImp    = 0;
-                            importe    = imp.Monto;
-                            break;
-                    }
+                    var (sistImpst, codImp, descCodImp, baseImp, importe) = distLines[idx];
 
                     var proveedorExport = c.EsEmpleado ? (c.EmpleadoCodigo ?? string.Empty) : c.RucReceptor;
                     var nombreExport    = c.EsEmpleado ? (c.EmpleadoNombre ?? string.Empty) : c.RazonSocialReceptor;
