@@ -331,6 +331,31 @@ function ocultarFormularioImputacion() {
  * Índice 3/4 → seq 4/5 (Retención, solo si > 0)
  */
 function obtenerLineasEsperadas() {
+    const esRP  = $('#hdnTipoDocumento').val() === 'RP';
+
+    // Para RP fraccionado: usar las líneas dinámicas de listaImputaciones (tipoLinea)
+    if (esRP && listaImputaciones.length > 0 &&
+        listaImputaciones.some(i => i.tipoLinea)) {
+
+        const lineas = [];
+        // Seq 1 = Cabecera (siempre)
+        lineas.push({ monto: null, desc: 'Cabecera SyteLine', afectacion: 'CABECERA' });
+
+        // Resto: construir desde listaImputaciones que tienen tipoLinea
+        const conTipo = listaImputaciones
+            .filter(i => i.secuencia > 1 && i.tipoLinea)
+            .sort((a, b) => a.secuencia - b.secuencia);
+
+        conTipo.forEach(imp => {
+            const desc = imp.tipoLinea === 'GRAVADO' ? 'Monto Neto'
+                       : imp.tipoLinea === 'IGV'     ? 'IGV Crédito Fiscal'
+                       : imp.tipoLinea;
+            lineas.push({ monto: imp.monto, desc, afectacion: imp.tipoLinea });
+        });
+
+        return lineas;
+    }
+
     const neto      = CorporativoCore.limpiarMonto($('#txtMontoNeto').val());
     const igv       = CorporativoCore.limpiarMonto($('#txtMontoIGVCredito').val());
     const exento    = CorporativoCore.limpiarMonto($('#txtMontoExento').val());
