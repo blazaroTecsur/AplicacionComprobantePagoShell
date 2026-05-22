@@ -20,7 +20,8 @@ namespace ComprobantePago.Application.Validations
                 .NotEmpty().WithMessage("El tipo de documento es obligatorio.");
 
             RuleFor(x => x.TipoSunat)
-                .NotEmpty().WithMessage("El tipo SUNAT es obligatorio.");
+                .NotEmpty().WithMessage("El tipo SUNAT es obligatorio.")
+                .When(x => !new[] { "VC", "PV", "VT", "RP" }.Contains(x.TipoDocumento));
 
             RuleFor(x => x.Serie)
                 .NotEmpty().WithMessage("La serie es obligatoria.")
