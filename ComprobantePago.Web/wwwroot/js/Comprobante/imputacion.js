@@ -25,10 +25,10 @@ function inicializarTablaImputacion() {
         columns: [
             { data: 'aliasCuenta' },
             {
-                // Afectación / código impositivo — calculado por secuencia
+                // Afectación / código impositivo — tipoLinea (RP) o secuencia (otros)
                 data: null,
                 render: function (data, type, row) {
-                    const af = obtenerAfectacion(row.secuencia);
+                    const af = obtenerAfectacion(row.secuencia, row.tipoLinea);
                     if (!af) return '';
                     const clases = {
                         CABECERA:  'bg-secondary',
@@ -90,7 +90,16 @@ function cargarImputaciones(folio) {
         listaImputaciones = data;
         refrescarTabla();
         calcularTotales();
+        actualizarBotonesRP();
     });
+}
+
+// ── Mostrar/ocultar botones según tipo RP ─────
+function actualizarBotonesRP() {
+    const esRP = $('#hdnTipoDocumento').val() === 'RP';
+    $('#btnFraccionar').toggleClass('d-none', !esRP);
+    $('#btnExplorar').toggleClass('d-none', !esRP);
+    $('#btnDescargarPlantillaImputacion').toggleClass('d-none', !esRP);
 }
 
 // ── Mostrar formulario nueva imputación ───────
@@ -346,8 +355,9 @@ function obtenerLineasEsperadas() {
     return lineas;
 }
 
-/** Devuelve la etiqueta de afectación/código impositivo para una secuencia dada. */
-function obtenerAfectacion(seq) {
+/** Devuelve la etiqueta de afectación. Para RP usa tipoLinea directo; otros usan secuencia. */
+function obtenerAfectacion(seq, tipoLinea) {
+    if (tipoLinea) return tipoLinea;
     const lineas = obtenerLineasEsperadas();
     const item   = lineas[seq - 1];
     return item ? item.afectacion : '';
@@ -547,6 +557,204 @@ function mostrarModalBusqueda(data, titulo, claseItem, inputId) {
 }
 
 // ════════════════════════════════════════════
+// MODAL FRACCIONAR (solo RP)
+// ════════════════════════════════════════════
+
+function mostrarModalFraccionar() {
+    const montoNeto = CorporativoCore.limpiarMonto($('#txtMontoNeto').val());
+    const montoIgv  = CorporativoCore.limpiarMonto($('#txtMontoIGVCredito').val());
+
+    const html = `
+    <div class="modal fade" id="modalFraccionar" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header py-2" style="background-color:#5b74ad;">
+                    <h6 class="modal-title text-white mb-0">
+                        <i class="bi bi-grid-3x3-gap"></i> Fraccionar Imputación
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-auto">
+                            <label class="form-label fw-bold mb-0">Número de líneas</label>
+                            <input type="number" id="txtNumLineas" class="form-control form-control-sm"
+                                   value="2" min="2" max="20" style="width:80px" />
+                        </div>
+                        <div class="col-auto d-flex align-items-end">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="radio" name="rdTipoDiv"
+                                       id="rdMontoIgual" value="igual" checked />
+                                <label class="form-check-label" for="rdMontoIgual">Montos iguales</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="rdTipoDiv"
+                                       id="rdPorcentaje" value="porcentaje" />
+                                <label class="form-check-label" for="rdPorcentaje">Por porcentaje</label>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex align-items-end">
+                            <button class="btn btn-secondary btn-sm" id="btnGenerarLineas">
+                                <i class="bi bi-arrow-clockwise"></i> Generar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered" id="tblFraccionar">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Línea</th>
+                                    <th class="text-end">% (opcional)</th>
+                                    <th class="text-end">Monto Neto</th>
+                                    <th class="text-end">IGV</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bodyFraccionar"></tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td>Total</td>
+                                    <td class="text-end" id="tdTotalPct"></td>
+                                    <td class="text-end" id="tdTotalNeto"></td>
+                                    <td class="text-end" id="tdTotalIgv"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="btnConfirmarFraccion">
+                        <i class="bi bi-check-circle"></i> Confirmar Fraccionamiento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    $('#modalFraccionar').remove();
+    $('#modalContainer').append(html);
+
+    const modal = new bootstrap.Modal(document.getElementById('modalFraccionar'));
+    modal.show();
+
+    generarFilasFraccionar(montoNeto, montoIgv);
+
+    $('#btnGenerarLineas').on('click', function () {
+        generarFilasFraccionar(montoNeto, montoIgv);
+    });
+
+    $('#bodyFraccionar').on('input', '.inp-pct', function () {
+        recalcularDesdePorcentaje(montoNeto, montoIgv);
+    });
+
+    $('#bodyFraccionar').on('input', '.inp-neto, .inp-igv', function () {
+        actualizarTotalesFraccionar();
+    });
+
+    $('#btnConfirmarFraccion').on('click', function () {
+        confirmarFraccionamiento();
+    });
+}
+
+function generarFilasFraccionar(montoNeto, montoIgv) {
+    const n      = Math.max(2, Math.min(20, parseInt($('#txtNumLineas').val()) || 2));
+    const tipo   = $('input[name="rdTipoDiv"]:checked').val();
+    const esPct  = tipo === 'porcentaje';
+    const pct    = parseFloat((100 / n).toFixed(4));
+    const neto   = parseFloat((montoNeto / n).toFixed(2));
+    const igv    = parseFloat((montoIgv  / n).toFixed(2));
+
+    let rows = '';
+    for (let i = 1; i <= n; i++) {
+        const esUltima = i === n;
+        // Ajuste de redondeo en la última línea
+        const netoFila = esUltima ? parseFloat((montoNeto - neto * (n - 1)).toFixed(2)) : neto;
+        const igvFila  = esUltima ? parseFloat((montoIgv  - igv  * (n - 1)).toFixed(2)) : igv;
+        const pctFila  = esUltima ? parseFloat((100 - pct * (n - 1)).toFixed(4)) : pct;
+
+        rows += `<tr>
+            <td>${i}</td>
+            <td class="text-end">
+                <input type="number" class="form-control form-control-sm text-end inp-pct"
+                       value="${pctFila}" min="0" max="100" step="0.01"
+                       style="width:80px" ${!esPct ? 'disabled' : ''} />
+            </td>
+            <td class="text-end">
+                <input type="number" class="form-control form-control-sm text-end inp-neto"
+                       value="${netoFila}" min="0" step="0.01"
+                       style="width:110px" ${esPct ? 'disabled' : ''} />
+            </td>
+            <td class="text-end">
+                <input type="number" class="form-control form-control-sm text-end inp-igv"
+                       value="${igvFila}" min="0" step="0.01"
+                       style="width:110px" ${esPct ? 'disabled' : ''} />
+            </td>
+        </tr>`;
+    }
+    $('#bodyFraccionar').html(rows);
+    actualizarTotalesFraccionar();
+}
+
+function recalcularDesdePorcentaje(montoNeto, montoIgv) {
+    const filas = $('#bodyFraccionar tr');
+    filas.each(function (idx) {
+        const pct    = parseFloat($(this).find('.inp-pct').val()) || 0;
+        const esUlt  = idx === filas.length - 1;
+        if (!esUlt) {
+            $(this).find('.inp-neto').val(parseFloat((montoNeto * pct / 100).toFixed(2)));
+            $(this).find('.inp-igv').val( parseFloat((montoIgv  * pct / 100).toFixed(2)));
+        }
+    });
+    // Última fila: ajuste de redondeo
+    const sumNeto = filas.slice(0, -1).toArray()
+        .reduce((s, r) => s + (parseFloat($(r).find('.inp-neto').val()) || 0), 0);
+    const sumIgv  = filas.slice(0, -1).toArray()
+        .reduce((s, r) => s + (parseFloat($(r).find('.inp-igv').val())  || 0), 0);
+    filas.last().find('.inp-neto').val(parseFloat((montoNeto - sumNeto).toFixed(2)));
+    filas.last().find('.inp-igv').val( parseFloat((montoIgv  - sumIgv).toFixed(2)));
+    actualizarTotalesFraccionar();
+}
+
+function actualizarTotalesFraccionar() {
+    let totalPct = 0, totalNeto = 0, totalIgv = 0;
+    $('#bodyFraccionar tr').each(function () {
+        totalPct  += parseFloat($(this).find('.inp-pct').val())  || 0;
+        totalNeto += parseFloat($(this).find('.inp-neto').val()) || 0;
+        totalIgv  += parseFloat($(this).find('.inp-igv').val())  || 0;
+    });
+    $('#tdTotalPct').text(totalPct.toFixed(2) + '%');
+    $('#tdTotalNeto').text(CorporativoCore.formatearMonto(totalNeto));
+    $('#tdTotalIgv').text(CorporativoCore.formatearMonto(totalIgv));
+}
+
+function confirmarFraccionamiento() {
+    const lineas = [];
+    $('#bodyFraccionar tr').each(function () {
+        lineas.push({
+            montoNeto: parseFloat($(this).find('.inp-neto').val()) || 0,
+            montoIgv:  parseFloat($(this).find('.inp-igv').val())  || 0
+        });
+    });
+
+    if (lineas.length === 0) return;
+
+    CorporativoQuery.ajaxPost(
+        BASE_URL + '/Comprobante/FraccionarImputacion',
+        { folio: $('#hdnFolio').val(), lineas },
+        function (response) {
+            if (response.exito) {
+                listaImputaciones = response.imputaciones;
+                refrescarTabla();
+                calcularTotales();
+                bootstrap.Modal.getInstance(
+                    document.getElementById('modalFraccionar')).hide();
+                CorporativoCore.notificarExito('Imputación fraccionada correctamente.');
+            }
+        }
+    );
+}
+
+// ════════════════════════════════════════════
 // BIND EVENTOS
 // ════════════════════════════════════════════
 
@@ -556,6 +764,8 @@ function bindEventosImputacion() {
     $('#btnAgregarNuevaImputacion').on('click', agregarImputacion);
     $('#btnEditarDetalle').on('click', guardarEdicionImputacion);
     $('#btnCancelarDetalle').on('click', ocultarFormularioImputacion);
+
+    $('#btnFraccionar').on('click', mostrarModalFraccionar);
 
     $('#btnLimpiarImputacion').on('click', async function () {
         const ok = await CorporativoCore.confirmar('¿Desea limpiar el formulario de imputación?');
@@ -595,6 +805,7 @@ function bindEventosImputacion() {
             $('#barraAccionesImputacion').removeClass('d-none');
             cargarImputaciones(folio);
         }
+        actualizarBotonesRP();
     });
 
     // ── Códigos Unidad ────────────────────────

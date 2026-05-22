@@ -151,6 +151,15 @@ namespace ComprobantePago.Web.Controllers
         [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
+        public async Task<IActionResult> FraccionarImputacion([FromBody] FraccionarImputacionRequest request)
+        {
+            var imputaciones = await _repository.FraccionarImputacionAsync(request.Folio, request.Lineas);
+            return Ok(new { exito = true, imputaciones });
+        }
+
+        [HttpPost("[action]")]
+        [ValidateAntiForgeryToken]
+        [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> CargarImputacionMasiva(IFormFile file)
         {
             var imputaciones = await _repository.CargarImputacionMasivaAsync(file);

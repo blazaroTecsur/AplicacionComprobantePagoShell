@@ -13,6 +13,7 @@ namespace ComprobantePago.Infrastructure.Persistence.Configurations
             builder.HasKey(x => x.IdImputacionContable);
             builder.Property(x => x.Folio).HasMaxLength(20).IsRequired();
             builder.Property(x => x.Monto).HasColumnType("decimal(18,2)");
+            builder.Property(x => x.TipoLinea).HasMaxLength(20);
             builder.Property(x => x.UsuarioReg).HasMaxLength(50).IsRequired();
         }
     }

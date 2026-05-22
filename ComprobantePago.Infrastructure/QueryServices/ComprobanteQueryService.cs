@@ -238,6 +238,29 @@ namespace ComprobantePago.Infrastructure.QueryServices
         }
 
         public Task<byte[]> ObtenerPlantillaImputacionAsync()
-            => Task.FromResult<byte[]>(null!);
+        {
+            using var wb = new ClosedXML.Excel.XLWorkbook();
+            var ws = wb.Worksheets.Add("Imputaciones");
+
+            string[] headers = [
+                "Secuencia", "AliasCuenta", "CuentaContable", "DescripcionCuenta",
+                "Monto", "Descripcion", "Proyecto",
+                "CodUnidad1", "CodUnidad2", "CodUnidad3", "CodUnidad4"
+            ];
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                var cell = ws.Cell(1, i + 1);
+                cell.Value = headers[i];
+                cell.Style.Font.Bold = true;
+                cell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightBlue;
+            }
+
+            ws.Columns().AdjustToContents();
+
+            using var ms = new MemoryStream();
+            wb.SaveAs(ms);
+            return Task.FromResult(ms.ToArray());
+        }
     }
 }

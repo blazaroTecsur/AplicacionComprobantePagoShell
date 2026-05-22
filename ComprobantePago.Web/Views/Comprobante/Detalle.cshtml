@@ -19,6 +19,7 @@
 <input type="hidden" id="hdnEstaDerivado" />
 <input type="hidden" id="hdnRequiereAduana" />
 <input type="hidden" id="hdnCodigoEstado" />
+<input type="hidden" id="hdnTipoDocumento" />
 <input type="hidden" id="hdnEsDocumentoElectronico" />
 <input type="hidden" id="hdnTienePdf" />
 <input type="hidden" id="hdnOrigen" />
@@ -232,6 +233,9 @@
                     <div class="barra-imputacion d-none" id="barraOpcionesImputacion">
                         <button type="button" class="btn btn-secondary btn-sm" id="btnLimpiarImputacion">
                             <i class="bi bi-brush"></i> Limpiar Imputación
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm d-none" id="btnFraccionar">
+                            <i class="bi bi-grid-3x3-gap"></i> Fraccionar
                         </button>
                         <input type="file" id="inpFile" accept=".xlsx" style="display:none" />
                         <button type="button" class="btn btn-primary btn-sm d-none" id="btnExplorar">

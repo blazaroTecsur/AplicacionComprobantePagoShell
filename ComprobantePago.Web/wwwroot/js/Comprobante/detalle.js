@@ -176,6 +176,7 @@ function poblarCabecera(data) {
 
     // Hidden fields
     $('#hdnCodigoEstado').val(data.codigoEstado);
+    $('#hdnTipoDocumento').val(data.tipoDocumento);
     $('#hdnEsDocumentoElectronico').val(data.esDocumentoElectronico);
     $('#hdnRequiereDetraccion').val(data.requiereDetraccion);
     $('#hdnAplicaIGV').val(data.aplicaIGV);

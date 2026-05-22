@@ -1,5 +1,6 @@
 ﻿using ComprobantePago.Application.Commands.Comprobante;
 using ComprobantePago.Application.Commands.Imputacion;
+using ComprobantePago.Application.DTOs.Comprobante.Requests;
 using ComprobantePago.Application.DTOs.Comprobante.Response;
 using ComprobantePago.Domain.Entities;
 using Microsoft.AspNetCore.Http;
@@ -37,6 +38,8 @@ namespace ComprobantePago.Application.Interfaces.Repositories
             EliminarImputacionCommand command);
         Task<IEnumerable<ImputacionDetalleDto>> CargarImputacionMasivaAsync(
             IFormFile file);
+        Task<IEnumerable<ImputacionDetalleDto>> FraccionarImputacionAsync(
+            string folio, List<ImputacionFraccionDto> lineas);
         Task<ValidacionSunatDto> ValidarXmlSunatAsync(IFormFile archivo);
         Task<ValidacionSunatDto> ValidarPdfSunatAsync(IFormFile archivo);
         Task<ValidacionSunatDto> ValidarZipSunatAsync(IFormFile archivo);

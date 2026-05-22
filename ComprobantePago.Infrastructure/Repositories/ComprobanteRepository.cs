@@ -1,5 +1,7 @@
+using ClosedXML.Excel;
 using ComprobantePago.Application.Commands.Comprobante;
 using ComprobantePago.Application.Commands.Imputacion;
+using ComprobantePago.Application.DTOs.Comprobante.Requests;
 using ComprobantePago.Application.DTOs.Comprobante.Response;
 using ComprobantePago.Application.Exceptions;
 using ComprobantePago.Application.Interfaces;
@@ -511,9 +513,107 @@ namespace ComprobantePago.Infrastructure.Repositories
             }
         }
 
-        public Task<IEnumerable<ImputacionDetalleDto>> CargarImputacionMasivaAsync(
+        public async Task<IEnumerable<ImputacionDetalleDto>> CargarImputacionMasivaAsync(
             IFormFile file)
-            => Task.FromResult<IEnumerable<ImputacionDetalleDto>>(new List<ImputacionDetalleDto>());
+        {
+            var resultado = new List<ImputacionDetalleDto>();
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            ms.Position = 0;
+
+            using var workbook = new XLWorkbook(ms);
+            var hoja = workbook.Worksheets.First();
+
+            // Fila 1 = encabezados, leer desde fila 2
+            int seq = 1;
+            foreach (var fila in hoja.RowsUsed().Skip(1))
+            {
+                string GetCell(int col) => fila.Cell(col).GetValue<string>()?.Trim() ?? string.Empty;
+                decimal GetDecimal(int col)
+                {
+                    var val = fila.Cell(col).GetValue<string>();
+                    return decimal.TryParse(val,
+                        System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out var d) ? d : 0m;
+                }
+
+                var alias = GetCell(1);
+                if (string.IsNullOrWhiteSpace(alias)) continue;
+
+                resultado.Add(new ImputacionDetalleDto
+                {
+                    Secuencia         = seq++,
+                    Folio             = string.Empty,
+                    AliasCuenta       = alias,
+                    CuentaContable    = GetCell(2),
+                    DescripcionCuenta = GetCell(3),
+                    Monto             = GetDecimal(4),
+                    Descripcion       = GetCell(5),
+                    Proyecto          = GetCell(6),
+                    CodUnidad1Cuenta  = GetCell(7),
+                    CodUnidad2Cuenta  = GetCell(8),
+                    CodUnidad3Cuenta  = GetCell(9),
+                    CodUnidad4Cuenta  = GetCell(10),
+                    TipoLinea         = null
+                });
+            }
+
+            return resultado;
+        }
+
+        public async Task<IEnumerable<ImputacionDetalleDto>> FraccionarImputacionAsync(
+            string folio, List<ImputacionFraccionDto> lineas)
+        {
+            // Eliminar imputaciones existentes con secuencia > 1
+            var existentes = await _contexto.ImputacionesContables
+                .Where(x => x.Folio == folio && x.Secuencia > 1)
+                .ToListAsync();
+            _contexto.ImputacionesContables.RemoveRange(existentes);
+
+            var nuevas = new List<ImputacionContable>();
+            int seq = 2;
+
+            // N líneas GRAVADO (Monto Neto)
+            foreach (var linea in lineas)
+            {
+                nuevas.Add(new ImputacionContable
+                {
+                    Folio      = folio,
+                    Secuencia  = seq++,
+                    TipoLinea  = "GRAVADO",
+                    Monto      = linea.MontoNeto,
+                    Descripcion = "Monto Neto",
+                    UsuarioReg  = _usuario.Correo,
+                    FechaReg    = DateTime.Now
+                });
+            }
+
+            // N líneas IGV
+            foreach (var linea in lineas)
+            {
+                nuevas.Add(new ImputacionContable
+                {
+                    Folio      = folio,
+                    Secuencia  = seq++,
+                    TipoLinea  = "IGV",
+                    Monto      = linea.MontoIgv,
+                    Descripcion = "IGV Crédito Fiscal",
+                    UsuarioReg  = _usuario.Correo,
+                    FechaReg    = DateTime.Now
+                });
+            }
+
+            _contexto.ImputacionesContables.AddRange(nuevas);
+            await _unitOfWork.SaveChangesAsync();
+
+            var todas = await _contexto.ImputacionesContables
+                .Where(x => x.Folio == folio)
+                .OrderBy(x => x.Secuencia)
+                .ToListAsync();
+
+            return todas.Adapt<IEnumerable<ImputacionDetalleDto>>();
+        }
 
         // ── Validar ZIP SUNAT ─────────────────────
         public async Task<ValidacionSunatDto> ValidarZipSunatAsync(IFormFile archivo)

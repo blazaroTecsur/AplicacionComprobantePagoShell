@@ -15,6 +15,7 @@ namespace ComprobantePago.Domain.Entities
         public string? CodUnidad2Cuenta { get; set; }
         public string? CodUnidad3Cuenta { get; set; }
         public string? CodUnidad4Cuenta { get; set; }
+        public string? TipoLinea { get; set; }
         public string UsuarioReg { get; set; } = string.Empty;
         public DateTime FechaReg { get; set; } = DateTime.Now;
         public string? UsuarioAct { get; set; }
