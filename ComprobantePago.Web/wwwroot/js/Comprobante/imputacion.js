@@ -103,13 +103,22 @@ function actualizarBotonesRP() {
 }
 
 // ── Mostrar formulario nueva imputación ───────
-function mostrarFormularioImputacion() {
+function mostrarFormularioImputacion(secuenciaObjetivo) {
     limpiarFormularioImputacion();
     modoEdicion = false;
     secuenciaEditando = null;
 
-    // Pre-cargar monto y mostrar badge según la línea que se va a agregar
-    const linea = obtenerLineaSiguiente();
+    // Si viene de "Configurar" usamos la secuencia del pendiente; si es "Nueva" la siguiente disponible
+    let linea;
+    if (secuenciaObjetivo != null) {
+        const lineas = obtenerLineasEsperadas();
+        const item   = lineas[secuenciaObjetivo - 1];
+        linea = item ? { seq: secuenciaObjetivo, ...item } : { seq: secuenciaObjetivo, monto: null, desc: null };
+    } else {
+        linea = obtenerLineaSiguiente();
+    }
+
+    $('#txtSecuencia').val(linea.seq);
     if (linea.monto !== null) {
         $('#txtMonto').val(CorporativoCore.formatearMonto(linea.monto));
     }
@@ -810,9 +819,8 @@ function bindEventosImputacion() {
         eliminarImputacion($(this).data('secuencia'));
     });
 
-    // Configurar fila pendiente: abre el formulario pre-cargado para la siguiente línea esperada.
     $('#tblImputacion').on('click', '.btn-configurar-imp', function () {
-        mostrarFormularioImputacion();
+        mostrarFormularioImputacion(parseInt($(this).data('secuencia')));
     });
 
     $('#btnExplorar').on('click', function () {
