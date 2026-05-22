@@ -823,18 +823,33 @@ function bindEventosImputacion() {
         mostrarFormularioImputacion(parseInt($(this).data('secuencia')));
     });
 
+    // Flag global: bloquea re-entradas mientras el diálogo de archivos está abierto.
+    // Chrome re-dispara click en el botón cuando el diálogo cierra y el foco vuelve;
+    // el flag permanece true hasta que la ventana recupera el foco (diálogo cerrado).
+    let _explorandoArchivo = false;
+
     $('#btnExplorar').on('click', function () {
-        // Clonar el input elimina estado viejo y eventos previos; .one() garantiza
-        // que change dispare una sola vez aunque Chrome re-emita el evento al limpiar
+        if (_explorandoArchivo) return;
+        _explorandoArchivo = true;
+
         const $old = $('#inpFile');
-        const $nuevo = $old.clone().val('');
+        const $nuevo = $old.clone();
         $old.replaceWith($nuevo);
 
         $nuevo.one('change', function () {
+            _explorandoArchivo = false;
             if (this.files.length > 0) {
                 procesarImputacionMasiva(this.files[0]);
             }
         });
+
+        // Liberar el flag cuando el diálogo cierre (ventana recupera foco),
+        // tanto si el usuario seleccionó un archivo como si canceló.
+        window.addEventListener('focus', function liberarDialogo() {
+            window.removeEventListener('focus', liberarDialogo);
+            // Pequeño delay para que el evento change llegue primero si hubo selección
+            setTimeout(() => { _explorandoArchivo = false; }, 400);
+        }, { once: true });
 
         setTimeout(() => $nuevo[0].click(), 0);
     });
