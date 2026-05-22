@@ -181,7 +181,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
 
                 if (esFraccionado)
                 {
-                    var codIgv  = c.PorcentajeIGV == 10 ? "IGV10" : "IGV18";
+                    var codIgv  = c.PorcentajeIGV == 10 ? "IGV 10" : "IGV18";
                     var descIgv = c.PorcentajeIGV == 10 ? "IGV 10%" : "IGV 18%";
                     foreach (var imp in imputacionesDistribucion)
                     {
@@ -197,7 +197,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 else
                 {
                     // Flujo normal: montos desde el comprobante, cuentas desde imputaciones por posición
-                    var codIgv  = c.PorcentajeIGV == 10 ? "IGV10" : "IGV18";
+                    var codIgv  = c.PorcentajeIGV == 10 ? "IGV 10" : "IGV18";
                     var descIgv = c.PorcentajeIGV == 10 ? "IGV 10%" : "IGV 18%";
                     var montoLines = new List<(string sistImpst, string codImp, string descCodImp, decimal baseImp, decimal importe)>();
                     if (c.MontoNeto > 0)
