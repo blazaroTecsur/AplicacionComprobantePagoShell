@@ -466,6 +466,7 @@ function procesarImputacionMasiva(archivo) {
                 listaImputaciones = response.imputaciones;
                 refrescarTabla();
                 calcularTotales();
+                actualizarBotonesRP();
                 CorporativoCore.notificarExito('Imputación masiva cargada correctamente.');
             } else {
                 CorporativoCore.notificarError(response.mensaje);

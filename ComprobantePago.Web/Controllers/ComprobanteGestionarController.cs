@@ -160,10 +160,23 @@ namespace ComprobantePago.Web.Controllers
         [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
-        public async Task<IActionResult> CargarImputacionMasiva(IFormFile file)
+        public async Task<IActionResult> CargarImputacionMasiva(IFormFile file, string folio)
         {
-            var imputaciones = await _repository.CargarImputacionMasivaAsync(file);
-            return Ok(new { exito = true, imputaciones });
+            var errorArchivo = ValidarArchivo(file, 10, "xlsx");
+            if (errorArchivo != null) return BadRequest(errorArchivo);
+
+            if (string.IsNullOrWhiteSpace(folio))
+                return BadRequest(new { success = false, error = new { code = "FOLIO_REQUIRED", userMessage = "Debe guardar el comprobante antes de cargar imputaciones." } });
+
+            try
+            {
+                var imputaciones = await _repository.CargarImputacionMasivaAsync(file, folio);
+                return Ok(new { exito = true, imputaciones });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, error = new { code = "IMPORT_ERROR", userMessage = ex.Message } });
+            }
         }
 
         // ── Documentos adjuntos ──────────────────────────────────

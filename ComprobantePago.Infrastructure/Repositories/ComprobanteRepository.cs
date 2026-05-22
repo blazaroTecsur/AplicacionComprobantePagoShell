@@ -514,9 +514,8 @@ namespace ComprobantePago.Infrastructure.Repositories
         }
 
         public async Task<IEnumerable<ImputacionDetalleDto>> CargarImputacionMasivaAsync(
-            IFormFile file)
+            IFormFile file, string folio)
         {
-            var resultado = new List<ImputacionDetalleDto>();
             using var ms = new MemoryStream();
             await file.CopyToAsync(ms);
             ms.Position = 0;
@@ -524,9 +523,14 @@ namespace ComprobantePago.Infrastructure.Repositories
             using var workbook = new XLWorkbook(ms);
             var hoja = workbook.Worksheets.First();
 
-            // Fila 1 = encabezados, leer desde fila 2
-            int seq = 1;
-            foreach (var fila in hoja.RowsUsed().Skip(1))
+            // Columnas según plantilla:
+            // 1=Secuencia 2=AliasCuenta 3=CuentaContable 4=DescripcionCuenta
+            // 5=Monto 6=TipoLinea 7=Descripcion 8=Proyecto
+            // 9=CodUnidad1 10=CodUnidad2 11=CodUnidad3 12=CodUnidad4
+
+            var lineasExcel = new List<ImputacionContable>();
+
+            foreach (var fila in hoja.RowsUsed().Skip(1)) // fila 1 = encabezados
             {
                 string GetCell(int col) => fila.Cell(col).GetValue<string>()?.Trim() ?? string.Empty;
                 decimal GetDecimal(int col)
@@ -538,28 +542,54 @@ namespace ComprobantePago.Infrastructure.Repositories
                         out var d) ? d : 0m;
                 }
 
-                var alias = GetCell(1);
-                if (string.IsNullOrWhiteSpace(alias)) continue;
+                var alias    = GetCell(2);
+                var tipoLinea = GetCell(6).ToUpperInvariant();
 
-                resultado.Add(new ImputacionDetalleDto
+                // Ignorar filas vacías o la fila de cabecera (no se importa)
+                if (string.IsNullOrWhiteSpace(alias)) continue;
+                if (tipoLinea == "CABECERA") continue;
+
+                lineasExcel.Add(new ImputacionContable
                 {
-                    Secuencia         = seq++,
-                    Folio             = string.Empty,
+                    Folio             = folio,
                     AliasCuenta       = alias,
-                    CuentaContable    = GetCell(2),
-                    DescripcionCuenta = GetCell(3),
-                    Monto             = GetDecimal(4),
-                    Descripcion       = GetCell(5),
-                    Proyecto          = GetCell(6),
-                    CodUnidad1Cuenta  = GetCell(7),
-                    CodUnidad2Cuenta  = GetCell(8),
-                    CodUnidad3Cuenta  = GetCell(9),
-                    CodUnidad4Cuenta  = GetCell(10),
-                    TipoLinea         = null
+                    CuentaContable    = GetCell(3),
+                    DescripcionCuenta = GetCell(4),
+                    Monto             = GetDecimal(5),
+                    TipoLinea         = string.IsNullOrEmpty(tipoLinea) ? null : tipoLinea,
+                    Descripcion       = GetCell(7),
+                    Proyecto          = GetCell(8),
+                    CodUnidad1Cuenta  = GetCell(9),
+                    CodUnidad2Cuenta  = GetCell(10),
+                    CodUnidad3Cuenta  = GetCell(11),
+                    CodUnidad4Cuenta  = GetCell(12),
+                    UsuarioReg        = _usuario.Correo,
+                    FechaReg          = DateTime.Now
                 });
             }
 
-            return resultado;
+            if (lineasExcel.Count == 0)
+                throw new InvalidOperationException("El archivo no contiene líneas de imputación válidas.");
+
+            // Eliminar imputaciones existentes con secuencia > 1 y reemplazar
+            var existentes = await _contexto.ImputacionesContables
+                .Where(x => x.Folio == folio && x.Secuencia > 1)
+                .ToListAsync();
+            _contexto.ImputacionesContables.RemoveRange(existentes);
+
+            int seq = 2;
+            foreach (var linea in lineasExcel)
+                linea.Secuencia = seq++;
+
+            _contexto.ImputacionesContables.AddRange(lineasExcel);
+            await _unitOfWork.SaveChangesAsync();
+
+            var todas = await _contexto.ImputacionesContables
+                .Where(x => x.Folio == folio)
+                .OrderBy(x => x.Secuencia)
+                .ToListAsync();
+
+            return todas.Adapt<IEnumerable<ImputacionDetalleDto>>();
         }
 
         public async Task<IEnumerable<ImputacionDetalleDto>> FraccionarImputacionAsync(

@@ -240,6 +240,8 @@ namespace ComprobantePago.Infrastructure.QueryServices
         public Task<byte[]> ObtenerPlantillaImputacionAsync()
         {
             using var wb = new ClosedXML.Excel.XLWorkbook();
+
+            // ── Hoja 1: Imputaciones ──────────────────────────────────────────
             var ws = wb.Worksheets.Add("Imputaciones");
 
             string[] headers = [
@@ -248,15 +250,133 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 "CodUnidad1", "CodUnidad2", "CodUnidad3", "CodUnidad4"
             ];
 
+            // Encabezados
             for (int i = 0; i < headers.Length; i++)
             {
                 var cell = ws.Cell(1, i + 1);
                 cell.Value = headers[i];
                 cell.Style.Font.Bold = true;
                 cell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightBlue;
+                cell.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
             }
 
+            // Filas de ejemplo por tipo de afectación
+            var ejemplos = new[]
+            {
+                //  Seq   Alias       CuentaContable  Descripcion             Monto      TipoLinea   Desc                    Proyecto   U1  U2  U3  U4
+                (1, "CUENTA-01", "42110001", "Proveedores Nacionales",      0m,       "CABECERA", "Cabecera SyteLine",    "",        "",  "",  "",  ""),
+                (2, "CUENTA-02", "60110001", "Costo de Servicios",       1000m,       "GRAVADO",  "Monto Neto",           "PROY-01", "A1", "B2", "",  ""),
+                (3, "CUENTA-03", "40111001", "IGV por Pagar",             180m,       "IGV",      "IGV Crédito Fiscal",   "",        "",  "",  "",  ""),
+                (4, "CUENTA-04", "63900001", "Servicios No Gravados",     500m,       "EXENTO",   "Monto Exento",         "",        "",  "",  "",  ""),
+            };
+
+            var coloresFila = new Dictionary<string, ClosedXML.Excel.XLColor>
+            {
+                ["CABECERA"] = ClosedXML.Excel.XLColor.LightGray,
+                ["GRAVADO"]  = ClosedXML.Excel.XLColor.FromArgb(198, 224, 180), // verde claro
+                ["IGV"]      = ClosedXML.Excel.XLColor.FromArgb(189, 215, 238), // azul claro
+                ["EXENTO"]   = ClosedXML.Excel.XLColor.FromArgb(255, 242, 204), // amarillo claro
+            };
+
+            for (int r = 0; r < ejemplos.Length; r++)
+            {
+                var (seq, alias, cuenta, descCuenta, monto, tipo, desc, proy, u1, u2, u3, u4) = ejemplos[r];
+                object[] valores = [seq, alias, cuenta, descCuenta, monto, tipo, desc, proy, u1, u2, u3, u4];
+
+                var color = coloresFila.TryGetValue(tipo, out var c) ? c : ClosedXML.Excel.XLColor.NoColor;
+                for (int col = 0; col < valores.Length; col++)
+                {
+                    var cell = ws.Cell(r + 2, col + 1);
+                    cell.Value   = ClosedXML.Excel.XLCellValue.FromObject(valores[col]);
+                    cell.Style.Fill.BackgroundColor = color;
+                    cell.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                    cell.Style.Font.Italic = true;
+                    cell.Style.Font.FontColor = ClosedXML.Excel.XLColor.Gray;
+                }
+            }
+
+            // Nota instructiva debajo de los ejemplos
+            var notaCell = ws.Cell(ejemplos.Length + 3, 1);
+            notaCell.Value = "⚠ Elimine las filas de ejemplo antes de cargar. La fila de CABECERA (Secuencia=1) no se importa.";
+            notaCell.Style.Font.Bold = true;
+            notaCell.Style.Font.FontColor = ClosedXML.Excel.XLColor.DarkRed;
+            ws.Range(notaCell, ws.Cell(ejemplos.Length + 3, headers.Length)).Merge();
+
             ws.Columns().AdjustToContents();
+
+            // ── Hoja 2: Glosario ──────────────────────────────────────────────
+            var wg = wb.Worksheets.Add("Glosario");
+
+            // Título
+            var titulo = wg.Cell(1, 1);
+            titulo.Value = "Glosario de columnas — Plantilla de Imputación Contable";
+            titulo.Style.Font.Bold = true;
+            titulo.Style.Font.FontSize = 13;
+            titulo.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+            titulo.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromArgb(91, 116, 173);
+            wg.Range("A1:C1").Merge();
+
+            // Encabezado de tabla
+            string[] glosHeaders = ["Columna", "Obligatorio", "Descripción"];
+            for (int i = 0; i < glosHeaders.Length; i++)
+            {
+                var cell = wg.Cell(2, i + 1);
+                cell.Value = glosHeaders[i];
+                cell.Style.Font.Bold = true;
+                cell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightBlue;
+                cell.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+            }
+
+            var glosario = new[]
+            {
+                ("Secuencia",       "No",  "Número de orden de la línea. Solo informativo; el sistema lo reasigna al importar."),
+                ("AliasCuenta",     "Sí",  "Código alias de la cuenta contable (clave de búsqueda en el sistema)."),
+                ("CuentaContable",  "Sí",  "Código completo de la cuenta contable según el plan de cuentas."),
+                ("DescripcionCuenta","Sí", "Descripción de la cuenta contable."),
+                ("Monto",           "Sí",  "Importe de la línea en la moneda del comprobante. Use punto (.) como separador decimal."),
+                ("TipoLinea",       "Sí",  "Tipo de afectación contable. Valores válidos: GRAVADO · IGV · EXENTO · CABECERA.\n  - GRAVADO : línea de gasto (monto neto). Cada línea = distribución independiente en Syteline.\n  - IGV     : impuesto al valor agregado (una sola línea por comprobante).\n  - EXENTO  : monto no gravado / exonerado.\n  - CABECERA: línea de control de la cuenta A/P. No se importa."),
+                ("Descripcion",     "No",  "Texto libre que describe la línea de imputación."),
+                ("Proyecto",        "No",  "Código de proyecto asociado a la línea (máx. 10 caracteres)."),
+                ("CodUnidad1",      "No",  "Código de unidad de análisis 1 (ej. centro de costo)."),
+                ("CodUnidad2",      "No",  "Código de unidad de análisis 2."),
+                ("CodUnidad3",      "No",  "Código de unidad de análisis 3."),
+                ("CodUnidad4",      "No",  "Código de unidad de análisis 4."),
+            };
+
+            bool sombreado = false;
+            for (int r = 0; r < glosario.Length; r++)
+            {
+                var (col, oblig, desc) = glosario[r];
+                var rowIdx = r + 3;
+                var color  = sombreado ? ClosedXML.Excel.XLColor.FromArgb(242, 242, 242) : ClosedXML.Excel.XLColor.White;
+                sombreado  = !sombreado;
+
+                void SetGlos(int c, object v)
+                {
+                    var cell = wg.Cell(rowIdx, c);
+                    cell.Value = ClosedXML.Excel.XLCellValue.FromObject(v);
+                    cell.Style.Fill.BackgroundColor = color;
+                    cell.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                    cell.Style.Alignment.WrapText = true;
+                    cell.Style.Alignment.Vertical = ClosedXML.Excel.XLAlignmentVerticalValues.Top;
+                }
+
+                SetGlos(1, col);
+                var cOblig = wg.Cell(rowIdx, 2);
+                cOblig.Value = oblig;
+                cOblig.Style.Fill.BackgroundColor = color;
+                cOblig.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                cOblig.Style.Alignment.Horizontal  = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                cOblig.Style.Font.Bold = oblig == "Sí";
+                cOblig.Style.Font.FontColor = oblig == "Sí"
+                    ? ClosedXML.Excel.XLColor.DarkGreen
+                    : ClosedXML.Excel.XLColor.Gray;
+                SetGlos(3, desc);
+            }
+
+            wg.Column(1).Width = 18;
+            wg.Column(2).Width = 12;
+            wg.Column(3).Width = 70;
 
             using var ms = new MemoryStream();
             wb.SaveAs(ms);
