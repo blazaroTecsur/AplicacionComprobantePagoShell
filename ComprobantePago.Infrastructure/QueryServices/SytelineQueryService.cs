@@ -170,15 +170,43 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 var imputacionesDistribucion = imputaciones.Skip(1).ToList();
                 if (!imputacionesDistribucion.Any()) continue;
 
-                // Líneas de distribución según montos no cero del comprobante:
-                // cada entrada = (sistImpst, codImp, descCodImp, baseImp, importe)
-                var distLines = new List<(string sistImpst, string codImp, string descCodImp, decimal baseImp, decimal importe)>();
-                if (c.MontoNeto > 0)
-                    distLines.Add(("", "", "", 0, c.MontoNeto));
-                if (c.MontoIGVCredito > 0)
-                    distLines.Add(("2", "IGV18", "IGV 18%", c.MontoNeto, c.MontoIGVCredito));
-                if (c.MontoExento > 0)
-                    distLines.Add(("", "EXO", "Exento", c.MontoExento, c.MontoExento));
+                // Líneas de distribución:
+                // Si las imputaciones tienen TipoLinea (RP fraccionado), cada imputación
+                // es una línea independiente con su propio monto (leído de rcoimputacioncontable).
+                // Si no, se construyen desde los montos del comprobante (flujo normal).
+                bool esFraccionado = imputacionesDistribucion.Any(i => i.TipoLinea != null);
+
+                var distLines = new List<(string sistImpst, string codImp, string descCodImp, decimal baseImp, decimal importe, ImputacionContable imp)>();
+
+                if (esFraccionado)
+                {
+                    foreach (var imp in imputacionesDistribucion)
+                    {
+                        var (sist, cod, desc, baseImp) = imp.TipoLinea switch
+                        {
+                            "IGV"    => ("2", "IGV18", "IGV 18%", c.MontoNeto),
+                            "EXENTO" => ("",  "EXO",   "Exento",  imp.Monto),
+                            _        => ("",  "",      "",        0m)          // GRAVADO u otro
+                        };
+                        distLines.Add((sist, cod, desc, baseImp, imp.Monto, imp));
+                    }
+                }
+                else
+                {
+                    // Flujo normal: montos desde el comprobante, cuentas desde imputaciones por posición
+                    var montoLines = new List<(string sistImpst, string codImp, string descCodImp, decimal baseImp, decimal importe)>();
+                    if (c.MontoNeto > 0)
+                        montoLines.Add(("", "", "", 0, c.MontoNeto));
+                    if (c.MontoIGVCredito > 0)
+                        montoLines.Add(("2", "IGV18", "IGV 18%", c.MontoNeto, c.MontoIGVCredito));
+                    if (c.MontoExento > 0)
+                        montoLines.Add(("", "EXO", "Exento", c.MontoExento, c.MontoExento));
+
+                    var totalLineas = Math.Min(montoLines.Count, imputacionesDistribucion.Count);
+                    for (int i = 0; i < totalLineas; i++)
+                        distLines.Add((montoLines[i].sistImpst, montoLines[i].codImp, montoLines[i].descCodImp,
+                                       montoLines[i].baseImp,   montoLines[i].importe, imputacionesDistribucion[i]));
+                }
 
                 if (!distLines.Any()) continue;
 
@@ -186,13 +214,10 @@ namespace ComprobantePago.Infrastructure.QueryServices
                     ? c.FechaRecepcion.Value.ToString("dd/MM/yyyy")
                     : c.FechaEmision.ToString("dd/MM/yyyy");
 
-                var totalLineas = Math.Min(distLines.Count, imputacionesDistribucion.Count);
-                for (int idx = 0; idx < totalLineas; idx++)
+                for (int idx = 0; idx < distLines.Count; idx++)
                 {
-                    var imp = imputacionesDistribucion[idx];
+                    var (sistImpst, codImp, descCodImp, baseImp, importe, imp) = distLines[idx];
                     int secDist = (idx + 1) * 5;
-
-                    var (sistImpst, codImp, descCodImp, baseImp, importe) = distLines[idx];
 
                     var proveedorExport = c.EsEmpleado ? (c.EmpleadoCodigo ?? string.Empty) : c.RucReceptor;
                     var nombreExport    = c.EsEmpleado ? (c.EmpleadoNombre ?? string.Empty) : c.RazonSocialReceptor;
