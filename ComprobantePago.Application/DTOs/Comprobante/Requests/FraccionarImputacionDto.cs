@@ -8,7 +8,6 @@ namespace ComprobantePago.Application.DTOs.Comprobante.Requests
 
     public class ImputacionFraccionDto
     {
-        public decimal MontoNeto { get; set; }
-        public decimal MontoIgv  { get; set; }
+        public decimal Monto { get; set; }
     }
 }

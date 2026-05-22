@@ -349,6 +349,7 @@ function obtenerLineasEsperadas() {
         conTipo.forEach(imp => {
             const desc = imp.tipoLinea === 'GRAVADO' ? 'Monto Neto'
                        : imp.tipoLinea === 'IGV'     ? 'IGV Crédito Fiscal'
+                       : imp.tipoLinea === 'EXENTO'  ? 'Monto Exento'
                        : imp.tipoLinea;
             lineas.push({ monto: imp.monto, desc, afectacion: imp.tipoLinea });
         });
@@ -586,12 +587,26 @@ function mostrarModalBusqueda(data, titulo, claseItem, inputId) {
 // ════════════════════════════════════════════
 
 function mostrarModalFraccionar() {
-    const montoNeto = CorporativoCore.limpiarMonto($('#txtMontoNeto').val());
-    const montoIgv  = CorporativoCore.limpiarMonto($('#txtMontoIGVCredito').val());
+    const montoNeto   = CorporativoCore.limpiarMonto($('#txtMontoNeto').val());
+    const montoExento = CorporativoCore.limpiarMonto($('#txtMontoExento').val());
+    const montoIgv    = CorporativoCore.limpiarMonto($('#txtMontoIGVCredito').val());
+
+    // Solo se fracciona el neto (gravado) o el exento; el IGV queda como línea única
+    const soloExento = montoNeto === 0 && montoIgv === 0 && montoExento > 0;
+    const montoAFraccionar = soloExento ? montoExento : montoNeto;
+    const labelMonto = soloExento ? 'Monto Exento' : 'Monto Neto';
+
+    const infoIgv = montoIgv > 0
+        ? `<div class="alert alert-info py-1 px-2 mb-3 small">
+               <i class="bi bi-info-circle"></i>
+               IGV <strong>${CorporativoCore.formatearMonto(montoIgv)}</strong>
+               se registrará como una línea única separada.
+           </div>`
+        : '';
 
     const html = `
     <div class="modal fade" id="modalFraccionar" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header py-2" style="background-color:#5b74ad;">
                     <h6 class="modal-title text-white mb-0">
@@ -600,6 +615,7 @@ function mostrarModalFraccionar() {
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    ${infoIgv}
                     <div class="row g-2 mb-3">
                         <div class="col-auto">
                             <label class="form-label fw-bold mb-0">Número de líneas</label>
@@ -628,10 +644,9 @@ function mostrarModalFraccionar() {
                         <table class="table table-sm table-bordered" id="tblFraccionar">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Línea</th>
+                                    <th>Línea (dist. Syteline)</th>
                                     <th class="text-end">% (opcional)</th>
-                                    <th class="text-end">Monto Neto</th>
-                                    <th class="text-end">IGV</th>
+                                    <th class="text-end">${labelMonto}</th>
                                 </tr>
                             </thead>
                             <tbody id="bodyFraccionar"></tbody>
@@ -639,8 +654,7 @@ function mostrarModalFraccionar() {
                                 <tr class="fw-bold">
                                     <td>Total</td>
                                     <td class="text-end" id="tdTotalPct"></td>
-                                    <td class="text-end" id="tdTotalNeto"></td>
-                                    <td class="text-end" id="tdTotalIgv"></td>
+                                    <td class="text-end" id="tdTotalMonto"></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -662,17 +676,17 @@ function mostrarModalFraccionar() {
     const modal = new bootstrap.Modal(document.getElementById('modalFraccionar'));
     modal.show();
 
-    generarFilasFraccionar(montoNeto, montoIgv);
+    generarFilasFraccionar(montoAFraccionar);
 
     $('#btnGenerarLineas').on('click', function () {
-        generarFilasFraccionar(montoNeto, montoIgv);
+        generarFilasFraccionar(montoAFraccionar);
     });
 
     $('#bodyFraccionar').on('input', '.inp-pct', function () {
-        recalcularDesdePorcentaje(montoNeto, montoIgv);
+        recalcularDesdePorcentaje(montoAFraccionar);
     });
 
-    $('#bodyFraccionar').on('input', '.inp-neto, .inp-igv', function () {
+    $('#bodyFraccionar').on('input', '.inp-monto', function () {
         actualizarTotalesFraccionar();
     });
 
@@ -681,21 +695,18 @@ function mostrarModalFraccionar() {
     });
 }
 
-function generarFilasFraccionar(montoNeto, montoIgv) {
-    const n      = Math.max(2, Math.min(20, parseInt($('#txtNumLineas').val()) || 2));
-    const tipo   = $('input[name="rdTipoDiv"]:checked').val();
-    const esPct  = tipo === 'porcentaje';
-    const pct    = parseFloat((100 / n).toFixed(4));
-    const neto   = parseFloat((montoNeto / n).toFixed(2));
-    const igv    = parseFloat((montoIgv  / n).toFixed(2));
+function generarFilasFraccionar(montoTotal) {
+    const n     = Math.max(2, Math.min(20, parseInt($('#txtNumLineas').val()) || 2));
+    const tipo  = $('input[name="rdTipoDiv"]:checked').val();
+    const esPct = tipo === 'porcentaje';
+    const pct   = parseFloat((100 / n).toFixed(4));
+    const monto = parseFloat((montoTotal / n).toFixed(2));
 
     let rows = '';
     for (let i = 1; i <= n; i++) {
-        const esUltima = i === n;
-        // Ajuste de redondeo en la última línea
-        const netoFila = esUltima ? parseFloat((montoNeto - neto * (n - 1)).toFixed(2)) : neto;
-        const igvFila  = esUltima ? parseFloat((montoIgv  - igv  * (n - 1)).toFixed(2)) : igv;
-        const pctFila  = esUltima ? parseFloat((100 - pct * (n - 1)).toFixed(4)) : pct;
+        const esUltima  = i === n;
+        const montoFila = esUltima ? parseFloat((montoTotal - monto * (n - 1)).toFixed(2)) : monto;
+        const pctFila   = esUltima ? parseFloat((100 - pct * (n - 1)).toFixed(4)) : pct;
 
         rows += `<tr>
             <td>${i}</td>
@@ -705,14 +716,9 @@ function generarFilasFraccionar(montoNeto, montoIgv) {
                        style="width:80px" ${!esPct ? 'disabled' : ''} />
             </td>
             <td class="text-end">
-                <input type="number" class="form-control form-control-sm text-end inp-neto"
-                       value="${netoFila}" min="0" step="0.01"
-                       style="width:110px" ${esPct ? 'disabled' : ''} />
-            </td>
-            <td class="text-end">
-                <input type="number" class="form-control form-control-sm text-end inp-igv"
-                       value="${igvFila}" min="0" step="0.01"
-                       style="width:110px" ${esPct ? 'disabled' : ''} />
+                <input type="number" class="form-control form-control-sm text-end inp-monto"
+                       value="${montoFila}" min="0" step="0.01"
+                       style="width:130px" ${esPct ? 'disabled' : ''} />
             </td>
         </tr>`;
     }
@@ -720,44 +726,37 @@ function generarFilasFraccionar(montoNeto, montoIgv) {
     actualizarTotalesFraccionar();
 }
 
-function recalcularDesdePorcentaje(montoNeto, montoIgv) {
+function recalcularDesdePorcentaje(montoTotal) {
     const filas = $('#bodyFraccionar tr');
     filas.each(function (idx) {
-        const pct    = parseFloat($(this).find('.inp-pct').val()) || 0;
-        const esUlt  = idx === filas.length - 1;
+        const pct   = parseFloat($(this).find('.inp-pct').val()) || 0;
+        const esUlt = idx === filas.length - 1;
         if (!esUlt) {
-            $(this).find('.inp-neto').val(parseFloat((montoNeto * pct / 100).toFixed(2)));
-            $(this).find('.inp-igv').val( parseFloat((montoIgv  * pct / 100).toFixed(2)));
+            $(this).find('.inp-monto').val(parseFloat((montoTotal * pct / 100).toFixed(2)));
         }
     });
     // Última fila: ajuste de redondeo
-    const sumNeto = filas.slice(0, -1).toArray()
-        .reduce((s, r) => s + (parseFloat($(r).find('.inp-neto').val()) || 0), 0);
-    const sumIgv  = filas.slice(0, -1).toArray()
-        .reduce((s, r) => s + (parseFloat($(r).find('.inp-igv').val())  || 0), 0);
-    filas.last().find('.inp-neto').val(parseFloat((montoNeto - sumNeto).toFixed(2)));
-    filas.last().find('.inp-igv').val( parseFloat((montoIgv  - sumIgv).toFixed(2)));
+    const sumMonto = filas.slice(0, -1).toArray()
+        .reduce((s, r) => s + (parseFloat($(r).find('.inp-monto').val()) || 0), 0);
+    filas.last().find('.inp-monto').val(parseFloat((montoTotal - sumMonto).toFixed(2)));
     actualizarTotalesFraccionar();
 }
 
 function actualizarTotalesFraccionar() {
-    let totalPct = 0, totalNeto = 0, totalIgv = 0;
+    let totalPct = 0, totalMonto = 0;
     $('#bodyFraccionar tr').each(function () {
-        totalPct  += parseFloat($(this).find('.inp-pct').val())  || 0;
-        totalNeto += parseFloat($(this).find('.inp-neto').val()) || 0;
-        totalIgv  += parseFloat($(this).find('.inp-igv').val())  || 0;
+        totalPct   += parseFloat($(this).find('.inp-pct').val())   || 0;
+        totalMonto += parseFloat($(this).find('.inp-monto').val()) || 0;
     });
     $('#tdTotalPct').text(totalPct.toFixed(2) + '%');
-    $('#tdTotalNeto').text(CorporativoCore.formatearMonto(totalNeto));
-    $('#tdTotalIgv').text(CorporativoCore.formatearMonto(totalIgv));
+    $('#tdTotalMonto').text(CorporativoCore.formatearMonto(totalMonto));
 }
 
 function confirmarFraccionamiento() {
     const lineas = [];
     $('#bodyFraccionar tr').each(function () {
         lineas.push({
-            montoNeto: parseFloat($(this).find('.inp-neto').val()) || 0,
-            montoIgv:  parseFloat($(this).find('.inp-igv').val())  || 0
+            monto: parseFloat($(this).find('.inp-monto').val()) || 0
         });
     });
 

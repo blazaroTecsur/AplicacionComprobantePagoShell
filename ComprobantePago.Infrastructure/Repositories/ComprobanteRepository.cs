@@ -565,6 +565,10 @@ namespace ComprobantePago.Infrastructure.Repositories
         public async Task<IEnumerable<ImputacionDetalleDto>> FraccionarImputacionAsync(
             string folio, List<ImputacionFraccionDto> lineas)
         {
+            var comprobante = await _contexto.Comprobantes
+                .FirstOrDefaultAsync(x => x.Folio == folio)
+                ?? throw new InvalidOperationException($"Comprobante {folio} no encontrado.");
+
             // Eliminar imputaciones existentes con secuencia > 1
             var existentes = await _contexto.ImputacionesContables
                 .Where(x => x.Folio == folio && x.Secuencia > 1)
@@ -574,30 +578,37 @@ namespace ComprobantePago.Infrastructure.Repositories
             var nuevas = new List<ImputacionContable>();
             int seq = 2;
 
-            // N líneas GRAVADO (Monto Neto)
+            // Determinar si es exento puro o gravado
+            bool soloExento = comprobante.MontoNeto == 0
+                           && comprobante.MontoIGVCredito == 0
+                           && comprobante.MontoExento > 0;
+            string tipoLinea  = soloExento ? "EXENTO"      : "GRAVADO";
+            string descripcion = soloExento ? "Monto Exento" : "Monto Neto";
+
+            // N líneas fraccionadas (GRAVADO o EXENTO) — cada una es una línea de distribución Syteline
             foreach (var linea in lineas)
             {
                 nuevas.Add(new ImputacionContable
                 {
-                    Folio      = folio,
-                    Secuencia  = seq++,
-                    TipoLinea  = "GRAVADO",
-                    Monto      = linea.MontoNeto,
-                    Descripcion = "Monto Neto",
+                    Folio       = folio,
+                    Secuencia   = seq++,
+                    TipoLinea   = tipoLinea,
+                    Monto       = linea.Monto,
+                    Descripcion = descripcion,
                     UsuarioReg  = _usuario.Correo,
                     FechaReg    = DateTime.Now
                 });
             }
 
-            // N líneas IGV
-            foreach (var linea in lineas)
+            // 1 línea IGV al final (si aplica)
+            if (comprobante.MontoIGVCredito > 0)
             {
                 nuevas.Add(new ImputacionContable
                 {
-                    Folio      = folio,
-                    Secuencia  = seq++,
-                    TipoLinea  = "IGV",
-                    Monto      = linea.MontoIgv,
+                    Folio       = folio,
+                    Secuencia   = seq++,
+                    TipoLinea   = "IGV",
+                    Monto       = comprobante.MontoIGVCredito,
                     Descripcion = "IGV Crédito Fiscal",
                     UsuarioReg  = _usuario.Correo,
                     FechaReg    = DateTime.Now
