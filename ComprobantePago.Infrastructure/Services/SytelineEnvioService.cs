@@ -242,7 +242,8 @@ namespace ComprobantePago.Infrastructure.Services
                     AcctUnit3 = lineaExento.CodUnidad3.Length > 0 ? lineaExento.CodUnidad3[..Math.Min(4, lineaExento.CodUnidad3.Length)] : "",
                     AcctUnit4 = lineaExento.CodUnidad4.Length > 0 ? lineaExento.CodUnidad4[..Math.Min(4, lineaExento.CodUnidad4.Length)] : "",
                     Amount    = lineaExento.Importe,
-                    TaxCodeE  = "EXE",
+                    TaxSystem = "1",
+                    TaxCode   = "EXE",
                     aptZLA_TipoDocumento = lineaExento.TipoDoc.Length > 0 ? lineaExento.TipoDoc[..Math.Min(2, lineaExento.TipoDoc.Length)] : "",
                 };
                 _logger.LogInformation("IDO SLAptrxds Exento → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
