@@ -160,7 +160,7 @@ namespace ComprobantePago.Web.Controllers
         [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         [Permission("COMP.GUARDAR")]
-        public async Task<IActionResult> CargarImputacionMasiva(IFormFile file, string folio)
+        public async Task<IActionResult> CargarImputacionMasiva(IFormFile file, [FromQuery] string folio)
         {
             var errorArchivo = ValidarArchivo(file, 10, "xlsx");
             if (errorArchivo != null) return BadRequest(errorArchivo);

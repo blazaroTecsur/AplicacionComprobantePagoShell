@@ -446,13 +446,14 @@ function obtenerDescripcionSecuencia(seq) {
 
 // ── Cargar imputación masiva ──────────────────
 function procesarImputacionMasiva(archivo) {
+    const folio = $('#hdnFolio').val();
     const formData = new FormData();
     formData.append('file', archivo);
-    formData.append('folio', $('#hdnFolio').val());
 
     CorporativoCore.showLoading();
     $.ajax({
-        url: BASE_URL+'/Comprobante/CargarImputacionMasiva',
+        // folio va en la query string para evitar problemas de binding multipart
+        url: BASE_URL + '/Comprobante/CargarImputacionMasiva?folio=' + encodeURIComponent(folio),
         type: 'POST',
         data: formData,
         processData: false,
@@ -474,11 +475,15 @@ function procesarImputacionMasiva(archivo) {
         },
         error: function (xhr) {
             CorporativoCore.hideLoading();
-            CorporativoCore.handleError(xhr, {
-                onCustom: function () {
-                    CorporativoCore.notificarError('Error al procesar el archivo.');
-                }
-            });
+            // Mostrar el mensaje del servidor si viene en el formato estándar
+            const msg = xhr.responseJSON?.error?.userMessage;
+            if (msg) {
+                CorporativoCore.notificarError(msg);
+            } else {
+                CorporativoCore.handleError(xhr, {
+                    onCustom: () => CorporativoCore.notificarError('Error al procesar el archivo.')
+                });
+            }
         }
     });
 }
@@ -811,15 +816,19 @@ function bindEventosImputacion() {
     });
 
     $('#btnExplorar').on('click', function () {
-        // setTimeout evita que Chrome re-dispare el click del botón al cerrar el diálogo
-        setTimeout(() => $('#inpFile')[0].click(), 0);
-    });
+        // Clonar el input elimina estado viejo y eventos previos; .one() garantiza
+        // que change dispare una sola vez aunque Chrome re-emita el evento al limpiar
+        const $old = $('#inpFile');
+        const $nuevo = $old.clone().val('');
+        $old.replaceWith($nuevo);
 
-    $('#inpFile').on('change', function () {
-        if (this.files.length > 0) {
-            procesarImputacionMasiva(this.files[0]);
-            $(this).val('');
-        }
+        $nuevo.one('change', function () {
+            if (this.files.length > 0) {
+                procesarImputacionMasiva(this.files[0]);
+            }
+        });
+
+        setTimeout(() => $nuevo[0].click(), 0);
     });
 
     $('#btnDescargarPlantillaImputacion').on('click', descargarPlantillaImputacion);
