@@ -379,6 +379,7 @@ function guardarComprobante() {
                     'Comprobante guardado correctamente.');
                 $('#txtFolio').val(response.folio);
                 $('#hdnFolio').val(response.folio);
+                $('#hdnTipoDocumento').val($('#ddlTipoDocumento').val());
                 mostrarBotonesSegunEstado('REGISTRADO');
                 $('#barraOpcionesImputacion').removeClass('d-none');
                 $('#barraAccionesImputacion').removeClass('d-none');
