@@ -379,7 +379,24 @@ namespace ComprobantePago.Infrastructure.Repositories
                 .Where(x => x.Folio == dto.Folio)
                 .MaxAsync(x => (int?)x.Secuencia) ?? 0;
 
-            var nuevaSecuencia = maxSec + 1;
+            // Si el frontend solicita explícitamente seq=1 (cabecera SyteLine) y no existe
+            // todavía (ej: carga masiva insertó las líneas de detalle sin la cabecera),
+            // respetamos esa secuencia y omitimos la validación de montos.
+            bool esCabeceraExplicita = int.TryParse(dto.Secuencia, out int seqSolicitada)
+                                       && seqSolicitada == 1
+                                       && maxSec >= 1; // ya hay líneas pero falta la cabecera
+
+            if (esCabeceraExplicita)
+            {
+                var existe = await _contexto.ImputacionesContables
+                    .AnyAsync(x => x.Folio == dto.Folio && x.Secuencia == 1);
+                if (existe)
+                    throw new AppException(
+                        "La cabecera SyteLine ya existe para este comprobante.",
+                        "CABECERA_DUPLICADA");
+            }
+
+            var nuevaSecuencia = esCabeceraExplicita ? 1 : maxSec + 1;
 
             // ── Validación de monto por secuencia ─────────────────────────────
             // Seq 1 = cabecera SyteLine (no requiere monto específico).
