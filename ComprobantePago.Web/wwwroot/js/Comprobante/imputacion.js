@@ -829,14 +829,20 @@ function bindEventosImputacion() {
         mostrarFormularioImputacion(parseInt($(this).data('secuencia')));
     });
 
-    // Delegación en document: funciona aunque el input sea reemplazado por clone.
-    // El clone reemplaza al input ANTES de procesar, evitando que this.value=''
-    // dispare un segundo change. El label[for="inpFile"] encuentra el nuevo clone
-    // por ID en la próxima apertura, permitiendo re-seleccionar el mismo archivo.
+    // Abrir diálogo de archivo. Se deshabilita el botón hasta que el diálogo
+    // se cierre (window focus) para que Chrome no re-dispare el click.
+    $('#btnExplorar').on('click', function () {
+        const $btn = $(this).prop('disabled', true);
+        $(window).one('focus.fileDialog', function () {
+            setTimeout(() => $btn.prop('disabled', false), 300);
+        });
+        $('#inpFile')[0].click();
+    });
+
     $(document).on('change', '#inpFile', function () {
         if (!this.files || this.files.length === 0) return;
         const archivo = this.files[0];
-        $(this).replaceWith($(this).clone()); // reset sin side-effects
+        $(this).val(''); // permite re-seleccionar el mismo archivo
         procesarImputacionMasiva(archivo);
     });
 
