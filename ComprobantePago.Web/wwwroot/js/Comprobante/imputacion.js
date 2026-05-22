@@ -823,12 +823,14 @@ function bindEventosImputacion() {
         mostrarFormularioImputacion(parseInt($(this).data('secuencia')));
     });
 
-    // El label[for="inpFile"] abre el diálogo de forma nativa (sin JS),
-    // evitando el re-fire de Chrome. Solo necesitamos escuchar el change.
-    $('#inpFile').on('change', function () {
+    // Delegación en document: funciona aunque el input sea reemplazado por clone.
+    // El clone reemplaza al input ANTES de procesar, evitando que this.value=''
+    // dispare un segundo change. El label[for="inpFile"] encuentra el nuevo clone
+    // por ID en la próxima apertura, permitiendo re-seleccionar el mismo archivo.
+    $(document).on('change', '#inpFile', function () {
         if (!this.files || this.files.length === 0) return;
         const archivo = this.files[0];
-        this.value = ''; // reset para poder volver a seleccionar el mismo archivo
+        $(this).replaceWith($(this).clone()); // reset sin side-effects
         procesarImputacionMasiva(archivo);
     });
 
