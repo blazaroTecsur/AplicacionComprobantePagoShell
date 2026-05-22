@@ -22,7 +22,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
             {
                 var url = $"{_settings.BaseUrl}{_settings.Endpoints.CuentasContables}?filtro={Uri.EscapeDataString(filtro)}";
                 var result = await _httpClient.GetFromJsonAsync<IEnumerable<ComboDto>>(url);
-                return result ?? Enumerable.Empty<ComboDto>();
+                return result?.Where(x => x.Codigo?.Length >= 7) ?? Enumerable.Empty<ComboDto>();
             }
             catch (Exception ex)
             {
