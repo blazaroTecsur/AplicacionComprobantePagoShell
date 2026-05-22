@@ -181,13 +181,15 @@ namespace ComprobantePago.Infrastructure.QueryServices
 
                 if (esFraccionado)
                 {
+                    var codIgv  = c.PorcentajeIGV == 10 ? "IGV10" : "IGV18";
+                    var descIgv = c.PorcentajeIGV == 10 ? "IGV 10%" : "IGV 18%";
                     foreach (var imp in imputacionesDistribucion)
                     {
                         var (sist, cod, desc, baseImp) = imp.TipoLinea switch
                         {
-                            "IGV"    => ("2", "IGV18", "IGV 18%", c.MontoNeto),
+                            "IGV"    => ("2", codIgv,  descIgv,  c.MontoNeto),
                             "EXENTO" => ("",  "EXO",   "Exento",  imp.Monto),
-                            _        => ("",  "",      "",        0m)          // GRAVADO u otro
+                            _        => ("",  "",      "",        0m)
                         };
                         distLines.Add((sist, cod, desc, baseImp, imp.Monto, imp));
                     }
@@ -195,11 +197,13 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 else
                 {
                     // Flujo normal: montos desde el comprobante, cuentas desde imputaciones por posición
+                    var codIgv  = c.PorcentajeIGV == 10 ? "IGV10" : "IGV18";
+                    var descIgv = c.PorcentajeIGV == 10 ? "IGV 10%" : "IGV 18%";
                     var montoLines = new List<(string sistImpst, string codImp, string descCodImp, decimal baseImp, decimal importe)>();
                     if (c.MontoNeto > 0)
                         montoLines.Add(("", "", "", 0, c.MontoNeto));
                     if (c.MontoIGVCredito > 0)
-                        montoLines.Add(("2", "IGV18", "IGV 18%", c.MontoNeto, c.MontoIGVCredito));
+                        montoLines.Add(("2", codIgv, descIgv, c.MontoNeto, c.MontoIGVCredito));
                     if (c.MontoExento > 0)
                         montoLines.Add(("", "EXO", "Exento", c.MontoExento, c.MontoExento));
 
@@ -278,7 +282,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
                         // Fraccionado: todas las líneas GRAVADO/EXENTO son líneas de gasto;
                         // solo IGV queda fuera. Normal: solo la primera línea GRAVADO (idx=0,
                         // codImp vacío) es línea de gasto; IGV y EXENTO se envían por separado.
-                        EsLineaPrincipal     = esFraccionado ? codImp != "IGV18"
+                        EsLineaPrincipal     = esFraccionado ? !codImp.StartsWith("IGV")
                                                              : (idx == 0 && codImp != "EXO"),
                         EsEmpleado           = c.EsEmpleado,
                         TipoDoc              = c.TipoSunat,

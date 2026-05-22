@@ -170,7 +170,7 @@ namespace ComprobantePago.Infrastructure.Services
                 return;
             }
 
-            var lineaIgv    = lista.FirstOrDefault(l => l.CodImp == "IGV18");
+            var lineaIgv    = lista.FirstOrDefault(l => l.CodImp.StartsWith("IGV"));
             var lineaExento = lista.FirstOrDefault(l => l.CodImp == "EXO");
             var expenseLines = lista.Where(l => l.EsLineaPrincipal).ToList();
 
@@ -218,7 +218,7 @@ namespace ComprobantePago.Infrastructure.Services
                     AcctUnit4 = lineaIgv.CodUnidad4.Length > 0 ? lineaIgv.CodUnidad4[..Math.Min(4, lineaIgv.CodUnidad4.Length)] : "",
                     Amount    = lineaIgv.Importe,
                     TaxBasis  = lineaIgv.BaseImp,
-                    TaxCode   = "IGV18",
+                    TaxCode   = lineaIgv.CodImp,
                     TaxSystem = "2",
                     aptZLA_TipoDocumento = lineaIgv.TipoDoc.Length > 0 ? lineaIgv.TipoDoc[..Math.Min(2, lineaIgv.TipoDoc.Length)] : "",
                 };
