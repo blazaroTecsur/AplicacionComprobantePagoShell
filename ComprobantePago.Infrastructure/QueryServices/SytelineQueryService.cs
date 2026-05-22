@@ -1,5 +1,6 @@
 using ComprobantePago.Application.DTOs.Responses;
 using ComprobantePago.Application.Interfaces.QueryServices;
+using ComprobantePago.Domain.Entities;
 using ComprobantePago.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
