@@ -823,36 +823,13 @@ function bindEventosImputacion() {
         mostrarFormularioImputacion(parseInt($(this).data('secuencia')));
     });
 
-    let _explorandoArchivo = false;
-
-    $('#btnExplorar').on('click', function () {
-        if (_explorandoArchivo) return;
-        _explorandoArchivo = true;
-
-        const $old = $('#inpFile');
-        const $nuevo = $old.clone();
-        $old.replaceWith($nuevo);
-
-        $nuevo.one('change', function () {
-            const archivo = this.files.length > 0 ? this.files[0] : null;
-
-            // Reemplazar con input limpio ANTES de procesar para permitir re-selección
-            const $fresh = $(this).clone();
-            $(this).replaceWith($fresh);
-
-            // Mantener el flag activo 1s para bloquear el re-fire de Chrome
-            setTimeout(() => { _explorandoArchivo = false; }, 1000);
-
-            if (archivo) procesarImputacionMasiva(archivo);
-        });
-
-        // Liberar si el usuario cancela el diálogo (sin change)
-        window.addEventListener('focus', function liberarDialogo() {
-            window.removeEventListener('focus', liberarDialogo);
-            setTimeout(() => { _explorandoArchivo = false; }, 1000);
-        }, { once: true });
-
-        setTimeout(() => $nuevo[0].click(), 0);
+    // El label[for="inpFile"] abre el diálogo de forma nativa (sin JS),
+    // evitando el re-fire de Chrome. Solo necesitamos escuchar el change.
+    $('#inpFile').on('change', function () {
+        if (!this.files || this.files.length === 0) return;
+        const archivo = this.files[0];
+        this.value = ''; // reset para poder volver a seleccionar el mismo archivo
+        procesarImputacionMasiva(archivo);
     });
 
     $('#btnDescargarPlantillaImputacion').on('click', descargarPlantillaImputacion);
