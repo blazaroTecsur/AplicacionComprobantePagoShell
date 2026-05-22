@@ -220,6 +220,7 @@ namespace ComprobantePago.Infrastructure.Services
                     TaxBasis  = lineaIgv.BaseImp,
                     TaxCode   = "IGV18",
                     TaxSystem = "2",
+                    aptZLA_TipoDocumento = lineaIgv.TipoDoc.Length > 0 ? lineaIgv.TipoDoc[..Math.Min(2, lineaIgv.TipoDoc.Length)] : "",
                 };
                 _logger.LogInformation("IDO SLAptrxds IGV → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
                     voucher, distSeq, dto.Amount);
@@ -242,6 +243,7 @@ namespace ComprobantePago.Infrastructure.Services
                     AcctUnit4 = lineaExento.CodUnidad4.Length > 0 ? lineaExento.CodUnidad4[..Math.Min(4, lineaExento.CodUnidad4.Length)] : "",
                     Amount    = lineaExento.Importe,
                     TaxCodeE  = "EXE",
+                    aptZLA_TipoDocumento = lineaExento.TipoDoc.Length > 0 ? lineaExento.TipoDoc[..Math.Min(2, lineaExento.TipoDoc.Length)] : "",
                 };
                 _logger.LogInformation("IDO SLAptrxds Exento → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
                     voucher, distSeq, dto.Amount);
