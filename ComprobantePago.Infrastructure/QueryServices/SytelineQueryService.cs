@@ -275,7 +275,9 @@ namespace ComprobantePago.Infrastructure.QueryServices
                         CodUnidad2        = imp.CodUnidad2Cuenta ?? string.Empty,
                         CodUnidad3        = imp.CodUnidad3Cuenta ?? string.Empty,
                         CodUnidad4        = imp.CodUnidad4Cuenta ?? string.Empty,
-                        EsLineaPrincipal     = idx == 0,
+                        // Fraccionado: todas las líneas GRAVADO/EXENTO son líneas de gasto;
+                        // solo IGV queda fuera. Normal: solo la primera (idx=0) es línea de gasto.
+                        EsLineaPrincipal     = esFraccionado ? codImp != "IGV18" : idx == 0,
                         EsEmpleado           = c.EsEmpleado,
                         TipoDoc              = c.TipoSunat,
                         AptZCO_APD_VendNum   = aptZCO,
