@@ -571,6 +571,21 @@ namespace ComprobantePago.Infrastructure.Repositories
             if (lineasExcel.Count == 0)
                 throw new InvalidOperationException("El archivo no contiene líneas de imputación válidas.");
 
+            // Validar que los totales del Excel no superen los montos de cabecera
+            var comprobante = await _contexto.Comprobantes.FirstOrDefaultAsync(x => x.Folio == folio)
+                ?? throw new InvalidOperationException($"Comprobante {folio} no encontrado.");
+
+            var totalGravado = lineasExcel.Where(l => l.TipoLinea == "GRAVADO").Sum(l => l.Monto);
+            var totalExento  = lineasExcel.Where(l => l.TipoLinea == "EXENTO").Sum(l => l.Monto);
+
+            if (totalGravado > comprobante.MontoNeto)
+                throw new InvalidOperationException(
+                    $"El total de líneas GRAVADO ({totalGravado:N2}) supera el monto neto del comprobante ({comprobante.MontoNeto:N2}).");
+
+            if (totalExento > comprobante.MontoExento)
+                throw new InvalidOperationException(
+                    $"El total de líneas EXENTO ({totalExento:N2}) supera el monto exento del comprobante ({comprobante.MontoExento:N2}).");
+
             // Eliminar imputaciones existentes con secuencia > 1 y reemplazar
             var existentes = await _contexto.ImputacionesContables
                 .Where(x => x.Folio == folio && x.Secuencia > 1)

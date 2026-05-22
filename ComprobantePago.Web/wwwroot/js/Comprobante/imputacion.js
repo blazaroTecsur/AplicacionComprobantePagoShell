@@ -811,7 +811,8 @@ function bindEventosImputacion() {
     });
 
     $('#btnExplorar').on('click', function () {
-        $('#inpFile').trigger('click');
+        // setTimeout evita que Chrome re-dispare el click del botón al cerrar el diálogo
+        setTimeout(() => $('#inpFile')[0].click(), 0);
     });
 
     $('#inpFile').on('change', function () {
