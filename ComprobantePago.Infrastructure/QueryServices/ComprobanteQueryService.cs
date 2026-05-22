@@ -244,7 +244,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
 
             string[] headers = [
                 "Secuencia", "AliasCuenta", "CuentaContable", "DescripcionCuenta",
-                "Monto", "Descripcion", "Proyecto",
+                "Monto", "TipoLinea", "Descripcion", "Proyecto",
                 "CodUnidad1", "CodUnidad2", "CodUnidad3", "CodUnidad4"
             ];
 
