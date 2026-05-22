@@ -53,8 +53,19 @@ namespace ComprobantePago.Web.Controllers
                     error = new { code = "VALIDATION_ERROR", userMessage = validacion.Errors.First().ErrorMessage }
                 });
 
-            var folio = await _repository.GuardarAsync(command);
-            return Ok(new { exito = true, folio });
+            try
+            {
+                var folio = await _repository.GuardarAsync(command);
+                return Ok(new { exito = true, folio });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    error = new { code = "DUPLICATE_COMPROBANTE", userMessage = ex.Message }
+                });
+            }
         }
 
         // ── Enviar ───────────────────────────────────────────────

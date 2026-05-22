@@ -67,6 +67,17 @@ namespace ComprobantePago.Infrastructure.Repositories
             var folio = string.IsNullOrWhiteSpace(dto.Folio)
                 ? await GenerarFolioAsync()
                 : dto.Folio;
+
+            var duplicado = await _contexto.Comprobantes
+                .AnyAsync(x => x.Folio        != folio
+                            && x.RucReceptor  == dto.Ruc
+                            && x.Serie        == dto.Serie
+                            && x.Numero       == dto.Numero
+                            && x.CodigoEstado != "ANULADO");
+
+            if (duplicado)
+                throw new InvalidOperationException(
+                    $"Ya existe un comprobante con serie {dto.Serie}-{dto.Numero} para el RUC {dto.Ruc}.");
             _logger.LogInformation("Guardando comprobante folio {Folio}", folio);
 
             await _unitOfWork.BeginTransactionAsync();
