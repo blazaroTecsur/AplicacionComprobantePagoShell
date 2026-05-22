@@ -454,7 +454,12 @@ function obtenerDescripcionSecuencia(seq) {
 }
 
 // ── Cargar imputación masiva ──────────────────
+let _cargandoMasiva = false;
+
 function procesarImputacionMasiva(archivo) {
+    if (_cargandoMasiva) return;
+    _cargandoMasiva = true;
+
     const folio = $('#hdnFolio').val();
     const formData = new FormData();
     formData.append('file', archivo);
@@ -471,6 +476,7 @@ function procesarImputacionMasiva(archivo) {
             'RequestVerificationToken': CorporativoCore.obtenerToken()
         },
         success: function (response) {
+            _cargandoMasiva = false;
             CorporativoCore.hideLoading();
             if (response.exito) {
                 listaImputaciones = response.imputaciones;
@@ -483,8 +489,8 @@ function procesarImputacionMasiva(archivo) {
             }
         },
         error: function (xhr) {
+            _cargandoMasiva = false;
             CorporativoCore.hideLoading();
-            // Mostrar el mensaje del servidor si viene en el formato estándar
             const msg = xhr.responseJSON?.error?.userMessage;
             if (msg) {
                 CorporativoCore.notificarError(msg);
