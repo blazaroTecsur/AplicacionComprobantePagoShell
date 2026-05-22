@@ -829,16 +829,6 @@ function bindEventosImputacion() {
         mostrarFormularioImputacion(parseInt($(this).data('secuencia')));
     });
 
-    // Abrir diálogo de archivo. Se deshabilita el botón hasta que el diálogo
-    // se cierre (window focus) para que Chrome no re-dispare el click.
-    $('#btnExplorar').on('click', function () {
-        const $btn = $(this).prop('disabled', true);
-        $(window).one('focus.fileDialog', function () {
-            setTimeout(() => $btn.prop('disabled', false), 300);
-        });
-        $('#inpFile')[0].click();
-    });
-
     $(document).on('change', '#inpFile', function () {
         if (!this.files || this.files.length === 0) return;
         const archivo = this.files[0];
