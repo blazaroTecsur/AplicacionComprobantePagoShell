@@ -823,9 +823,6 @@ function bindEventosImputacion() {
         mostrarFormularioImputacion(parseInt($(this).data('secuencia')));
     });
 
-    // Flag global: bloquea re-entradas mientras el diálogo de archivos está abierto.
-    // Chrome re-dispara click en el botón cuando el diálogo cierra y el foco vuelve;
-    // el flag permanece true hasta que la ventana recupera el foco (diálogo cerrado).
     let _explorandoArchivo = false;
 
     $('#btnExplorar').on('click', function () {
@@ -837,18 +834,22 @@ function bindEventosImputacion() {
         $old.replaceWith($nuevo);
 
         $nuevo.one('change', function () {
-            _explorandoArchivo = false;
-            if (this.files.length > 0) {
-                procesarImputacionMasiva(this.files[0]);
-            }
+            const archivo = this.files.length > 0 ? this.files[0] : null;
+
+            // Reemplazar con input limpio ANTES de procesar para permitir re-selección
+            const $fresh = $(this).clone();
+            $(this).replaceWith($fresh);
+
+            // Mantener el flag activo 1s para bloquear el re-fire de Chrome
+            setTimeout(() => { _explorandoArchivo = false; }, 1000);
+
+            if (archivo) procesarImputacionMasiva(archivo);
         });
 
-        // Liberar el flag cuando el diálogo cierre (ventana recupera foco),
-        // tanto si el usuario seleccionó un archivo como si canceló.
+        // Liberar si el usuario cancela el diálogo (sin change)
         window.addEventListener('focus', function liberarDialogo() {
             window.removeEventListener('focus', liberarDialogo);
-            // Pequeño delay para que el evento change llegue primero si hubo selección
-            setTimeout(() => { _explorandoArchivo = false; }, 400);
+            setTimeout(() => { _explorandoArchivo = false; }, 1000);
         }, { once: true });
 
         setTimeout(() => $nuevo[0].click(), 0);
