@@ -835,15 +835,6 @@ function bindEventos() {
         if (this.files.length > 0) subirArchivoSunat(this.files[0]);
     });
 
-    // Imputación masiva
-    $('#btnExplorar').on('click', function () {
-        $('#inpFile').trigger('click');
-    });
-
-    $('#inpFile').on('change', function () {
-        if (this.files.length > 0) subirImputacionMasiva(this.files[0]);
-    });
-
     // Descargar imputación (PDF descarga directa)
     $('#btnImprimirComprobante').on('click', function () {
         const folio = $('#hdnFolio').val();
@@ -1020,10 +1011,3 @@ function subirArchivoSunat(archivo) {
         'Error al procesar el archivo SUNAT.');
 }
 
-function subirImputacionMasiva(archivo) {
-    const fd = new FormData();
-    fd.append('file', archivo);
-    _subirFormData(BASE_URL+'/Comprobante/CargarImputacionMasiva', fd,
-        'Imputación cargada correctamente.',
-        'Error al cargar el archivo de imputación.');
-}
