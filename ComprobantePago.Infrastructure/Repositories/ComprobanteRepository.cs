@@ -547,6 +547,7 @@ namespace ComprobantePago.Infrastructure.Repositories
             // 9=CodUnidad1 10=CodUnidad2 11=CodUnidad3 12=CodUnidad4
 
             var lineasExcel = new List<ImputacionContable>();
+            var numerosFilaExcel = new List<int>(); // nro de fila Excel por cada entrada en lineasExcel
 
             foreach (var fila in hoja.RowsUsed().Skip(1)) // fila 1 = encabezados
             {
@@ -567,6 +568,7 @@ namespace ComprobantePago.Infrastructure.Repositories
                 if (string.IsNullOrWhiteSpace(alias)) continue;
                 if (tipoLinea == "CABECERA") continue;
 
+                numerosFilaExcel.Add(fila.RowNumber());
                 lineasExcel.Add(new ImputacionContable
                 {
                     Folio             = folio,
@@ -588,6 +590,70 @@ namespace ComprobantePago.Infrastructure.Repositories
 
             if (lineasExcel.Count == 0)
                 throw new InvalidOperationException("El archivo no contiene líneas de imputación válidas.");
+
+            // ── Validar catálogo de cuentas contables y códigos de unidad ─────
+            var empresa = _usuario.Empresa;
+
+            var cuentasValidas = await _contexto.CuentasContables
+                .Where(x => x.Activo && x.Codigo.Length >= 7)
+                .Select(x => x.Codigo)
+                .ToHashSetAsync();
+
+            var unidad1Validas = await _contexto.CodigosUnidad1
+                .Where(x => x.Activo && (string.IsNullOrEmpty(empresa) || x.Empresa == empresa))
+                .Select(x => x.Codigo)
+                .ToHashSetAsync();
+
+            var unidad2Validas = await _contexto.CodigosUnidad2
+                .Where(x => x.Activo && (string.IsNullOrEmpty(empresa) || x.Empresa == empresa))
+                .Select(x => x.Codigo)
+                .ToHashSetAsync();
+
+            var unidad3Validas = await _contexto.CodigosUnidad3
+                .Where(x => x.Activo && (string.IsNullOrEmpty(empresa) || x.Empresa == empresa))
+                .Select(x => x.Codigo)
+                .ToHashSetAsync();
+
+            var unidad4Validas = await _contexto.CodigosUnidad4
+                .Where(x => x.Activo)
+                .Select(x => x.Codigo)
+                .ToHashSetAsync();
+
+            var erroresCatalogo = new List<string>();
+            for (int i = 0; i < lineasExcel.Count; i++)
+            {
+                var linea   = lineasExcel[i];
+                var nroFila = numerosFilaExcel[i];
+                var prefijo = $"Fila {nroFila}";
+
+                if (string.IsNullOrWhiteSpace(linea.CuentaContable))
+                    erroresCatalogo.Add($"{prefijo}: la cuenta contable es obligatoria.");
+                else if (linea.CuentaContable.Length < 7)
+                    erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' tiene menos de 7 dígitos.");
+                else if (!cuentasValidas.Contains(linea.CuentaContable))
+                    erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' no existe en el catálogo.");
+
+                if (!string.IsNullOrWhiteSpace(linea.CodUnidad1Cuenta) &&
+                    !unidad1Validas.Contains(linea.CodUnidad1Cuenta))
+                    erroresCatalogo.Add($"{prefijo}: código unidad 1 '{linea.CodUnidad1Cuenta}' no existe en el catálogo.");
+
+                if (!string.IsNullOrWhiteSpace(linea.CodUnidad2Cuenta) &&
+                    !unidad2Validas.Contains(linea.CodUnidad2Cuenta))
+                    erroresCatalogo.Add($"{prefijo}: código unidad 2 '{linea.CodUnidad2Cuenta}' no existe en el catálogo.");
+
+                if (!string.IsNullOrWhiteSpace(linea.CodUnidad3Cuenta) &&
+                    !unidad3Validas.Contains(linea.CodUnidad3Cuenta))
+                    erroresCatalogo.Add($"{prefijo}: código unidad 3 '{linea.CodUnidad3Cuenta}' no existe en el catálogo.");
+
+                if (!string.IsNullOrWhiteSpace(linea.CodUnidad4Cuenta) &&
+                    !unidad4Validas.Contains(linea.CodUnidad4Cuenta))
+                    erroresCatalogo.Add($"{prefijo}: código unidad 4 '{linea.CodUnidad4Cuenta}' no existe en el catálogo.");
+            }
+
+            if (erroresCatalogo.Count > 0)
+                throw new InvalidOperationException(
+                    "La plantilla contiene errores de catálogo:\n" +
+                    string.Join("\n", erroresCatalogo));
 
             // Validar que los totales del Excel no superen los montos de cabecera
             var comprobante = await _contexto.Comprobantes.FirstOrDefaultAsync(x => x.Folio == folio)

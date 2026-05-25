@@ -493,7 +493,18 @@ function procesarImputacionMasiva(archivo) {
             CorporativoCore.hideLoading();
             const msg = xhr.responseJSON?.error?.userMessage;
             if (msg) {
-                CorporativoCore.notificarError(msg);
+                const lineas = msg.split('\n').filter(l => l.trim());
+                if (lineas.length > 1 && typeof Swal !== 'undefined') {
+                    const items = lineas.map(l => `<li>${$('<div>').text(l).html()}</li>`).join('');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errores en la plantilla',
+                        html: `<ul class="text-start small mb-0" style="max-height:300px;overflow-y:auto">${items}</ul>`,
+                        confirmButtonText: 'Cerrar'
+                    });
+                } else {
+                    CorporativoCore.notificarError(lineas[0] || msg);
+                }
             } else {
                 CorporativoCore.handleError(xhr, {
                     onCustom: () => CorporativoCore.notificarError('Error al procesar el archivo.')
