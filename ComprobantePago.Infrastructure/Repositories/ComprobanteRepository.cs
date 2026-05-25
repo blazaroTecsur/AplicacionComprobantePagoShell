@@ -596,13 +596,13 @@ namespace ComprobantePago.Infrastructure.Repositories
             var totalGravado = lineasExcel.Where(l => l.TipoLinea == "GRAVADO").Sum(l => l.Monto);
             var totalExento  = lineasExcel.Where(l => l.TipoLinea == "EXENTO").Sum(l => l.Monto);
 
-            if (totalGravado > comprobante.MontoNeto)
+            if (comprobante.MontoNeto > 0 && Math.Abs(totalGravado - comprobante.MontoNeto) > 0.02m)
                 throw new InvalidOperationException(
-                    $"El total de líneas GRAVADO ({totalGravado:N2}) supera el monto neto del comprobante ({comprobante.MontoNeto:N2}).");
+                    $"El total de líneas GRAVADO ({totalGravado:N2}) debe coincidir con el monto neto del comprobante ({comprobante.MontoNeto:N2}).");
 
-            if (totalExento > comprobante.MontoExento)
+            if (comprobante.MontoExento > 0 && Math.Abs(totalExento - comprobante.MontoExento) > 0.02m)
                 throw new InvalidOperationException(
-                    $"El total de líneas EXENTO ({totalExento:N2}) supera el monto exento del comprobante ({comprobante.MontoExento:N2}).");
+                    $"El total de líneas EXENTO ({totalExento:N2}) debe coincidir con el monto exonerado del comprobante ({comprobante.MontoExento:N2}).");
 
             // Eliminar imputaciones existentes con secuencia > 1 y reemplazar
             var existentes = await _contexto.ImputacionesContables
