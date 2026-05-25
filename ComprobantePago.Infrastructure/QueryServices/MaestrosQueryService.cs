@@ -87,15 +87,14 @@ namespace ComprobantePago.Infrastructure.QueryServices
             {
                 var fechaFmt = fecha.ToString("yyyyMMdd") + " 00:00:00.000";
                 var resultado = await _ido.LoadAsync(
-                    ido:       "SLCurrates",
-                    props:     "FromCurrCode,BuyRate",
-                    filter:    $"EffDate='{fechaFmt}' AND FromCurrCode='{moneda}'",
-                    recordCap: 1,
-                    adv:       true);
+                    ido:    "SLCurrates",
+                    props:  "FromCurrCode,SellRate",
+                    filter: $"EffDate = '{fechaFmt}' AND FromCurrCode='{moneda}'",
+                    adv:    true);
 
                 if (resultado.TryGetProperty("Items", out var items) &&
                     items.GetArrayLength() > 0 &&
-                    items[0].TryGetProperty("BuyRate", out var rate))
+                    items[0].TryGetProperty("SellRate", out var rate))
                 {
                     return rate.TryGetDecimal(out var valor) ? valor : 0m;
                 }
