@@ -132,7 +132,8 @@ namespace ComprobantePago.Web.Controllers
             if (string.IsNullOrWhiteSpace(moneda))
                 return BadRequest(new { error = "Moneda requerida." });
 
-            var fechaParsed = DateTime.TryParseExact(fecha, "dd/MM/yyyy",
+            var fechaParsed = DateTime.TryParseExact(fecha,
+                new[] { "yyyy-MM-dd", "dd/MM/yyyy" },
                 System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.None, out var d)
                 ? d : DateTime.Today;
