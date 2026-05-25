@@ -217,17 +217,13 @@ namespace Infor.Infrastructure.Services
 
         private string ResolverConfiguracionMongoose()
         {
-            var user   = _httpContextAccessor.HttpContext?.User;
-            var tid    = user?.FindFirst("tid")?.Value ?? string.Empty;
+            var user    = _httpContextAccessor.HttpContext?.User;
+            var tid     = user?.FindFirst("tid")?.Value ?? string.Empty;
             var empresa = _configuration.GetSection("TenantEmpresas")[tid]
                           ?? user?.FindFirst("empresa")?.Value
                           ?? string.Empty;
 
-            if (!string.IsNullOrEmpty(empresa) &&
-                _settings.Configuraciones.TryGetValue(empresa, out var cfg))
-                return cfg;
-
-            return _settings.Configuration;
+            return _settings.Configuration.Replace("{EMPRESA}", empresa);
         }
 
         private async Task<JsonElement> LeerRespuestaAsync(
