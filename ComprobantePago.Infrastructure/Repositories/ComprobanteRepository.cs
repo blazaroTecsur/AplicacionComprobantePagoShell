@@ -594,30 +594,30 @@ namespace ComprobantePago.Infrastructure.Repositories
             // ── Validar catálogo de cuentas contables y códigos de unidad ─────
             var empresa = _usuario.Empresa;
 
-            var cuentasValidas = await _contexto.CuentasContables
+            var cuentasValidas = (await _contexto.CuentasContables
                 .Where(x => x.Activo && x.Codigo.Length >= 7)
                 .Select(x => x.Codigo)
-                .ToHashSetAsync();
+                .ToListAsync()).ToHashSet();
 
-            var unidad1Validas = await _contexto.CodigosUnidad1
+            var unidad1Validas = (await _contexto.CodigosUnidad1
                 .Where(x => x.Activo && (string.IsNullOrEmpty(empresa) || x.Empresa == empresa))
                 .Select(x => x.Codigo)
-                .ToHashSetAsync();
+                .ToListAsync()).ToHashSet();
 
-            var unidad2Validas = await _contexto.CodigosUnidad2
+            var unidad2Validas = (await _contexto.CodigosUnidad2
                 .Where(x => x.Activo && (string.IsNullOrEmpty(empresa) || x.Empresa == empresa))
                 .Select(x => x.Codigo)
-                .ToHashSetAsync();
+                .ToListAsync()).ToHashSet();
 
-            var unidad3Validas = await _contexto.CodigosUnidad3
+            var unidad3Validas = (await _contexto.CodigosUnidad3
                 .Where(x => x.Activo && (string.IsNullOrEmpty(empresa) || x.Empresa == empresa))
                 .Select(x => x.Codigo)
-                .ToHashSetAsync();
+                .ToListAsync()).ToHashSet();
 
-            var unidad4Validas = await _contexto.CodigosUnidad4
+            var unidad4Validas = (await _contexto.CodigosUnidad4
                 .Where(x => x.Activo)
                 .Select(x => x.Codigo)
-                .ToHashSetAsync();
+                .ToListAsync()).ToHashSet();
 
             var erroresCatalogo = new List<string>();
             for (int i = 0; i < lineasExcel.Count; i++)
