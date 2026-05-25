@@ -2,7 +2,9 @@ using ComprobantePago.Application.DTOs.Comprobante.Common;
 using ComprobantePago.Application.Interfaces.QueryServices;
 using ComprobantePago.Application.Interfaces.Services.Maestros;
 using ComprobantePago.Infrastructure.Persistence;
+using Infor.Abstractions.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ComprobantePago.Infrastructure.QueryServices
 {
@@ -10,13 +12,17 @@ namespace ComprobantePago.Infrastructure.QueryServices
         AppDbContext contexto,
         IEmpleadoService empleadoService,
         ICatalogoUnidadService cataloService,
-        ICuentaContableService cuentaService)
+        ICuentaContableService cuentaService,
+        IInforIdoService ido,
+        ILogger<MaestrosQueryService> logger)
         : IMaestrosQueryService
     {
         private readonly AppDbContext _contexto = contexto;
         private readonly IEmpleadoService _empleadoService = empleadoService;
         private readonly ICatalogoUnidadService _cataloService = cataloService;
         private readonly ICuentaContableService _cuentaService = cuentaService;
+        private readonly IInforIdoService _ido = ido;
+        private readonly ILogger<MaestrosQueryService> _logger = logger;
 
         public async Task<IEnumerable<ComboDto>> ObtenerTiposDocumentoAsync()
             => await _contexto.TiposDocumento
@@ -74,5 +80,31 @@ namespace ComprobantePago.Infrastructure.QueryServices
         public Task<IEnumerable<ComboDto>> ObtenerCodigosUnidadAsync(
             string campo, int unidad, string codigo, string filtro = "")
             => _cataloService.ObtenerCodigosUnidadAsync(unidad, filtro);
+
+        public async Task<decimal> ObtenerTipoCambioAsync(string moneda, DateTime fecha)
+        {
+            try
+            {
+                var fechaFmt = fecha.ToString("yyyyMMdd") + " 00:00:00.000";
+                var resultado = await _ido.LoadAsync(
+                    ido:       "SLCurrates",
+                    props:     "FromCurrCode,BuyRate",
+                    filter:    $"EffDate='{fechaFmt}' AND FromCurrCode='{moneda}'",
+                    recordCap: 1,
+                    adv:       true);
+
+                if (resultado.TryGetProperty("Items", out var items) &&
+                    items.GetArrayLength() > 0 &&
+                    items[0].TryGetProperty("BuyRate", out var rate))
+                {
+                    return rate.TryGetDecimal(out var valor) ? valor : 0m;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "No se pudo obtener tipo de cambio de Syteline para {Moneda} {Fecha}", moneda, fecha);
+            }
+            return 0m;
+        }
     }
 }

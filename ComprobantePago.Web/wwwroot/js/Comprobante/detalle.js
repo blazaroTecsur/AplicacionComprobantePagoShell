@@ -157,6 +157,10 @@ function poblarCabecera(data) {
     $('#txtFechaEmision').val(data.fechaEmision);
     $('#txtFechaRecepcion').val(data.fechaRecepcion);
     $('#txtTasaCambio').val(data.tasaCambio);
+    // Fallback: si el XML no trajo tasa (0) y la moneda no es PEN, consultar Syteline
+    if ((!data.tasaCambio || parseFloat(data.tasaCambio) === 0) && data.moneda && data.moneda !== 'PEN') {
+        obtenerTipoCambio(data.moneda, data.fechaEmision);
+    }
     $('#txtCR').val(data.centroResponsabilidad);
     $('#txtDesCR').val(data.descripcionCR);
     $('#txtObservacion').val(data.observacion);
@@ -809,6 +813,17 @@ function bindEventos() {
         }
     });
 
+    // Moneda → tipo de cambio automático desde Syteline (solo manual, moneda != PEN)
+    $('#ddlMoneda').on('change', function () {
+        const moneda = $(this).val();
+        if (!moneda || moneda === 'PEN') {
+            $('#txtTasaCambio').val('1.000');
+            return;
+        }
+        const fecha = $('#txtFechaEmision').val() || '';
+        obtenerTipoCambio(moneda, fecha);
+    });
+
     // Tipo detracción → porcentaje automático
     $('#ddlTipoDetraccion').on('change', function () {
         const porcentaje = $(this).find('option:selected')
@@ -1001,6 +1016,20 @@ function _subirFormData(url, formData, mensajeExito, mensajeError) {
             });
         }
     });
+}
+
+function obtenerTipoCambio(moneda, fecha) {
+    CorporativoQuery.ajaxGet(
+        BASE_URL + '/Comprobante/ObtenerTipoCambio?moneda=' + encodeURIComponent(moneda) +
+        '&fecha=' + encodeURIComponent(fecha || ''),
+        function (data) {
+            if (data.tasa && parseFloat(data.tasa) > 0) {
+                $('#txtTasaCambio').val(parseFloat(data.tasa).toFixed(3));
+            } else {
+                CorporativoCore.notificarAdvertencia('No se encontró tipo de cambio en Syteline para la fecha indicada.');
+            }
+        }
+    );
 }
 
 function subirArchivoSunat(archivo) {

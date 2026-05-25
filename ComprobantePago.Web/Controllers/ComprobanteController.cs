@@ -126,6 +126,22 @@ namespace ComprobantePago.Web.Controllers
             => Ok(await _maestrosService.ObtenerCodigosUnidadAsync(campo, unidad, codigo, filtro));
 
         [HttpGet("[action]")]
+        public async Task<IActionResult> ObtenerTipoCambio(
+            [FromQuery] string moneda, [FromQuery] string fecha)
+        {
+            if (string.IsNullOrWhiteSpace(moneda))
+                return BadRequest(new { error = "Moneda requerida." });
+
+            var fechaParsed = DateTime.TryParseExact(fecha, "dd/MM/yyyy",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var d)
+                ? d : DateTime.Today;
+
+            var tasa = await _maestrosService.ObtenerTipoCambioAsync(moneda, fechaParsed);
+            return Ok(new { tasa });
+        }
+
+        [HttpGet("[action]")]
         public async Task<IActionResult> DescargarPlantillaImputacion()
         {
             var archivo = await _queryService.ObtenerPlantillaImputacionAsync();
