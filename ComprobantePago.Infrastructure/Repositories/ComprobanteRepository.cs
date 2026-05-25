@@ -626,13 +626,14 @@ namespace ComprobantePago.Infrastructure.Repositories
         }
 
         public async Task<IEnumerable<ImputacionDetalleDto>> FraccionarImputacionAsync(
-            string folio, List<ImputacionFraccionDto> lineas)
+            string folio,
+            List<ImputacionFraccionDto> lineasGravado,
+            List<ImputacionFraccionDto> lineasExento)
         {
             var comprobante = await _contexto.Comprobantes
                 .FirstOrDefaultAsync(x => x.Folio == folio)
                 ?? throw new InvalidOperationException($"Comprobante {folio} no encontrado.");
 
-            // Eliminar imputaciones existentes con secuencia > 1
             var existentes = await _contexto.ImputacionesContables
                 .Where(x => x.Folio == folio && x.Secuencia > 1)
                 .ToListAsync();
@@ -641,29 +642,20 @@ namespace ComprobantePago.Infrastructure.Repositories
             var nuevas = new List<ImputacionContable>();
             int seq = 2;
 
-            // Determinar si es exento puro o gravado
-            bool soloExento = comprobante.MontoNeto == 0
-                           && comprobante.MontoIGVCredito == 0
-                           && comprobante.MontoExento > 0;
-            string tipoLinea  = soloExento ? "EXENTO"      : "GRAVADO";
-            string descripcion = soloExento ? "Monto Exento" : "Monto Neto";
-
-            // N líneas fraccionadas (GRAVADO o EXENTO) — cada una es una línea de distribución Syteline
-            foreach (var linea in lineas)
+            foreach (var linea in lineasGravado)
             {
                 nuevas.Add(new ImputacionContable
                 {
                     Folio       = folio,
                     Secuencia   = seq++,
-                    TipoLinea   = tipoLinea,
+                    TipoLinea   = "GRAVADO",
                     Monto       = linea.Monto,
-                    Descripcion = descripcion,
+                    Descripcion = "Monto Neto",
                     UsuarioReg  = _usuario.Correo,
                     FechaReg    = DateTime.Now
                 });
             }
 
-            // 1 línea IGV al final (si aplica)
             if (comprobante.MontoIGVCredito > 0)
             {
                 nuevas.Add(new ImputacionContable
@@ -673,6 +665,20 @@ namespace ComprobantePago.Infrastructure.Repositories
                     TipoLinea   = "IGV",
                     Monto       = comprobante.MontoIGVCredito,
                     Descripcion = "IGV Crédito Fiscal",
+                    UsuarioReg  = _usuario.Correo,
+                    FechaReg    = DateTime.Now
+                });
+            }
+
+            foreach (var linea in lineasExento)
+            {
+                nuevas.Add(new ImputacionContable
+                {
+                    Folio       = folio,
+                    Secuencia   = seq++,
+                    TipoLinea   = "EXENTO",
+                    Monto       = linea.Monto,
+                    Descripcion = "Monto Exento",
                     UsuarioReg  = _usuario.Correo,
                     FechaReg    = DateTime.Now
                 });

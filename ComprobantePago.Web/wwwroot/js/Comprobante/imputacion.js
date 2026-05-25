@@ -612,10 +612,8 @@ function mostrarModalFraccionar() {
     const montoExento = CorporativoCore.limpiarMonto($('#txtMontoExento').val());
     const montoIgv    = CorporativoCore.limpiarMonto($('#txtMontoIGVCredito').val());
 
-    // Solo se fracciona el neto (gravado) o el exento; el IGV queda como línea única
-    const soloExento = montoNeto === 0 && montoIgv === 0 && montoExento > 0;
-    const montoAFraccionar = soloExento ? montoExento : montoNeto;
-    const labelMonto = soloExento ? 'Monto Exento' : 'Monto Neto';
+    const soloExento  = montoNeto === 0 && montoIgv === 0 && montoExento > 0;
+    const mixto       = montoNeto > 0 && montoExento > 0;
 
     const infoIgv = montoIgv > 0
         ? `<div class="alert alert-info py-1 px-2 mb-3 small">
@@ -625,9 +623,73 @@ function mostrarModalFraccionar() {
            </div>`
         : '';
 
+    // Controles de generación (compartidos o per-sección en modo mixto)
+    const controlesGen = (sufijo) => `
+        <div class="row g-2 mb-3">
+            <div class="col-auto">
+                <label class="form-label fw-bold mb-0">Número de líneas</label>
+                <input type="number" id="txtNumLineas${sufijo}" class="form-control form-control-sm"
+                       value="2" min="2" max="20" style="width:80px" />
+            </div>
+            <div class="col-auto d-flex align-items-end">
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="radio" name="rdTipoDiv${sufijo}"
+                           id="rdMontoIgual${sufijo}" value="igual" checked />
+                    <label class="form-check-label" for="rdMontoIgual${sufijo}">Montos iguales</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="rdTipoDiv${sufijo}"
+                           id="rdPorcentaje${sufijo}" value="porcentaje" />
+                    <label class="form-check-label" for="rdPorcentaje${sufijo}">Por porcentaje</label>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-end">
+                <button class="btn btn-secondary btn-sm btn-generar" data-sufijo="${sufijo}">
+                    <i class="bi bi-arrow-clockwise"></i> Generar
+                </button>
+            </div>
+        </div>`;
+
+    const tablaFrac = (sufijo, label) => `
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Línea</th>
+                        <th class="text-end">% (opcional)</th>
+                        <th class="text-end">${label}</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyFraccionar${sufijo}"></tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td>Total</td>
+                        <td class="text-end" id="tdTotalPct${sufijo}"></td>
+                        <td class="text-end" id="tdTotalMonto${sufijo}"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>`;
+
+    let cuerpoModal = infoIgv;
+    if (mixto) {
+        cuerpoModal += `
+            <h6 class="fw-bold text-primary mb-1"><i class="bi bi-grid"></i> Gravado (Monto Neto)</h6>
+            ${controlesGen('G')}
+            ${tablaFrac('G', 'Monto Neto')}
+            <hr/>
+            <h6 class="fw-bold text-success mb-1"><i class="bi bi-grid"></i> Exonerado (Monto Exento)</h6>
+            ${controlesGen('E')}
+            ${tablaFrac('E', 'Monto Exento')}`;
+    } else {
+        const sufijo = soloExento ? 'E' : 'G';
+        const label  = soloExento ? 'Monto Exento' : 'Monto Neto';
+        cuerpoModal += controlesGen(sufijo) + tablaFrac(sufijo, label);
+    }
+
     const html = `
     <div class="modal fade" id="modalFraccionar" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog ${mixto ? 'modal-lg' : ''}">
             <div class="modal-content">
                 <div class="modal-header py-2" style="background-color:#5b74ad;">
                     <h6 class="modal-title text-white mb-0">
@@ -635,52 +697,7 @@ function mostrarModalFraccionar() {
                     </h6>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    ${infoIgv}
-                    <div class="row g-2 mb-3">
-                        <div class="col-auto">
-                            <label class="form-label fw-bold mb-0">Número de líneas</label>
-                            <input type="number" id="txtNumLineas" class="form-control form-control-sm"
-                                   value="2" min="2" max="20" style="width:80px" />
-                        </div>
-                        <div class="col-auto d-flex align-items-end">
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="radio" name="rdTipoDiv"
-                                       id="rdMontoIgual" value="igual" checked />
-                                <label class="form-check-label" for="rdMontoIgual">Montos iguales</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="rdTipoDiv"
-                                       id="rdPorcentaje" value="porcentaje" />
-                                <label class="form-check-label" for="rdPorcentaje">Por porcentaje</label>
-                            </div>
-                        </div>
-                        <div class="col-auto d-flex align-items-end">
-                            <button class="btn btn-secondary btn-sm" id="btnGenerarLineas">
-                                <i class="bi bi-arrow-clockwise"></i> Generar
-                            </button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered" id="tblFraccionar">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Línea (dist. Syteline)</th>
-                                    <th class="text-end">% (opcional)</th>
-                                    <th class="text-end">${labelMonto}</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bodyFraccionar"></tbody>
-                            <tfoot>
-                                <tr class="fw-bold">
-                                    <td>Total</td>
-                                    <td class="text-end" id="tdTotalPct"></td>
-                                    <td class="text-end" id="tdTotalMonto"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
+                <div class="modal-body">${cuerpoModal}</div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary btn-sm" id="btnConfirmarFraccion">
@@ -697,28 +714,35 @@ function mostrarModalFraccionar() {
     const modal = new bootstrap.Modal(document.getElementById('modalFraccionar'));
     modal.show();
 
-    generarFilasFraccionar(montoAFraccionar);
+    // Inicializar tablas
+    if (mixto || !soloExento) generarFilasFraccionarSuf('G', montoNeto);
+    if (mixto || soloExento)  generarFilasFraccionarSuf('E', montoExento);
 
-    $('#btnGenerarLineas').on('click', function () {
-        generarFilasFraccionar(montoAFraccionar);
+    $(document).on('click', '.btn-generar', function () {
+        const suf = $(this).data('sufijo');
+        const monto = suf === 'G' ? montoNeto : montoExento;
+        generarFilasFraccionarSuf(suf, monto);
     });
 
-    $('#bodyFraccionar').on('input', '.inp-pct', function () {
-        recalcularDesdePorcentaje(montoAFraccionar);
+    $(document).on('input', '#bodyFraccionarG .inp-pct, #bodyFraccionarE .inp-pct', function () {
+        const suf = $(this).closest('tbody').is('#bodyFraccionarG') ? 'G' : 'E';
+        const monto = suf === 'G' ? montoNeto : montoExento;
+        recalcularDesdePorcentajeSuf(suf, monto);
     });
 
-    $('#bodyFraccionar').on('input', '.inp-monto', function () {
-        actualizarTotalesFraccionar();
+    $(document).on('input', '#bodyFraccionarG .inp-monto, #bodyFraccionarE .inp-monto', function () {
+        const suf = $(this).closest('tbody').is('#bodyFraccionarG') ? 'G' : 'E';
+        actualizarTotalesFraccionarSuf(suf);
     });
 
     $('#btnConfirmarFraccion').on('click', function () {
-        confirmarFraccionamiento();
+        confirmarFraccionamiento(soloExento, mixto);
     });
 }
 
-function generarFilasFraccionar(montoTotal) {
-    const n     = Math.max(2, Math.min(20, parseInt($('#txtNumLineas').val()) || 2));
-    const tipo  = $('input[name="rdTipoDiv"]:checked').val();
+function generarFilasFraccionarSuf(sufijo, montoTotal) {
+    const n     = Math.max(2, Math.min(20, parseInt($('#txtNumLineas' + sufijo).val()) || 2));
+    const tipo  = $('input[name="rdTipoDiv' + sufijo + '"]:checked').val();
     const esPct = tipo === 'porcentaje';
     const pct   = parseFloat((100 / n).toFixed(4));
     const monto = parseFloat((montoTotal / n).toFixed(2));
@@ -743,12 +767,12 @@ function generarFilasFraccionar(montoTotal) {
             </td>
         </tr>`;
     }
-    $('#bodyFraccionar').html(rows);
-    actualizarTotalesFraccionar();
+    $('#bodyFraccionar' + sufijo).html(rows);
+    actualizarTotalesFraccionarSuf(sufijo);
 }
 
-function recalcularDesdePorcentaje(montoTotal) {
-    const filas = $('#bodyFraccionar tr');
+function recalcularDesdePorcentajeSuf(sufijo, montoTotal) {
+    const filas = $('#bodyFraccionar' + sufijo + ' tr');
     filas.each(function (idx) {
         const pct   = parseFloat($(this).find('.inp-pct').val()) || 0;
         const esUlt = idx === filas.length - 1;
@@ -756,36 +780,39 @@ function recalcularDesdePorcentaje(montoTotal) {
             $(this).find('.inp-monto').val(parseFloat((montoTotal * pct / 100).toFixed(2)));
         }
     });
-    // Última fila: ajuste de redondeo
     const sumMonto = filas.slice(0, -1).toArray()
         .reduce((s, r) => s + (parseFloat($(r).find('.inp-monto').val()) || 0), 0);
     filas.last().find('.inp-monto').val(parseFloat((montoTotal - sumMonto).toFixed(2)));
-    actualizarTotalesFraccionar();
+    actualizarTotalesFraccionarSuf(sufijo);
 }
 
-function actualizarTotalesFraccionar() {
+function actualizarTotalesFraccionarSuf(sufijo) {
     let totalPct = 0, totalMonto = 0;
-    $('#bodyFraccionar tr').each(function () {
+    $('#bodyFraccionar' + sufijo + ' tr').each(function () {
         totalPct   += parseFloat($(this).find('.inp-pct').val())   || 0;
         totalMonto += parseFloat($(this).find('.inp-monto').val()) || 0;
     });
-    $('#tdTotalPct').text(totalPct.toFixed(2) + '%');
-    $('#tdTotalMonto').text(CorporativoCore.formatearMonto(totalMonto));
+    $('#tdTotalPct'  + sufijo).text(totalPct.toFixed(2) + '%');
+    $('#tdTotalMonto' + sufijo).text(CorporativoCore.formatearMonto(totalMonto));
 }
 
-function confirmarFraccionamiento() {
+function leerLineasDeSufijo(sufijo) {
     const lineas = [];
-    $('#bodyFraccionar tr').each(function () {
-        lineas.push({
-            monto: parseFloat($(this).find('.inp-monto').val()) || 0
-        });
+    $('#bodyFraccionar' + sufijo + ' tr').each(function () {
+        lineas.push({ monto: parseFloat($(this).find('.inp-monto').val()) || 0 });
     });
+    return lineas;
+}
 
-    if (lineas.length === 0) return;
+function confirmarFraccionamiento(soloExento, mixto) {
+    const lineasGravado = (!soloExento || mixto) ? leerLineasDeSufijo('G') : [];
+    const lineasExento  = (soloExento  || mixto) ? leerLineasDeSufijo('E') : [];
+
+    if (lineasGravado.length === 0 && lineasExento.length === 0) return;
 
     CorporativoQuery.ajaxPost(
         BASE_URL + '/Comprobante/FraccionarImputacion',
-        { folio: $('#hdnFolio').val(), lineas },
+        { folio: $('#hdnFolio').val(), lineasGravado, lineasExento },
         function (response) {
             if (response.exito) {
                 listaImputaciones = response.imputaciones;

@@ -39,7 +39,9 @@ namespace ComprobantePago.Application.Interfaces.Repositories
         Task<IEnumerable<ImputacionDetalleDto>> CargarImputacionMasivaAsync(
             IFormFile file, string folio);
         Task<IEnumerable<ImputacionDetalleDto>> FraccionarImputacionAsync(
-            string folio, List<ImputacionFraccionDto> lineas);
+            string folio,
+            List<ImputacionFraccionDto> lineasGravado,
+            List<ImputacionFraccionDto> lineasExento);
         Task<ValidacionSunatDto> ValidarXmlSunatAsync(IFormFile archivo);
         Task<ValidacionSunatDto> ValidarPdfSunatAsync(IFormFile archivo);
         Task<ValidacionSunatDto> ValidarZipSunatAsync(IFormFile archivo);

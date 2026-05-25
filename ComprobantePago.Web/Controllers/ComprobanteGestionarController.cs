@@ -153,7 +153,8 @@ namespace ComprobantePago.Web.Controllers
         [Permission("COMP.GUARDAR")]
         public async Task<IActionResult> FraccionarImputacion([FromBody] FraccionarImputacionRequest request)
         {
-            var imputaciones = await _repository.FraccionarImputacionAsync(request.Folio, request.Lineas);
+            var imputaciones = await _repository.FraccionarImputacionAsync(
+                request.Folio, request.LineasGravado, request.LineasExento);
             return Ok(new { exito = true, imputaciones });
         }
 
