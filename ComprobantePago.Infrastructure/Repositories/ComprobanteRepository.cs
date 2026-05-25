@@ -633,6 +633,15 @@ namespace ComprobantePago.Infrastructure.Repositories
                 else if (!cuentasValidas.Contains(linea.CuentaContable))
                     erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' no existe en el catálogo.");
 
+                // Cuentas que inician con 6: unidad 1 y unidad 4 son obligatorias
+                if (!string.IsNullOrWhiteSpace(linea.CuentaContable) && linea.CuentaContable.StartsWith("6"))
+                {
+                    if (string.IsNullOrWhiteSpace(linea.CodUnidad1Cuenta))
+                        erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' inicia con 6, el código de unidad 1 es obligatorio.");
+                    if (string.IsNullOrWhiteSpace(linea.CodUnidad4Cuenta))
+                        erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' inicia con 6, el código de unidad 4 es obligatorio.");
+                }
+
                 if (!string.IsNullOrWhiteSpace(linea.CodUnidad1Cuenta) &&
                     !unidad1Validas.Contains(linea.CodUnidad1Cuenta))
                     erroresCatalogo.Add($"{prefijo}: código unidad 1 '{linea.CodUnidad1Cuenta}' no existe en el catálogo.");
