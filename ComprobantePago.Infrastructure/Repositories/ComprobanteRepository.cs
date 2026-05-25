@@ -173,7 +173,8 @@ namespace ComprobantePago.Infrastructure.Repositories
                         RolDigitacion          = _usuario.Correo,
                         FechaDigitacion        = DateTime.Now,
                         UsuarioReg             = _usuario.Correo,
-                        FechaReg               = DateTime.Now
+                        FechaReg               = DateTime.Now,
+                        CodigoEmpresa          = _usuario.Empresa
                     };
                     await _entidades.AddAsync(comprobante);
                 }

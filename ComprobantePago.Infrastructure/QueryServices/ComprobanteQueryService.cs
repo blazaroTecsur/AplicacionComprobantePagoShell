@@ -9,25 +9,30 @@ using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Seguridad.Abstractions.Interfaces;
 
 namespace ComprobantePago.Infrastructure.QueryServices
 {
     public class ComprobanteQueryService(
         AppDbContext contexto,
         ILogger<ComprobanteQueryService> logger,
-        IOptions<EmpresaSettings> empresaOptions)
+        IOptions<EmpresaSettings> empresaOptions,
+        IUsuarioContexto usuario)
         : IComprobanteQueryService
     {
         private readonly AppDbContext _contexto = contexto;
         private readonly ILogger<ComprobanteQueryService> _logger = logger;
         private readonly EmpresaSettings _empresa = empresaOptions.Value;
+        private readonly IUsuarioContexto _usuario = usuario;
 
         // ── Buscar comprobantes ───────────────────
         public async Task<IEnumerable<ComprobanteDto>> BuscarAsync(
             BuscarComprobanteDto filtros)
         {
             _logger.LogInformation("Buscando comprobantes con filtros: {@Filtros}", filtros);
-            var query = _contexto.Comprobantes.AsQueryable();
+            var query = _contexto.Comprobantes
+                .Where(x => x.CodigoEmpresa == _usuario.Empresa)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(filtros.Tipo))
                 query = query.Where(x => x.TipoDocumento == filtros.Tipo);
@@ -65,7 +70,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
         public async Task<ComprobanteDetalleDto> ObtenerDetalleAsync(string folio)
         {
             var c = await _contexto.Comprobantes
-                .FirstOrDefaultAsync(x => x.Folio == folio);
+                .FirstOrDefaultAsync(x => x.Folio == folio && x.CodigoEmpresa == _usuario.Empresa);
 
             if (c == null) return null!;
 
@@ -127,7 +132,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
         public async Task<byte[]?> ObtenerPdfAsync(string folio)
         {
             var c = await _contexto.Comprobantes
-                .FirstOrDefaultAsync(x => x.Folio == folio);
+                .FirstOrDefaultAsync(x => x.Folio == folio && x.CodigoEmpresa == _usuario.Empresa);
             if (c is null) return null;
 
             var imputaciones = await _contexto.ImputacionesContables

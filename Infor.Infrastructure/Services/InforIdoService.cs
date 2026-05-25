@@ -1,5 +1,7 @@
 using Infor.Abstractions.DTOs;
 using Infor.Abstractions.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Text;
@@ -17,21 +19,26 @@ namespace Infor.Infrastructure.Services
         private readonly HttpClient _http;
         private readonly IInforTokenService _tokenService;
         private readonly InforSettings _settings;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
         private static readonly JsonSerializerOptions _jsonOpts = new()
         {
             PropertyNameCaseInsensitive = true,
-            // Permite enviar caracteres como "ó", "á", etc. sin escapar a \uXXXX
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
 
         public InforIdoService(
             HttpClient http,
             IInforTokenService tokenService,
-            IOptions<InforSettings> settings)
+            IOptions<InforSettings> settings,
+            IHttpContextAccessor httpContextAccessor,
+            IConfiguration configuration)
         {
             _http = http;
             _tokenService = tokenService;
             _settings = settings.Value;
+            _httpContextAccessor = httpContextAccessor;
+            _configuration = configuration;
         }
 
         // ── GET /json/{ido}[/{props}/adv] — LoadCollection ───────────────────
@@ -201,10 +208,26 @@ namespace Infor.Infrastructure.Services
             var token = await _tokenService.ObtenerTokenAsync();
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            // Header obligatorio de Mongoose: identifica la configuración/BD de Syteline.
-            // Sin él el IDO responde MessageCode 302 "Missing Mongoose configuration header".
-            if (!string.IsNullOrWhiteSpace(_settings.Configuration))
-                request.Headers.TryAddWithoutValidation("X-Infor-MongooseConfig", _settings.Configuration);
+            // Resolver la configuración Mongoose según la empresa del usuario logueado.
+            // Flujo: tid claim → TenantEmpresas[tid] → Configuraciones[empresa] → fallback Configuration.
+            var config = ResolverConfiguracionMongoose();
+            if (!string.IsNullOrWhiteSpace(config))
+                request.Headers.TryAddWithoutValidation("X-Infor-MongooseConfig", config);
+        }
+
+        private string ResolverConfiguracionMongoose()
+        {
+            var user   = _httpContextAccessor.HttpContext?.User;
+            var tid    = user?.FindFirst("tid")?.Value ?? string.Empty;
+            var empresa = _configuration.GetSection("TenantEmpresas")[tid]
+                          ?? user?.FindFirst("empresa")?.Value
+                          ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(empresa) &&
+                _settings.Configuraciones.TryGetValue(empresa, out var cfg))
+                return cfg;
+
+            return _settings.Configuration;
         }
 
         private async Task<JsonElement> LeerRespuestaAsync(

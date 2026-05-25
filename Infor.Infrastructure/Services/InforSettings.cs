@@ -46,11 +46,18 @@ namespace Infor.Infrastructure.Services
             $"{SsoBaseUrl.TrimEnd('/')}/{Tenant}/as/token.oauth2";
 
         /// <summary>
-        /// Nombre de la configuración Mongoose de Syteline.
-        /// Se envía en el header IFS-SL-Config en cada request al IDO REST.
+        /// Nombre de la configuración Mongoose de Syteline (fallback / empresa por defecto).
+        /// Se envía en el header X-Infor-MongooseConfig en cada request al IDO REST.
         /// Ejemplo: "SL_Production", "TECSUR"
         /// </summary>
         public string Configuration { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Mapa empresa → configuración Mongoose específica.
+        /// Permite multiempresa: cada empresa usa su propia config de Syteline.
+        /// Ejemplo: { "TECSUR": "TECSUR_PROD", "GCI": "GCI_PROD" }
+        /// </summary>
+        public Dictionary<string, string> Configuraciones { get; set; } = new();
 
         /// <summary>
         /// Site de Syteline destino para los comprobantes (campo UbToSite en SLAptrxs).
