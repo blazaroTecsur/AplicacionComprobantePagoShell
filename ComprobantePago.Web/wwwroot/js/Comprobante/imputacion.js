@@ -94,10 +94,10 @@ function cargarImputaciones(folio) {
     });
 }
 
-// ── Mostrar/ocultar botones según tipo RP ─────
+// ── Mostrar/ocultar botones según tipo de documento ──
 function actualizarBotonesRP() {
     const esRP = $('#hdnTipoDocumento').val() === 'RP';
-    $('#btnFraccionar').toggleClass('d-none', !esRP);
+    $('#btnFraccionar').removeClass('d-none');
     $('#btnExplorar').toggleClass('d-none', !esRP);
     $('#btnDescargarPlantillaImputacion').toggleClass('d-none', !esRP);
 }
