@@ -92,11 +92,22 @@ namespace ComprobantePago.Infrastructure.QueryServices
                     filter: $"EffDate = '{fechaFmt}' AND FromCurrCode='{moneda}'",
                     adv:    true);
 
-                if (resultado.TryGetProperty("Items", out var items) &&
-                    items.GetArrayLength() > 0 &&
-                    items[0].TryGetProperty("SellRate", out var rate))
+                if (resultado.TryGetProperty("Items", out var items) && items.GetArrayLength() > 0)
                 {
-                    return rate.TryGetDecimal(out var valor) ? valor : 0m;
+                    // Items es array de arrays: cada fila = [{Name,Value}, ...]
+                    foreach (var campo in items[0].EnumerateArray())
+                    {
+                        if (campo.TryGetProperty("Name",  out var nombre) &&
+                            nombre.GetString() == "SellRate" &&
+                            campo.TryGetProperty("Value", out var valor))
+                        {
+                            return decimal.TryParse(
+                                valor.GetString(),
+                                System.Globalization.NumberStyles.Any,
+                                System.Globalization.CultureInfo.InvariantCulture,
+                                out var tasa) ? tasa : 0m;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
