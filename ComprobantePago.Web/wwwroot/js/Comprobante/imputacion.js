@@ -98,8 +98,8 @@ function cargarImputaciones(folio) {
 function actualizarBotonesRP() {
     const esRP = $('#hdnTipoDocumento').val() === 'RP';
     $('#btnFraccionar').removeClass('d-none');
-    $('#btnExplorar').toggleClass('d-none', !esRP);
-    $('#btnDescargarPlantillaImputacion').toggleClass('d-none', !esRP);
+    $('#btnExplorar').removeClass('d-none');
+    $('#btnDescargarPlantillaImputacion').removeClass('d-none');
 }
 
 // ── Mostrar formulario nueva imputación ───────
