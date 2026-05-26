@@ -38,6 +38,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notificacion.Abstractions", "Notificacion.Abstractions\Notificacion.Abstractions.csproj", "{C13CDB11-D3D2-4016-A8E5-9AA137F29308}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		..\AplicacionComprobantePago\ComprobantePago\scripts\create_all_tables.sql = ..\AplicacionComprobantePago\ComprobantePago\scripts\create_all_tables.sql
+		..\AplicacionComprobantePago\ComprobantePago\scripts\insert_tmacodigounidad1.sql = ..\AplicacionComprobantePago\ComprobantePago\scripts\insert_tmacodigounidad1.sql
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8C313CB-FC37-4727-82E1-4C80BB1C93DE}"
 EndProject
