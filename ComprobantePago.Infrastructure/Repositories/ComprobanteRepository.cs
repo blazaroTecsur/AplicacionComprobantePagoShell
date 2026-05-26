@@ -108,16 +108,27 @@ namespace ComprobantePago.Infrastructure.Repositories
                 ? await GenerarFolioAsync()
                 : dto.Folio;
 
+            // Para PV/VC/PT nuevos sin número: generar serie+número en el momento del guardado
+            var serieEfectiva  = dto.Serie;
+            var numeroEfectivo = dto.Numero;
+            var tiposAutoNumero = new[] { "PV", "VC", "PT" };
+            if (string.IsNullOrWhiteSpace(dto.Folio) &&
+                tiposAutoNumero.Contains(dto.TipoDocumento) &&
+                string.IsNullOrWhiteSpace(dto.Numero))
+            {
+                (serieEfectiva, numeroEfectivo) = await GenerarSerieNumeroAsync(dto.TipoDocumento);
+            }
+
             var duplicado = await _contexto.Comprobantes
                 .AnyAsync(x => x.Folio        != folio
                             && x.RucReceptor  == dto.Ruc
-                            && x.Serie        == dto.Serie
-                            && x.Numero       == dto.Numero
+                            && x.Serie        == serieEfectiva
+                            && x.Numero       == numeroEfectivo
                             && x.CodigoEstado != "ANULADO");
 
             if (duplicado)
                 throw new InvalidOperationException(
-                    $"Ya existe un comprobante con serie {dto.Serie}-{dto.Numero} para el RUC {dto.Ruc}.");
+                    $"Ya existe un comprobante con serie {serieEfectiva}-{numeroEfectivo} para el RUC {dto.Ruc}.");
             _logger.LogInformation("Guardando comprobante folio {Folio}", folio);
 
             await _unitOfWork.BeginTransactionAsync();
@@ -132,8 +143,8 @@ namespace ComprobantePago.Infrastructure.Repositories
                     existente.RazonSocialReceptor  = dto.RazonSocial;
                     existente.TipoDocumento        = dto.TipoDocumento;
                     existente.TipoSunat            = dto.TipoSunat;
-                    existente.Serie                = dto.Serie;
-                    existente.Numero               = dto.Numero;
+                    existente.Serie                = serieEfectiva;
+                    existente.Numero               = numeroEfectivo;
                     existente.FechaEmision         = ParseFecha(dto.FechaEmision);
                     existente.FechaRecepcion       = ParseFechaNullable(dto.FechaRecepcion);
                     existente.FechaVencimiento     = ParseFechaNullable(dto.FechaVencimiento);
@@ -176,8 +187,8 @@ namespace ComprobantePago.Infrastructure.Repositories
                         RazonSocialReceptor    = dto.RazonSocial,
                         TipoDocumento          = dto.TipoDocumento,
                         TipoSunat              = dto.TipoSunat,
-                        Serie                  = dto.Serie,
-                        Numero                 = dto.Numero,
+                        Serie                  = serieEfectiva,
+                        Numero                 = numeroEfectivo,
                         FechaEmision           = ParseFecha(dto.FechaEmision),
                         FechaRecepcion         = ParseFechaNullable(dto.FechaRecepcion),
                         FechaVencimiento       = ParseFechaNullable(dto.FechaVencimiento),
@@ -226,7 +237,7 @@ namespace ComprobantePago.Infrastructure.Repositories
                 throw;
             }
 
-            return folio;
+            return (folio, serieEfectiva, numeroEfectivo);
         }
 
         // ── Enviar ────────────────────────────────

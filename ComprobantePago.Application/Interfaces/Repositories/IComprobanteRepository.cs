@@ -10,7 +10,7 @@ namespace ComprobantePago.Application.Interfaces.Repositories
     public interface IComprobanteRepository
     {
         // ── Comprobante ───────────────────────────
-        Task<string> GuardarAsync(
+        Task<(string folio, string serie, string numero)> GuardarAsync(
             RegistrarComprobanteCommand command);
         Task EnviarAsync(
             EnviarComprobanteCommand command);

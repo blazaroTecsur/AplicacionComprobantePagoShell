@@ -55,8 +55,8 @@ namespace ComprobantePago.Web.Controllers
 
             try
             {
-                var folio = await _repository.GuardarAsync(command);
-                return Ok(new { exito = true, folio });
+                var (folio, serie, numero) = await _repository.GuardarAsync(command);
+                return Ok(new { exito = true, folio, serie, numero });
             }
             catch (InvalidOperationException ex)
             {
