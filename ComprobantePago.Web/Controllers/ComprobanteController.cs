@@ -160,5 +160,15 @@ namespace ComprobantePago.Web.Controllers
             var contentType = ext == "pdf" ? "application/pdf" : "application/octet-stream";
             return File(doc.Contenido, contentType, doc.NombreArchivo);
         }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GenerarSerieNumero([FromQuery] string tipoDocumento)
+        {
+            var tipos = new[] { "PV", "VC", "PT" };
+            if (!tipos.Contains(tipoDocumento))
+                return BadRequest(new { error = "Tipo de documento no válido." });
+            var (serie, numero) = await _repository.GenerarSerieNumeroAsync(tipoDocumento);
+            return Ok(new { serie, numero });
+        }
     }
 }

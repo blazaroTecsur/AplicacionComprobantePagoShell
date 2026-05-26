@@ -62,6 +62,44 @@ namespace ComprobantePago.Infrastructure.Repositories
                 .ToString("D4");
         }
 
+        // ── Generar Serie + Número (PV / VC / PT) ────────────────────
+        public async Task<(string serie, string numero)> GenerarSerieNumeroAsync(string tipoDocumento)
+        {
+            var ahora   = DateTime.Now;
+            var anio    = ahora.Year;
+            var mes     = ahora.Month;
+            var empresa = _usuario.Empresa ?? string.Empty;
+
+            var registro = await _contexto.SeriesCorrelativo
+                .FirstOrDefaultAsync(x => x.CodigoEmpresa == empresa
+                                       && x.TipoDocumento  == tipoDocumento
+                                       && x.Anio           == anio
+                                       && x.Mes            == mes);
+
+            if (registro is null)
+            {
+                registro = new Domain.Entities.SerieCorrelativo
+                {
+                    CodigoEmpresa      = empresa,
+                    TipoDocumento      = tipoDocumento,
+                    Anio               = anio,
+                    Mes                = mes,
+                    UltimoCorrelativo  = 1
+                };
+                await _contexto.SeriesCorrelativo.AddAsync(registro);
+            }
+            else
+            {
+                registro.UltimoCorrelativo++;
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            var serie  = tipoDocumento; // "PV", "VC" o "PT"
+            var numero = $"{anio:D4}{mes:D2}{registro.UltimoCorrelativo:D5}";
+            return (serie, numero);
+        }
+
         // ── Guardar Comprobante ───────────────────
         public async Task<string> GuardarAsync(RegistrarComprobanteCommand command)
         {

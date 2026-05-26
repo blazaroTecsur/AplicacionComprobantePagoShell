@@ -25,6 +25,7 @@ namespace ComprobantePago.Infrastructure.Persistence
         public DbSet<Comprobante> Comprobantes { get; set; }
         public DbSet<ImputacionContable> ImputacionesContables { get; set; }
         public DbSet<DocumentoElectronico> DocumentosElectronicos { get; set; }
+        public DbSet<SerieCorrelativo> SeriesCorrelativo { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

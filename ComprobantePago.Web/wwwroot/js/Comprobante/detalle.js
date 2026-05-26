@@ -689,6 +689,22 @@ function bindEventos() {
         if ($(this).is(':checked')) activarModoManual();
     });
 
+    // En modo manual, cuando cambia tipo documento a PV/VC/PT → auto-generar serie/numero
+    $('#ddlTipoDocumento').on('change', function () {
+        const tipo = $(this).val();
+        const tiposAuto = ['PV', 'VC', 'PT'];
+        if (!tiposAuto.includes(tipo)) return;
+        // Solo si está en modo manual
+        if (!$('#rdoFacturacionManual').is(':checked')) return;
+        CorporativoQuery.ajaxGet(
+            BASE_URL + '/Comprobante/GenerarSerieNumero?tipoDocumento=' + encodeURIComponent(tipo),
+            function (data) {
+                $('#txtSerie').val(data.serie);
+                $('#txtNumero').val(data.numero);
+            }
+        );
+    });
+
     $('#rdoFacturacionElectronica').on('change', function () {
         if ($(this).is(':checked')) {
             CorporativoCore.confirmar(
