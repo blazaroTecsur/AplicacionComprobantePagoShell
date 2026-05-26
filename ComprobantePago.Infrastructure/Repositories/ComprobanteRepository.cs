@@ -101,7 +101,7 @@ namespace ComprobantePago.Infrastructure.Repositories
         }
 
         // ── Guardar Comprobante ───────────────────
-        public async Task<string> GuardarAsync(RegistrarComprobanteCommand command)
+        public async Task<(string folio, string serie, string numero)> GuardarAsync(RegistrarComprobanteCommand command)
         {
             var dto = command.Comprobante;
             var folio = string.IsNullOrWhiteSpace(dto.Folio)
