@@ -645,8 +645,9 @@ namespace ComprobantePago.Infrastructure.Repositories
 
             var cuentasValidas = (await _contexto.CuentasContables
                 .Where(x => x.Activo && x.Codigo.Length >= 7)
-                .Select(x => x.Codigo)
-                .ToListAsync()).ToHashSet();
+                .Select(x => new { x.Codigo, x.Descripcion })
+                .ToListAsync())
+                .ToDictionary(x => x.Codigo, x => x.Descripcion);
 
             var unidad1Validas = (await _contexto.CodigosUnidad1
                 .Where(x => x.Activo && (string.IsNullOrEmpty(empresa) || x.Empresa == empresa))
@@ -679,8 +680,10 @@ namespace ComprobantePago.Infrastructure.Repositories
                     erroresCatalogo.Add($"{prefijo}: la cuenta contable es obligatoria.");
                 else if (linea.CuentaContable.Length < 7)
                     erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' tiene menos de 7 dígitos.");
-                else if (!cuentasValidas.Contains(linea.CuentaContable))
+                else if (!cuentasValidas.ContainsKey(linea.CuentaContable))
                     erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' no existe en el catálogo.");
+                else
+                    linea.DescripcionCuenta = cuentasValidas[linea.CuentaContable];
 
                 // Cuentas que inician con 6: unidad 1 y unidad 4 son obligatorias
                 if (!string.IsNullOrWhiteSpace(linea.CuentaContable) && linea.CuentaContable.StartsWith("6"))
