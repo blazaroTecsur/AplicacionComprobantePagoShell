@@ -8,9 +8,8 @@ namespace ComprobantePago.Application.Validations
         public RegistrarComprobanteValidator()
         {
             RuleFor(x => x.Ruc)
-                .NotEmpty().WithMessage("El RUC es obligatorio.")
-                .Length(11).WithMessage("El RUC debe tener exactamente 11 dígitos.")
-                .Matches(@"^\d+$").WithMessage("El RUC solo debe contener dígitos.");
+                .NotEmpty().WithMessage("El número de documento es obligatorio.")
+                .Matches(@"^\d{8}$|^\d{11}$").WithMessage("El número de documento debe tener 8 dígitos (DNI) o 11 dígitos (RUC).");
 
             RuleFor(x => x.RazonSocial)
                 .NotEmpty().WithMessage("La razón social es obligatoria.")

@@ -448,7 +448,7 @@ function validarCabecera() {
     const campos = [
         {
             selector: '#txtNumeroDocumentoIdentidad',
-            msg: 'Debe ingresar el RUC del proveedor.'
+            msg: 'Debe ingresar el número de documento del proveedor.'
         },
         {
             selector: '#ddlTipoDocumento',
