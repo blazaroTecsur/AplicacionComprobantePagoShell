@@ -445,6 +445,9 @@ function obtenerDatosCabecera() {
 
 // ── Validaciones ──────────────────────────────
 function validarCabecera() {
+    const tipoDoc = $('#ddlTipoDocumento').val();
+    const tiposAutoNumero = ['PV', 'VC', 'PT'];
+
     const campos = [
         {
             selector: '#txtNumeroDocumentoIdentidad',
@@ -460,7 +463,8 @@ function validarCabecera() {
         },
         {
             selector: '#txtNumero',
-            msg: 'Debe ingresar el número.'
+            msg: 'Debe ingresar el número.',
+            skip: tiposAutoNumero.includes(tipoDoc)
         },
         {
             selector: '#txtFechaEmision',
@@ -473,6 +477,7 @@ function validarCabecera() {
     ];
 
     for (const campo of campos) {
+        if (campo.skip) continue;
         if (CorporativoCore.esVacio($(campo.selector).val())) {
             CorporativoCore.notificarAdvertencia(campo.msg);
             $(campo.selector).focus();

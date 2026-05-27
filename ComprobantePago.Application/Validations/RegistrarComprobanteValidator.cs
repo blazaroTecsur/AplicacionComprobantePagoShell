@@ -28,7 +28,10 @@ namespace ComprobantePago.Application.Validations
 
             RuleFor(x => x.Numero)
                 .NotEmpty().WithMessage("El número de comprobante es obligatorio.")
-                .MaximumLength(20).WithMessage("El número no puede superar 20 caracteres.");
+                .When(x => !new[] { "PV", "VC", "PT" }.Contains(x.TipoDocumento));
+            RuleFor(x => x.Numero)
+                .MaximumLength(20).WithMessage("El número no puede superar 20 caracteres.")
+                .When(x => !string.IsNullOrWhiteSpace(x.Numero));
 
             RuleFor(x => x.FechaEmision)
                 .NotEmpty().WithMessage("La fecha de emisión es obligatoria.");
