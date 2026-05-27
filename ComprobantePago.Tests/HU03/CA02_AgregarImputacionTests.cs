@@ -62,7 +62,7 @@ namespace ComprobantePago.Tests.HU03
                     TieneDetraccion = false
                 }
             };
-            return await repo.GuardarAsync(command);
+            return (await repo.GuardarAsync(command)).folio;
         }
 
         private static ImputacionDto ImputacionValida(string folio) => new()
