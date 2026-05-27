@@ -78,7 +78,7 @@ namespace ComprobantePago.Tests.HU02
         {
             var (repo, _) = Construir(nameof(GuardarManual_SinFolioPrevio_GeneraFolio));
             var folio     = await repo.GuardarAsync(Comando("RP"));
-            Assert.False(string.IsNullOrWhiteSpace(folio),
+            Assert.False(string.IsNullOrWhiteSpace(folio.folio),
                 "Debe generarse un folio al guardar en modo manual.");
         }
 
@@ -87,7 +87,7 @@ namespace ComprobantePago.Tests.HU02
         {
             var (repo, _) = Construir(nameof(GuardarManual_FolioTieneLongitudCorrecta));
             var folio     = await repo.GuardarAsync(Comando("RP"));
-            Assert.True(folio.Length == 10,
+            Assert.True(folio.folio.Length == 10,
                 "El folio debe tener formato YYYYMMNNNN (10 caracteres).");
         }
 
@@ -104,7 +104,7 @@ namespace ComprobantePago.Tests.HU02
         {
             var (repo, _) = Construir($"Tipo_{tipoDocumento}");
             var folio     = await repo.GuardarAsync(Comando(tipoDocumento));
-            Assert.False(string.IsNullOrWhiteSpace(folio),
+            Assert.False(string.IsNullOrWhiteSpace(folio.folio),
                 $"{descripcion} ({tipoDocumento}) debe guardarse correctamente.");
         }
 
@@ -117,16 +117,16 @@ namespace ComprobantePago.Tests.HU02
 
             // Primer guardado
             var folio = await repo.GuardarAsync(Comando("RP"));
-            Assert.False(string.IsNullOrWhiteSpace(folio));
+            Assert.False(string.IsNullOrWhiteSpace(folio.folio));
 
             // Segundo guardado con el mismo folio (actualización)
             var folioActualizado = await repo.GuardarAsync(
-                Comando("RP", folio: folio, total: 150m, montoNeto: 150m));
+                Comando("RP", folio: folio.folio, total: 150m, montoNeto: 150m));
 
             Assert.True(folioActualizado == folio,
                 "El folio no debe cambiar al actualizar un comprobante existente.");
 
-            var total = db.Comprobantes.Count(c => c.Folio == folio);
+            var total = db.Comprobantes.Count(c => c.Folio == folio.folio);
             Assert.True(total == 1,
                 "No debe crearse un duplicado al actualizar.");
         }
@@ -141,7 +141,7 @@ namespace ComprobantePago.Tests.HU02
             var folio = await repo.GuardarAsync(
                 Comando("RP", montoNeto: 250m, igv: 45m, total: 295m));
 
-            var registrado = db.Comprobantes.FirstOrDefault(c => c.Folio == folio);
+            var registrado = db.Comprobantes.FirstOrDefault(c => c.Folio == folio.folio);
             Assert.NotNull(registrado);
             Assert.Equal(250.00m, registrado.MontoNeto);
             Assert.Equal(45.00m,  registrado.MontoIGVCredito);
@@ -165,7 +165,7 @@ namespace ComprobantePago.Tests.HU02
                 NullLogger<ComprobanteRepository>.Instance);
 
             var folio      = await repo.GuardarAsync(Comando("RP"));
-            var registrado = db.Comprobantes.FirstOrDefault(c => c.Folio == folio);
+            var registrado = db.Comprobantes.FirstOrDefault(c => c.Folio == folio.folio);
 
             Assert.NotNull(registrado);
             Assert.Equal("operador@tecsur.com.pe", registrado.RolDigitacion);
@@ -178,7 +178,7 @@ namespace ComprobantePago.Tests.HU02
             var (repo, db) = Construir(nameof(GuardarManual_EstadoInicialEsRegistrado));
 
             var folio      = await repo.GuardarAsync(Comando("RP"));
-            var registrado = db.Comprobantes.FirstOrDefault(c => c.Folio == folio);
+            var registrado = db.Comprobantes.FirstOrDefault(c => c.Folio == folio.folio);
 
             Assert.NotNull(registrado);
             Assert.Equal("REGISTRADO", registrado.CodigoEstado);

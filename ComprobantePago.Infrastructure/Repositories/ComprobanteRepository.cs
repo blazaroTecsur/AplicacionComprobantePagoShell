@@ -690,6 +690,8 @@ namespace ComprobantePago.Infrastructure.Repositories
                 {
                     if (string.IsNullOrWhiteSpace(linea.CodUnidad1Cuenta))
                         erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' inicia con 6, el código de unidad 1 es obligatorio.");
+                    if (string.IsNullOrWhiteSpace(linea.CodUnidad2Cuenta))
+                        erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' inicia con 6, el código de unidad 2 es obligatorio.");
                     if (string.IsNullOrWhiteSpace(linea.CodUnidad4Cuenta))
                         erroresCatalogo.Add($"{prefijo}: cuenta '{linea.CuentaContable}' inicia con 6, el código de unidad 4 es obligatorio.");
                 }
