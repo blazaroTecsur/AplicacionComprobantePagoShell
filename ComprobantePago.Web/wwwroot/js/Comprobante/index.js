@@ -4,7 +4,7 @@
 
 let tablaComprobantes;
 
-$(document).ready(function () {
+$(function () {
     if ($('#index_tblComprobantes').length > 0) {
         inicializarTabla();
         cargarTipos();

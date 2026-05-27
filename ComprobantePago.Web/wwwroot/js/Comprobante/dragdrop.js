@@ -17,7 +17,7 @@ let _docsActuales = [];
 let _subTipoSeleccionado = null;
 
 // ─────────────────────────────────────────────
-$(document).ready(function () {
+$(function () {
     inicializarDragDrop();
     bindEventosDragDrop();
 });

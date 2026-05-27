@@ -2,7 +2,7 @@
 // DETALLE.JS - Registro de Comprobantes
 // ============================================
 
-$(document).ready(function () {
+$(function () {
     if ($('#tabsDetalle').length > 0) {
         inicializar();
         bindEventos();
@@ -480,7 +480,7 @@ function validarCabecera() {
         if (campo.skip) continue;
         if (CorporativoCore.esVacio($(campo.selector).val())) {
             CorporativoCore.notificarAdvertencia(campo.msg);
-            $(campo.selector).focus();
+            $(campo.selector).trigger('focus');
             return false;
         }
     }

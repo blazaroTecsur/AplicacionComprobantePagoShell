@@ -7,7 +7,7 @@ let modoEdicion = false;
 let secuenciaEditando = null;
 let listaImputaciones = [];
 
-$(document).ready(function () {
+$(function () {
     if ($('#tblImputacion').length > 0) {
         inicializarTablaImputacion();
         bindEventosImputacion();
@@ -131,7 +131,7 @@ function mostrarFormularioImputacion(secuenciaObjetivo) {
     $('#btnCancelarDetalle').removeClass('d-none');
     $('#btnEliminarDetalle').addClass('d-none');
     $('#btnEditarDetalle').addClass('d-none');
-    $('#txtAliasCuenta').focus();
+    $('#txtAliasCuenta').trigger('focus');
 }
 
 // ── Mostrar formulario editar imputación ──────
@@ -298,18 +298,18 @@ function validarFormularioImputacion() {
     const cuenta = $('#txtCuentaContable').val();
     if (CorporativoCore.esVacio(cuenta)) {
         CorporativoCore.notificarAdvertencia('Debe seleccionar una cuenta contable.');
-        $('#txtAliasCuenta').focus();
+        $('#txtAliasCuenta').trigger('focus');
         return false;
     }
     if (cuenta.startsWith('6')) {
         if (CorporativoCore.esVacio($('#txtCodUnidad1Cuenta').val())) {
             CorporativoCore.notificarAdvertencia('Las cuentas que inician con 6 requieren Código de Unidad 1.');
-            $('#txtCodUnidad1Cuenta').focus();
+            $('#txtCodUnidad1Cuenta').trigger('focus');
             return false;
         }
         if (CorporativoCore.esVacio($('#txtCodUnidad4Cuenta').val())) {
             CorporativoCore.notificarAdvertencia('Las cuentas que inician con 6 requieren Código de Unidad 4.');
-            $('#txtCodUnidad4Cuenta').focus();
+            $('#txtCodUnidad4Cuenta').trigger('focus');
             return false;
         }
     }
@@ -624,7 +624,7 @@ function mostrarModalBusqueda(data, titulo, claseItem, inputId) {
 
     const modal = new bootstrap.Modal(document.getElementById('modalBusqueda'));
     modal.show();
-    setTimeout(() => $('#txtFiltroBusqueda').focus(), 300);
+    setTimeout(() => $('#txtFiltroBusqueda').trigger('focus'), 300);
 }
 
 // ════════════════════════════════════════════
