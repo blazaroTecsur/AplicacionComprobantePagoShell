@@ -192,6 +192,8 @@ namespace ComprobantePago.Infrastructure.Services
                     AcctUnit3   = linea.CodUnidad3.Length > 0 ? linea.CodUnidad3[..Math.Min(4, linea.CodUnidad3.Length)] : "",
                     AcctUnit4   = linea.CodUnidad4.Length > 0 ? linea.CodUnidad4[..Math.Min(4, linea.CodUnidad4.Length)] : "",
                     Amount      = linea.Importe,
+                    TaxSystem   = linea.CodImp == "EXO" ? "1" : "",
+                    TaxCode     = linea.CodImp == "EXO" ? "EXE" : "",
                     DIOTTransType      = linea.EsEmpleado ? "1" : "0",
                     TaxRegNum          = linea.EsEmpleado && linea.NumRegFiscal.Length > 0 ? linea.NumRegFiscal[..Math.Min(25, linea.NumRegFiscal.Length)] : "",
                     TaxRegNumType      = linea.EsEmpleado && !string.IsNullOrEmpty(linea.NumRegFiscal) ? "T" : "",
