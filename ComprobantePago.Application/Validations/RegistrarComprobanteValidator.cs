@@ -39,6 +39,9 @@ namespace ComprobantePago.Application.Validations
             RuleFor(x => x.Moneda)
                 .NotEmpty().WithMessage("La moneda es obligatoria.");
 
+            RuleFor(x => x.PlazoPago)
+                .NotEmpty().WithMessage("El plazo de pago es obligatorio.");
+
             RuleFor(x => x.TasaCambio)
                 .GreaterThanOrEqualTo(0).WithMessage("La tasa de cambio no puede ser negativa.");
 

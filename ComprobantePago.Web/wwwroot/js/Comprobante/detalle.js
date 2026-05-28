@@ -474,6 +474,10 @@ function validarCabecera() {
             selector: '#ddlMoneda',
             msg: 'Debe seleccionar la moneda.'
         },
+        {
+            selector: '#txtPlazoPago',
+            msg: 'Debe ingresar el plazo de pago.'
+        },
     ];
 
     for (const campo of campos) {
