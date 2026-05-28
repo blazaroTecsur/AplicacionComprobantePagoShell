@@ -61,7 +61,8 @@ namespace ComprobantePago.Infrastructure.QueryServices
                     Moneda = x.Moneda,
                     MontoTotal = x.MontoTotal,
                     Estado = x.CodigoEstado,
-                    VoucherSyteline = x.VoucherSyteline
+                    VoucherSyteline = x.VoucherSyteline,
+                    Observacion = x.Observacion ?? string.Empty
                 })
                 .ToListAsync();
         }

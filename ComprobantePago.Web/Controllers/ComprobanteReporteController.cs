@@ -41,7 +41,7 @@ namespace ComprobantePago.Web.Controllers
             var ws = workbook.Worksheets.Add("Comprobantes");
 
             var headers = new[] { "Folio", "Tipo", "Serie", "Número", "Proveedor",
-                                   "Fecha", "Moneda", "Monto Total", "Estado", "Voucher" };
+                                   "Fecha", "Moneda", "Monto Total", "Estado", "Voucher", "Observación" };
             for (int i = 0; i < headers.Length; i++)
             {
                 ws.Cell(1, i + 1).Value = headers[i];
@@ -61,6 +61,7 @@ namespace ComprobantePago.Web.Controllers
                 ws.Cell(row, 8).Value  = (double)d.MontoTotal;
                 ws.Cell(row, 9).Value  = d.Estado;
                 ws.Cell(row, 10).Value = d.VoucherSyteline?.ToString() ?? "";
+                ws.Cell(row, 11).Value = d.Observacion;
                 row++;
             }
             ws.Columns().AdjustToContents();
