@@ -41,7 +41,7 @@ namespace ComprobantePago.Infrastructure.Services
             CancellationToken ct = default)
         {
             // Validar que el proveedor tenga VendNum asignado
-            var vendNum = cabecera.VendNum.PadLeft(7);
+            var vendNum = FormatearVendNum(cabecera.VendNum);
             if (string.IsNullOrWhiteSpace(vendNum.Trim()) || vendNum.Trim() == "0")
                 throw new InvalidOperationException(
                     $"El proveedor del comprobante '{cabecera.Factura}' no tiene VendNum " +
@@ -161,7 +161,7 @@ namespace ComprobantePago.Infrastructure.Services
             CancellationToken ct = default)
         {
             var lista   = lineas.OrderBy(l => l.SecDist).ToList();
-            var vendNum = cabecera.VendNum.PadLeft(7);
+            var vendNum = FormatearVendNum(cabecera.VendNum);
             var distSeq = 5;
 
             if (lista.Count == 0)
@@ -265,8 +265,7 @@ namespace ComprobantePago.Infrastructure.Services
             // "V" para facturas y demás; vacío para NC/ND (07/08) — se omite al filtrar
             Type = c.TipoSunat is "07" or "08" ? "" : "V",
 
-            // VendNum: longitud fija de 7 caracteres, rellenado con espacios a la izquierda
-            VendNum  = c.VendNum.PadLeft(7),
+            VendNum  = FormatearVendNum(c.VendNum),
             Voucher  = voucher,
             InvDate  = c.FechaFactura,
             DistDate = c.FechaDistribucion,
@@ -316,6 +315,15 @@ namespace ComprobantePago.Infrastructure.Services
             aptZLA_TotalDetraccion      = c.TotalDetraccion,
             aptZLA_TotalDetraccionLocal = c.TotalDetLocal,
         };
+
+        // ── Formatear VendNum ─────────────────────────────────────────────────
+        // Numérico → relleno con espacios a la izquierda hasta 7 chars (legacy Syteline).
+        // Alfanumérico → sin espacios.
+        private static string FormatearVendNum(string vendNum)
+        {
+            var v = vendNum.Trim();
+            return v.All(char.IsDigit) ? v.PadLeft(7) : v;
+        }
 
         // ── Construir lista de IdoProperty ───────────────────────────────────
         // Todos los campos se envían con IsNull=false.
