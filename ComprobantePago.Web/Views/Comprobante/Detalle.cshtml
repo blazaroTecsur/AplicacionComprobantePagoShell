@@ -7,6 +7,7 @@
     bool puedeAprobar   = User.HasClaim("permission", "COMP.APROBAR");
     bool puedeAnular    = User.HasClaim("permission", "COMP.ANULAR");
     bool puedePagar     = User.HasClaim("permission", "COMP.PAGAR");
+    bool puedeRevertir  = puedeAutorizar || puedeAprobar;
 }
 
 <!-- Campos hidden de estado global -->
@@ -39,6 +40,7 @@
 <input type="hidden" id="hdnIndImputableTodosCRs" />
 <input type="hidden" id="hdnHabilitaEditarMontos" value="N" />
 <input type="hidden" id="hdnHabSegAprob" value="@(puedeAprobar ? "S" : "N")" />
+<input type="hidden" id="hdnPuedeAutorizar"   value="@(puedeAutorizar ? "S" : "N")" />
 <input type="hidden" id="hdnPerdida" value="1" />
 <input type="hidden" id="hdnMontoRedondeo" />
 <input type="hidden" id="hdnSentidoDocumento" />
@@ -135,6 +137,12 @@
         {
             <button type="button" class="btn btn-primary btn-sm d-none" id="btnAprobarDetalle">
                 <i class="bi bi-check-circle"></i> Aprobar
+            </button>
+        }
+        @if (puedeRevertir)
+        {
+            <button type="button" class="btn btn-warning btn-sm d-none" id="btnRevertir">
+                <i class="bi bi-arrow-counterclockwise"></i> Revertir
             </button>
         }
         @if (puedePagar)

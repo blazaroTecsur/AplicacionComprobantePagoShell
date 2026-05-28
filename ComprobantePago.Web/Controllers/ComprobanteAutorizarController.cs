@@ -56,6 +56,24 @@ namespace ComprobantePago.Web.Controllers
 
         [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RevertirEnviado([FromBody] RevertirComprobanteCommand command)
+        {
+            var validacion = await _accionValidator.ValidateAsync(command.Comprobante);
+            if (!validacion.IsValid)
+                return BadRequest(new { errores = validacion.Errors.Select(e => e.ErrorMessage) });
+            try
+            {
+                await _repository.RevertirAsync(command);
+                return Ok(BaseResponse.Ok());
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { errores = new[] { ex.Message } });
+            }
+        }
+
+        [HttpPost("[action]")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AutorizarMasivo([FromBody] List<string> folios)
         {
             if (folios is null || folios.Count == 0)

@@ -330,17 +330,20 @@ function mostrarBotonesSegunEstado(estado) {
             $('#btnAutorizarDetalle, #btnImprimirComprobante')
                 .removeClass('d-none');
             $('#btnVistaPrevia').removeClass('d-none');
+            if ($('#hdnPuedeAutorizar').val() === 'S') $('#btnRevertir').removeClass('d-none');
             break;
         case 'AUTORIZADO':
             bloquearTodosLosCampos();
             $('#btnAprobarDetalle, #btnImprimirComprobante')
                 .removeClass('d-none');
             $('#btnVistaPrevia, #btnAnular').removeClass('d-none');
+            if ($('#hdnHabSegAprob').val() === 'S') $('#btnRevertir').removeClass('d-none');
             break;
         case 'APROBADO':
             bloquearTodosLosCampos();
             $('#btnPagar, #btnImprimirComprobante, #btnVistaPrevia')
                 .removeClass('d-none');
+            if ($('#hdnHabSegAprob').val() === 'S') $('#btnRevertir').removeClass('d-none');
             break;
         case 'PAGADO':
             bloquearTodosLosCampos();
@@ -747,6 +750,13 @@ function bindEventos() {
         if (ok) anularComprobante();
     });
 
+    // Revertir
+    $('#btnRevertir').on('click', async function () {
+        const ok = await CorporativoCore.confirmar(
+            '¿Desea revertir el comprobante al estado anterior?');
+        if (ok) revertirComprobante();
+    });
+
     // Enviar
     $('#btnEnviar').on('click', async function () {
         const ok = await CorporativoCore.confirmar(
@@ -983,6 +993,17 @@ function _accionComprobante(url, estadoDestino, mensajeExito, redirigir = false)
     );
 }
 
+function revertirComprobante() {
+    const estado = $('#hdnCodigoEstado').val();
+    const urls = {
+        'ENVIADO':    BASE_URL + '/Comprobante/RevertirEnviado',
+        'AUTORIZADO': BASE_URL + '/Comprobante/RevertirAprobacion',
+        'APROBADO':   BASE_URL + '/Comprobante/RevertirAprobacion',
+    };
+    const url = urls[estado];
+    if (!url) { CorporativoCore.notificarError('Estado no permite reversión.'); return; }
+    _accionComprobante(url, null, 'Comprobante revertido al estado anterior.', true);
+}
 function enviarComprobante() {
     _accionComprobante(BASE_URL+'/Comprobante/Enviar', 'ENVIADO',
         'Comprobante enviado correctamente.', true);

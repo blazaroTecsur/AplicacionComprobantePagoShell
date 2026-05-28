@@ -337,6 +337,39 @@ namespace ComprobantePago.Infrastructure.Repositories
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // ── Revertir estado ───────────────────────
+        public async Task RevertirAsync(RevertirComprobanteCommand command)
+        {
+            var c = await ObtenerPorFolioAsync(command.Comprobante.Folio);
+
+            switch (c.CodigoEstado)
+            {
+                case "ENVIADO":
+                    c.CodigoEstado = "REGISTRADO";
+                    break;
+
+                case "AUTORIZADO":
+                    c.CodigoEstado      = "ENVIADO";
+                    c.RolAutorizacion   = null;
+                    c.FechaAutorizacion = null;
+                    break;
+
+                case "APROBADO":
+                    c.CodigoEstado    = "AUTORIZADO";
+                    c.RolAprobacion   = null;
+                    c.FechaAprobacion = null;
+                    break;
+
+                default:
+                    throw new InvalidOperationException(
+                        $"No se puede revertir un comprobante en estado '{c.CodigoEstado}'.");
+            }
+
+            c.UsuarioAct = _usuario.Correo;
+            c.FechaAct   = DateTime.Now;
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         // ── Derivar ───────────────────────────────
         public async Task DerivarAsync(DerivarComprobanteCommand command)
         {

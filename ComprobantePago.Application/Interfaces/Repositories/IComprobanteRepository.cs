@@ -28,6 +28,8 @@ namespace ComprobantePago.Application.Interfaces.Repositories
             AnularComprobanteCommand command);
         Task DerivarAsync(
             DerivarComprobanteCommand command);
+        Task RevertirAsync(
+            RevertirComprobanteCommand command);
 
         // ── Imputación ────────────────────────────
         Task<ImputacionDetalleDto> AgregarImputacionAsync(
