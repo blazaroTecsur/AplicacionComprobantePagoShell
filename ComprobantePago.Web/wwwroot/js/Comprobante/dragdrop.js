@@ -553,10 +553,10 @@ function poblarCamposDesdeXml(datos) {
     if (!datos) return;
 
     $('#txtFolio').val($('#hdnFolio').val());
-    $('#txtNumeroDocumentoIdentidad').val(datos.ruc);
-    $('#txtRazonSocial').val(datos.razonSocial);
-    $('#txtRucBenef').val(datos.ruc);
-    $('#txtRazonSocialBenef').val(datos.razonSocial);
+    $('#txtNumeroDocumentoIdentidad').val(datos.rucProveedor);
+    $('#txtRazonSocial').val(datos.razonSocialProveedor);
+    $('#txtRucBenef').val(datos.rucProveedor);
+    $('#txtRazonSocialBenef').val(datos.razonSocialProveedor);
     $('#txtSerie').val(datos.serie);
     $('#txtNumero').val(datos.numero);
     poblarFecha('#txtFechaEmision', datos.fechaEmision);
