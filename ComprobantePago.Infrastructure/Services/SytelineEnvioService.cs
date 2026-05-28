@@ -174,6 +174,10 @@ namespace ComprobantePago.Infrastructure.Services
             var lineaExento = lista.FirstOrDefault(l => l.CodImp == "EXO");
             var expenseLines = lista.Where(l => l.EsLineaPrincipal).ToList();
 
+            // En modo fraccionado las líneas EXENTO ya se envían como expense lines;
+            // no agregar una línea EXO separada que las duplicaría.
+            bool exentoYaComoExpense = expenseLines.Any(l => l.CodImp == "EXO");
+
             // 1. Líneas de gasto (una por cada imputación principal)
             foreach (var linea in expenseLines)
             {
@@ -228,8 +232,8 @@ namespace ComprobantePago.Infrastructure.Services
                 distSeq += 5;
             }
 
-            // 4. Línea exento
-            if (lineaExento != null)
+            // 4. Línea exento (solo si no fue enviada ya como expense line en modo fraccionado)
+            if (lineaExento != null && !exentoYaComoExpense)
             {
                 var dto = new SLAptrxdsInsertDto
                 {
