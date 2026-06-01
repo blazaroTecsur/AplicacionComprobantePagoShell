@@ -9,10 +9,10 @@ namespace ComprobantePago.Application.Settings
 
         public class ApiEndpoints
         {
-            public string Empleados { get; set; } = "/empleados";
-            public string Proveedores { get; set; } = "/proveedores";
-            public string CodigosUnidad { get; set; } = "/codigos-unidad";
-            public string CuentasContables { get; set; } = "/cuentas-contables";
+            public string Empleados        { get; set; } = "api/v1/empleados";
+            public string Proveedores      { get; set; } = "api/v1/proveedores";
+            public string CodigosUnidad    { get; set; } = "api/v1/unidades";
+            public string CuentasContables { get; set; } = "api/v1/cuentas-contables";
         }
     }
 }
