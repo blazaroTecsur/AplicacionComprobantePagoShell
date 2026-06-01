@@ -64,6 +64,6 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
 
         private record MaestrosResponse<T>(bool Exito, T? Data, string Mensaje);
         private record PagedData<T>(IEnumerable<T> Items, int Total, int Pagina, int Tamano);
-        private record ProveedorItem(string Ruc, string NombreProveedor, string Estado);
+        private record ProveedorItem(string Ruc, string IdProveedorExternal, string NombreProveedor, string Estado);
     }
 }
