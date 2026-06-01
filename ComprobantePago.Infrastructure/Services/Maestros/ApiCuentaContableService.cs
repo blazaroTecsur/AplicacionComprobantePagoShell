@@ -39,10 +39,10 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
                     .ReadFromJsonAsync<MaestrosResponse<PagedData<CuentaContableItem>>>(_jsonOpts);
 
                 return wrapper?.Data?.Items
-                    .Where(c => c.Cuenta.Length >= 7)
+                    .Where(c => c.Codigo.Length >= 7)
                     .Select(c => new ComboDto
                     {
-                        Codigo      = c.Cuenta,
+                        Codigo      = c.Codigo,
                         Descripcion = c.Descripcion,
                     }) ?? Enumerable.Empty<ComboDto>();
             }
@@ -67,6 +67,6 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
 
         private record MaestrosResponse<T>(bool Exito, T? Data, string Mensaje);
         private record PagedData<T>(IEnumerable<T> Items, int Total, int Pagina, int Tamano);
-        private record CuentaContableItem(string Cuenta, string Descripcion);
+        private record CuentaContableItem(string Codigo, string Descripcion);
     }
 }
