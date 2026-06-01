@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Notificacion.Infrastructure.DependencyInjection;
 using ComprobantePago.Web.Auth;
 using Seguridad.Abstractions.Interfaces;
+using Maestros.Infrastructure.DependencyInjection;
 using Seguridad.Infrastructure.DependencyInjection;
 using Serilog;
 using Serilog.Events;
@@ -152,6 +153,9 @@ namespace ComprobantePago.Web.Middlewares
                 new ComprobanteUsuarioContexto(
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     sp.GetRequiredService<IConfiguration>()));
+
+            // Maestros API
+            services.AddMaestros(config);
 
             // Infor / Syteline
             services.AddInfor(config);
