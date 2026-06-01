@@ -549,32 +549,24 @@ function ocultarCodigosUnidad(campo) {
 }
 
 function buscarCuentaContable() {
-    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerCuentasContables',
-        function (data) {
-            if (!data || data.length === 0) {
-                CorporativoCore.notificarInfo('No hay cuentas contables disponibles.');
-                return;
-            }
-            mostrarModalBusqueda(data, 'Seleccionar Cuenta Contable', 'seleccionar-cuenta');
-        }
+    mostrarModalBusqueda(
+        BASE_URL+'/Comprobante/ObtenerCuentasContables',
+        'Seleccionar Cuenta Contable',
+        'seleccionar-cuenta'
     );
 }
 
 function buscarCodigoUnidad(campo, unidad, inputId) {
     const codigoOrigen = $('#txtCuentaContable').val();
-    CorporativoQuery.ajaxGet(
+    mostrarModalBusqueda(
         BASE_URL+`/Comprobante/ObtenerCodigosUnidad?campo=${campo}&unidad=${unidad}&codigo=${codigoOrigen}`,
-        function (data) {
-            if (!data || data.length === 0) {
-                CorporativoCore.notificarInfo('No hay códigos de unidad disponibles.');
-                return;
-            }
-            mostrarModalBusqueda(data, 'Seleccionar Código de Unidad', 'seleccionar-unidad', inputId);
-        }
+        'Seleccionar Código de Unidad',
+        'seleccionar-unidad',
+        inputId
     );
 }
 
-function mostrarModalBusqueda(data, titulo, claseItem, inputId) {
+function mostrarModalBusqueda(fetchUrl, titulo, claseItem, inputId) {
     const renderItem = (d) => {
         const $a = $('<a>', {
             class: `list-group-item list-group-item-action ${claseItem}`,
@@ -585,6 +577,14 @@ function mostrarModalBusqueda(data, titulo, claseItem, inputId) {
         $a.append($('<span>', { class: 'fw-bold' }).text(d.codigo));
         $a.append($('<span>', { class: 'text-muted ms-2' }).text(d.descripcion));
         return $a[0].outerHTML;
+    };
+
+    const renderLista = (items) => {
+        if (!items || items.length === 0) {
+            $('#listaBusqueda').html('<p class="text-muted text-center py-3 small">Sin resultados</p>');
+            return;
+        }
+        $('#listaBusqueda').html(items.map(renderItem).join(''));
     };
 
     const html = `
@@ -600,11 +600,11 @@ function mostrarModalBusqueda(data, titulo, claseItem, inputId) {
                     </div>
                     <div class="modal-body pb-0 pt-2 px-2">
                         <input type="text" class="form-control form-control-sm mb-2"
-                               id="txtFiltroBusqueda" placeholder="Filtrar..." autocomplete="off" />
+                               id="txtFiltroBusqueda" placeholder="Buscar..." autocomplete="off" />
                     </div>
                     <div class="modal-body p-0" style="max-height:360px; overflow-y:auto;">
                         <div class="list-group list-group-flush" id="listaBusqueda">
-                            ${data.map(renderItem).join('')}
+                            <p class="text-muted text-center py-3 small">Cargando...</p>
                         </div>
                     </div>
                 </div>
@@ -614,17 +614,25 @@ function mostrarModalBusqueda(data, titulo, claseItem, inputId) {
     $('#modalBusqueda').remove();
     $('#modalContainer').append(html);
 
+    const cargarDatos = (filtro) => {
+        const sep = fetchUrl.includes('?') ? '&' : '?';
+        const url = filtro ? `${fetchUrl}${sep}filtro=${encodeURIComponent(filtro)}` : fetchUrl;
+        CorporativoQuery.ajaxGet(url, renderLista);
+    };
+
+    let debounceTimer;
     $('#txtFiltroBusqueda').on('keyup', function () {
-        const texto = $(this).val().toLowerCase();
-        $('#listaBusqueda a').each(function () {
-            const coincide = $(this).text().toLowerCase().includes(texto);
-            $(this).toggleClass('d-none', !coincide);
-        });
+        const texto = $(this).val().trim();
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => cargarDatos(texto), 300);
     });
 
     const modal = new bootstrap.Modal(document.getElementById('modalBusqueda'));
     modal.show();
-    setTimeout(() => $('#txtFiltroBusqueda').trigger('focus'), 300);
+    setTimeout(() => {
+        $('#txtFiltroBusqueda').trigger('focus');
+        cargarDatos('');
+    }, 300);
 }
 
 // ════════════════════════════════════════════

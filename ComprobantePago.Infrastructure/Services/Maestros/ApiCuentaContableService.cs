@@ -26,7 +26,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
         {
             try
             {
-                var url = $"{_settings.BaseUrl.TrimEnd('/')}/{_settings.Endpoints.CuentasContables.TrimStart('/')}?tamano=500";
+                var url = $"{_settings.BaseUrl.TrimEnd('/')}/{_settings.Endpoints.CuentasContables.TrimStart('/')}?tamano=100";
                 if (!string.IsNullOrWhiteSpace(filtro)) url += $"&filtro={Uri.EscapeDataString(filtro)}";
 
                 using var request = new HttpRequestMessage(HttpMethod.Get, url);

@@ -31,7 +31,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
             {
                 var endpoint = $"{_settings.BaseUrl.TrimEnd('/')}/api/v1/cods-unidad{unidad}";
 
-                var query = "?tamano=500";
+                var query = "?tamano=100";
                 if (!string.IsNullOrWhiteSpace(_usuario.Empresa)) query += $"&empresa={Uri.EscapeDataString(_usuario.Empresa)}";
                 if (!string.IsNullOrWhiteSpace(filtro))            query += $"&filtro={Uri.EscapeDataString(filtro)}";
 

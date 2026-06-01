@@ -664,14 +664,11 @@ function obtenerParametroUrl(nombre) {
 
 // ── Buscar empleado (modal) ───────────────────
 function buscarEmpleado() {
-    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerEmpleados',
-        function (data) {
-            if (!data || data.length === 0) {
-                CorporativoCore.notificarInfo('No hay empleados disponibles.');
-                return;
-            }
-            mostrarModalBusqueda(data, 'Seleccionar Empleado', 'seleccionar-empleado');
-        });
+    mostrarModalBusqueda(
+        BASE_URL+'/Comprobante/ObtenerEmpleados',
+        'Seleccionar Empleado',
+        'seleccionar-empleado'
+    );
 }
 
 // ── Recalcular montos en modo manual ──────────
@@ -900,14 +897,11 @@ function bindEventos() {
 
     // ── Proveedor ─────────────────────────────
     $('#btnBuscarProveedorPrincipal').on('click', function () {
-        CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerProveedores',
-            function (data) {
-                if (!data || data.length === 0) {
-                    CorporativoCore.notificarInfo('No hay proveedores disponibles.');
-                    return;
-                }
-                mostrarModalBusqueda(data, 'Seleccionar Proveedor', 'seleccionar-proveedor');
-            });
+        mostrarModalBusqueda(
+            BASE_URL+'/Comprobante/ObtenerProveedores',
+            'Seleccionar Proveedor',
+            'seleccionar-proveedor'
+        );
     });
 
     $(document).on('click', '.seleccionar-proveedor', function (e) {

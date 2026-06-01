@@ -26,7 +26,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
         {
             try
             {
-                var url = $"{_settings.BaseUrl.TrimEnd('/')}/{_settings.Endpoints.Proveedores.TrimStart('/')}?filtro={Uri.EscapeDataString(filtro)}&tamano=500";
+                var url = $"{_settings.BaseUrl.TrimEnd('/')}/{_settings.Endpoints.Proveedores.TrimStart('/')}?filtro={Uri.EscapeDataString(filtro)}&tamano=100";
 
                 using var request = new HttpRequestMessage(HttpMethod.Get, url);
                 PropagateHeaders(request);
