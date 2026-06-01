@@ -6,6 +6,7 @@ using ComprobantePago.Application.Settings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Seguridad.Abstractions.Interfaces;
 
 namespace ComprobantePago.Infrastructure.Services.Maestros
 {
@@ -13,11 +14,13 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
         HttpClient httpClient,
         IOptions<ApiMaestrosSettings> settings,
         IHttpContextAccessor httpContextAccessor,
+        IUsuarioContexto usuario,
         ILogger<ApiCatalogoUnidadService> logger) : ICatalogoUnidadService
     {
         private readonly HttpClient _httpClient = httpClient;
         private readonly ApiMaestrosSettings _settings = settings.Value;
         private readonly IHttpContextAccessor _ctx = httpContextAccessor;
+        private readonly IUsuarioContexto _usuario = usuario;
         private readonly ILogger<ApiCatalogoUnidadService> _logger = logger;
 
         private static readonly JsonSerializerOptions _jsonOpts = new() { PropertyNameCaseInsensitive = true };
@@ -27,11 +30,10 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
             try
             {
                 var endpoint = $"{_settings.BaseUrl.TrimEnd('/')}/api/v1/cods-unidad{unidad}";
-                var empresa  = _ctx.HttpContext?.Request.Headers["X-Schema"].ToString();
 
                 var query = "?tamano=500";
-                if (!string.IsNullOrWhiteSpace(empresa)) query += $"&empresa={Uri.EscapeDataString(empresa)}";
-                if (!string.IsNullOrWhiteSpace(filtro))  query += $"&filtro={Uri.EscapeDataString(filtro)}";
+                if (!string.IsNullOrWhiteSpace(_usuario.Empresa)) query += $"&empresa={Uri.EscapeDataString(_usuario.Empresa)}";
+                if (!string.IsNullOrWhiteSpace(filtro))            query += $"&filtro={Uri.EscapeDataString(filtro)}";
 
                 using var request = new HttpRequestMessage(HttpMethod.Get, endpoint + query);
                 PropagateHeaders(request);
