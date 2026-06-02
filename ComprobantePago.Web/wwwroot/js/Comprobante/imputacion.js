@@ -57,6 +57,9 @@ function inicializarTablaImputacion() {
                 data: 'secuencia',
                 orderable: false,
                 render: function (secuencia, type, row) {
+                    const estado   = $('#hdnCodigoEstado').val();
+                    const editable = estado === '' || estado === 'NUEVO' || estado === 'REGISTRADO';
+                    if (!editable) return '';
                     if (row.estado === 'pendiente') {
                         return `<button class="btn btn-sm btn-warning btn-configurar-imp"
                                         data-secuencia="${secuencia}"
@@ -898,10 +901,14 @@ function bindEventosImputacion() {
     $('#btnDescargarPlantillaImputacion').on('click', descargarPlantillaImputacion);
 
     $('a[href="#tabImputacion"]').on('shown.bs.tab', function () {
-        const folio = $('#hdnFolio').val();
+        const folio  = $('#hdnFolio').val();
+        const estado = $('#hdnCodigoEstado').val();
+        const editable = estado === '' || estado === 'NUEVO' || estado === 'REGISTRADO';
         if (folio) {
-            $('#barraOpcionesImputacion').removeClass('d-none');
-            $('#barraAccionesImputacion').removeClass('d-none');
+            if (editable) {
+                $('#barraOpcionesImputacion').removeClass('d-none');
+                $('#barraAccionesImputacion').removeClass('d-none');
+            }
             cargarImputaciones(folio);
         }
         actualizarBotonesRP();

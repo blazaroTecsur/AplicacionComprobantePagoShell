@@ -302,6 +302,7 @@ function bloquearTodosLosCampos() {
       '#txtMontoIGVCreditoPorcentajeIGV')
         .prop('readonly', true);
     $('#txtFechaEmision, #txtFechaDeposito').prop('disabled', true);
+    $('#txtFechaVencimiento').prop('disabled', true);
     $('.monto').prop('readonly', true);
     // Empleado
     $('#btnBuscarEmpleado').prop('disabled', true);
