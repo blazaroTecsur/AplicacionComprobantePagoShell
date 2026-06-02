@@ -7,8 +7,8 @@ using ComprobantePago.Infrastructure.Persistence;
 using ComprobantePago.Infrastructure.Services;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Seguridad.Abstractions.Interfaces;
 
 namespace ComprobantePago.Infrastructure.QueryServices
@@ -16,14 +16,18 @@ namespace ComprobantePago.Infrastructure.QueryServices
     public class ComprobanteQueryService(
         AppDbContext contexto,
         ILogger<ComprobanteQueryService> logger,
-        IOptions<EmpresaSettings> empresaOptions,
+        IConfiguration config,
         IUsuarioContexto usuario)
         : IComprobanteQueryService
     {
         private readonly AppDbContext _contexto = contexto;
         private readonly ILogger<ComprobanteQueryService> _logger = logger;
-        private readonly EmpresaSettings _empresa = empresaOptions.Value;
+        private readonly IConfiguration _config = config;
         private readonly IUsuarioContexto _usuario = usuario;
+
+        private EmpresaSettings ObtenerEmpresa() =>
+            _config.GetSection($"{EmpresaSettings.Section}:{_usuario.Empresa}")
+                   .Get<EmpresaSettings>() ?? new EmpresaSettings();
 
         // ── Buscar comprobantes ───────────────────
         public async Task<IEnumerable<ComprobanteDto>> BuscarAsync(
@@ -155,10 +159,11 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 .Select(l => l.Descripcion)
                 .FirstOrDefaultAsync() ?? string.Empty;
 
+            var empresa = ObtenerEmpresa();
             var data = new ComprobanteReporteData
             {
-                EmpresaNombre = _empresa.Nombre,
-                EmpresaRuc    = _empresa.Ruc,
+                EmpresaNombre = empresa.Nombre,
+                EmpresaRuc    = empresa.Ruc,
 
                 RucProveedor      = c.RucReceptor,
                 RazonSocial       = c.RazonSocialReceptor,

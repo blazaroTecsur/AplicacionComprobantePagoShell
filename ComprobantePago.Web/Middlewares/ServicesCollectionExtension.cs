@@ -111,7 +111,6 @@ namespace ComprobantePago.Web.Middlewares
 
             // Settings
             services.Configure<SunatSettings>(config.GetSection("Sunat"));
-            services.Configure<EmpresaSettings>(config.GetSection(EmpresaSettings.Section));
             services.Configure<ApiMaestrosSettings>(config.GetSection(ApiMaestrosSettings.Section));
 
             // HttpClient SUNAT
