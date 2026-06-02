@@ -11,9 +11,30 @@ namespace Maestros.Infrastructure.DependencyInjection
         public static IServiceCollection AddMaestros(
             this IServiceCollection services, IConfiguration config)
         {
-            services.Configure<MaestrosSettings>(config.GetSection("ApiSettings:Maestros"));
+            services.Configure<MaestrosSettings>(config.GetSection("ApiMaestros"));
 
             services.AddHttpClient<IMaestrosProveedorService, MaestrosProveedorService>(
+                (sp, client) =>
+                {
+                    var settings = sp.GetRequiredService<IOptions<MaestrosSettings>>().Value;
+                    client.BaseAddress = new Uri(settings.BaseUrl);
+                });
+
+            services.AddHttpClient<IMaestrosEmpleadoService, MaestrosEmpleadoService>(
+                (sp, client) =>
+                {
+                    var settings = sp.GetRequiredService<IOptions<MaestrosSettings>>().Value;
+                    client.BaseAddress = new Uri(settings.BaseUrl);
+                });
+
+            services.AddHttpClient<IMaestrosCuentaContableService, MaestrosCuentaContableService>(
+                (sp, client) =>
+                {
+                    var settings = sp.GetRequiredService<IOptions<MaestrosSettings>>().Value;
+                    client.BaseAddress = new Uri(settings.BaseUrl);
+                });
+
+            services.AddHttpClient<IMaestrosCatalogoUnidadService, MaestrosCatalogoUnidadService>(
                 (sp, client) =>
                 {
                     var settings = sp.GetRequiredService<IOptions<MaestrosSettings>>().Value;

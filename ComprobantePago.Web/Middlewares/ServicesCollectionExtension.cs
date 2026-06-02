@@ -130,10 +130,10 @@ namespace ComprobantePago.Web.Middlewares
             var usarApiMaestros = config.GetValue<bool>($"{ApiMaestrosSettings.Section}:UsarApi");
             if (usarApiMaestros)
             {
-                services.AddHttpClient<IEmpleadoService, ApiEmpleadoService>();
-                services.AddHttpClient<IProveedorService, ApiProveedorService>();
-                services.AddHttpClient<ICatalogoUnidadService, ApiCatalogoUnidadService>();
-                services.AddHttpClient<ICuentaContableService, ApiCuentaContableService>();
+                services.AddScoped<IEmpleadoService, ApiEmpleadoService>();
+                services.AddScoped<IProveedorService, ApiProveedorService>();
+                services.AddScoped<ICatalogoUnidadService, ApiCatalogoUnidadService>();
+                services.AddScoped<ICuentaContableService, ApiCuentaContableService>();
             }
             else
             {
