@@ -1,6 +1,7 @@
 using Maestros.Abstractions.DTOs;
 using Maestros.Abstractions.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -10,17 +11,22 @@ namespace Maestros.Infrastructure.Services
     {
         private readonly HttpClient _http;
         private readonly IHttpContextAccessor _ctx;
+        private readonly MaestrosSettings _settings;
 
-        public MaestrosProveedorService(HttpClient http, IHttpContextAccessor ctx)
+        public MaestrosProveedorService(
+            HttpClient http,
+            IHttpContextAccessor ctx,
+            IOptions<MaestrosSettings> settings)
         {
-            _http = http;
-            _ctx  = ctx;
+            _http     = http;
+            _ctx      = ctx;
+            _settings = settings.Value;
         }
 
         public async Task<PagedResult<ProveedorListDto>> GetAllAsync(
             string? filtro, int pagina, int tamano, CancellationToken ct = default)
         {
-            var url = $"api/v1/proveedores?pagina={pagina}&tamano={tamano}";
+            var url = $"{_settings.Endpoints.Proveedores}?pagina={pagina}&tamano={tamano}";
             if (!string.IsNullOrWhiteSpace(filtro))
                 url += $"&filtro={Uri.EscapeDataString(filtro)}";
 
@@ -40,7 +46,7 @@ namespace Maestros.Infrastructure.Services
             string ruc, CancellationToken ct = default)
         {
             using var request = new HttpRequestMessage(HttpMethod.Get,
-                $"api/v1/proveedores/{Uri.EscapeDataString(ruc)}");
+                $"{_settings.Endpoints.Proveedores}/{Uri.EscapeDataString(ruc)}");
             PropagateHeaders(request);
 
             using var response = await _http.SendAsync(request, ct);

@@ -1,6 +1,7 @@
 using Maestros.Abstractions.DTOs;
 using Maestros.Abstractions.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 
 namespace Maestros.Infrastructure.Services
@@ -9,18 +10,23 @@ namespace Maestros.Infrastructure.Services
     {
         private readonly HttpClient _http;
         private readonly IHttpContextAccessor _ctx;
+        private readonly MaestrosSettings _settings;
 
-        public MaestrosCatalogoUnidadService(HttpClient http, IHttpContextAccessor ctx)
+        public MaestrosCatalogoUnidadService(
+            HttpClient http,
+            IHttpContextAccessor ctx,
+            IOptions<MaestrosSettings> settings)
         {
-            _http = http;
-            _ctx  = ctx;
+            _http     = http;
+            _ctx      = ctx;
+            _settings = settings.Value;
         }
 
         public async Task<PagedResult<CodUnidadListDto>> GetByUnidadAsync(
             int unidad, string empresa, string? filtro, int pagina, int tamano,
             CancellationToken ct = default)
         {
-            var url = $"api/v1/cods-unidad{unidad}?pagina={pagina}&tamano={tamano}";
+            var url = $"{_settings.Endpoints.CodigosUnidad}{unidad}?pagina={pagina}&tamano={tamano}";
             if (!string.IsNullOrWhiteSpace(empresa))
                 url += $"&empresa={Uri.EscapeDataString(empresa)}";
             if (!string.IsNullOrWhiteSpace(filtro))
