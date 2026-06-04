@@ -1,29 +1,28 @@
-﻿using Infor.Abstractions.DTOs;
+using Infor.Abstractions.DTOs;
 using System.Text.Json;
 
 namespace Infor.Abstractions.Interfaces
 {
     /// <summary>
-    /// Cliente para el servicio IDO REST de Infor Syteline (MGRestService.svc).
-    /// URLs según la especificación real del servicio.
+    /// Cliente para el servicio IDO REST de Infor Syteline (SyteLineRESTv2).
     /// </summary>
     public interface IInforIdoService
-    {/// <summary>
-     /// Consulta registros de un IDO.
-     /// GET /json/{ido}?props=...&amp;filter=...&amp;recordCap=N&amp;orderBy=...
-     /// </summary>
+    {
+        /// <summary>
+        /// Consulta registros de un IDO.
+        /// GET /load/{ido}?properties=...&amp;filter=...&amp;recordCap=N&amp;orderBy=...
+        /// </summary>
         Task<JsonElement> LoadAsync(
             string ido,
             string? props = null,
             string? filter = null,
             int recordCap = 0,
             string? orderBy = null,
-            bool adv = false,
             CancellationToken ct = default);
 
         /// <summary>
         /// Devuelve la definición de propiedades de un IDO (schema).
-        /// GET /json/idoinfo/{ido}
+        /// GET /info/{ido}
         /// </summary>
         Task<JsonElement> IdoInfoAsync(
             string ido,
@@ -31,28 +30,27 @@ namespace Infor.Abstractions.Interfaces
 
         /// <summary>
         /// Invoca un método de un IDO.
-        /// GET /json/method/{ido}/{method}
+        /// POST /invoke/{ido}?method={method}  body: string[]
         /// </summary>
         Task<JsonElement> InvokeMethodAsync(
             string ido,
             string method,
+            IEnumerable<string>? parameters = null,
             CancellationToken ct = default);
 
         /// <summary>
-        /// Inserta un registro en un IDO usando el formato Action/ItemId/Properties.
-        /// POST /json/{ido}/additem  — sin refresh
-        /// POST /json/{ido}/additem/adv?refresh=PROPS&amp;props=... — con refresh de campos
+        /// Inserta un registro en un IDO.
+        /// POST /update/{ido}  body: UpdateCollectionRequest con Action=1
         /// </summary>
         Task<JsonElement> InsertItemAsync(
             string ido,
             IEnumerable<IdoProperty> properties,
-            string? refresh = null,
-            string? props = null,
+            bool refreshAfterSave = false,
             CancellationToken ct = default);
 
         /// <summary>
         /// Inserta múltiples registros en un IDO.
-        /// POST /json/{ido}/additems
+        /// POST /update/{ido}  body: UpdateCollectionRequest con múltiples Changes
         /// </summary>
         Task<JsonElement> InsertItemsAsync(
             string ido,
@@ -61,7 +59,7 @@ namespace Infor.Abstractions.Interfaces
 
         /// <summary>
         /// Actualiza un registro en un IDO.
-        /// PUT /json/{ido}/updateitem
+        /// POST /update/{ido}  body: UpdateCollectionRequest con Action=2
         /// </summary>
         Task<JsonElement> UpdateItemAsync(
             string ido,
@@ -70,7 +68,7 @@ namespace Infor.Abstractions.Interfaces
 
         /// <summary>
         /// Elimina un registro de un IDO por su ItemId.
-        /// POST /json/{ido}/deleteitem
+        /// POST /update/{ido}  body: UpdateCollectionRequest con Action=4
         /// </summary>
         Task<JsonElement> DeleteItemAsync(
             string ido,
@@ -79,7 +77,7 @@ namespace Infor.Abstractions.Interfaces
 
         /// <summary>
         /// Lista las configuraciones IDO disponibles.
-        /// GET /json/configurations
+        /// GET /configurations
         /// </summary>
         Task<JsonElement> ObtenerConfiguracionesAsync(CancellationToken ct = default);
     }

@@ -11,8 +11,8 @@ using System.Text.Json;
 namespace Infor.Infrastructure.Services
 {
     /// <summary>
-    /// Cliente para el servicio IDO REST de Infor Syteline (MGRestService.svc).
-    /// URLs corregidas según la especificación real del servicio.
+    /// Cliente para el servicio IDO REST de Infor Syteline (SyteLineRESTv2).
+    /// Base path: {BaseUrl}/{Tenant}/{AppId}/IDORequestService/ido/
     /// </summary>
     public sealed class InforIdoService : IInforIdoService
     {
@@ -21,6 +21,7 @@ namespace Infor.Infrastructure.Services
         private readonly InforSettings _settings;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
+
         private static readonly JsonSerializerOptions _jsonOpts = new()
         {
             PropertyNameCaseInsensitive = true,
@@ -34,16 +35,14 @@ namespace Infor.Infrastructure.Services
             IHttpContextAccessor httpContextAccessor,
             IConfiguration configuration)
         {
-            _http = http;
-            _tokenService = tokenService;
-            _settings = settings.Value;
+            _http                = http;
+            _tokenService        = tokenService;
+            _settings            = settings.Value;
             _httpContextAccessor = httpContextAccessor;
-            _configuration = configuration;
+            _configuration       = configuration;
         }
 
-        // ── GET /json/{ido}[/{props}/adv] — LoadCollection ───────────────────
-        // adv=true → props van en la URL (/json/{ido}/{props}/adv) y devuelve
-        //            objetos con nombres de campo; adv=false → query params.
+        // ── GET /load/{ido} — LoadCollection ─────────────────────────────────
 
         public async Task<JsonElement> LoadAsync(
             string ido,
@@ -51,120 +50,120 @@ namespace Infor.Infrastructure.Services
             string? filter = null,
             int recordCap = 0,
             string? orderBy = null,
-            bool adv = false,
             CancellationToken ct = default)
         {
-            string url;
-            if (adv && !string.IsNullOrWhiteSpace(props))
-                url = $"{_settings.IdoBaseUrl}json/{Uri.EscapeDataString(ido)}/{Uri.EscapeDataString(props)}/adv";
-            else
-                url = $"{_settings.IdoBaseUrl}json/{Uri.EscapeDataString(ido)}";
+            var url = $"{_settings.IdoBaseUrl}load/{Uri.EscapeDataString(ido)}";
 
             var q = new List<string>();
-            if (!adv && !string.IsNullOrWhiteSpace(props)) q.Add($"props={Uri.EscapeDataString(props)}");
-            if (!string.IsNullOrWhiteSpace(filter)) q.Add($"filter={Uri.EscapeDataString(filter).Replace("%27", "'")}");
-            if (recordCap > 0) q.Add($"rowcap={recordCap}");
+            if (!string.IsNullOrWhiteSpace(props))   q.Add($"properties={Uri.EscapeDataString(props)}");
+            if (!string.IsNullOrWhiteSpace(filter))  q.Add($"filter={Uri.EscapeDataString(filter).Replace("%27", "'")}");
+            if (recordCap > 0)                       q.Add($"recordCap={recordCap}");
             if (!string.IsNullOrWhiteSpace(orderBy)) q.Add($"orderBy={Uri.EscapeDataString(orderBy)}");
             if (q.Count > 0) url += "?" + string.Join("&", q);
 
             return await EjecutarGetAsync(url, ct);
         }
 
-        // ── GET /json/idoinfo/{ido} — IDOPropInfo ────────────────────────────
+        // ── GET /info/{ido} — IDOPropInfo ─────────────────────────────────────
 
         public async Task<JsonElement> IdoInfoAsync(
             string ido,
             CancellationToken ct = default)
         {
-            var url = $"{_settings.IdoBaseUrl}json/idoinfo/{Uri.EscapeDataString(ido)}";
+            var url = $"{_settings.IdoBaseUrl}info/{Uri.EscapeDataString(ido)}";
             return await EjecutarGetAsync(url, ct);
         }
 
-        // ── GET /json/method/{ido}/{method} — InvokeMethod ───────────────────
+        // ── POST /invoke/{ido}?method={method} — InvokeMethod ────────────────
 
         public async Task<JsonElement> InvokeMethodAsync(
             string ido,
             string method,
+            IEnumerable<string>? parameters = null,
             CancellationToken ct = default)
         {
-            var url = $"{_settings.IdoBaseUrl}json/method/{Uri.EscapeDataString(ido)}/{Uri.EscapeDataString(method)}";
-            return await EjecutarGetAsync(url, ct);
+            var url  = $"{_settings.IdoBaseUrl}invoke/{Uri.EscapeDataString(ido)}?method={Uri.EscapeDataString(method)}";
+            var body = parameters?.ToArray() ?? Array.Empty<string>();
+            return await EjecutarPostAsync(url, body, ct);
         }
 
-        // ── POST /json/{ido}/additem[/adv] — InsertItem ─────────────────────
-        // Si se pasa refresh ("ALL" | "PROPS"), usa /additem/adv con los
-        // query params refresh y props para recibir los campos actualizados.
+        // ── POST /update/{ido} — InsertItem (Action=1) ───────────────────────
 
         public async Task<JsonElement> InsertItemAsync(
             string ido,
             IEnumerable<IdoProperty> properties,
-            string? refresh = null,
-            string? props = null,
+            bool refreshAfterSave = false,
             CancellationToken ct = default)
         {
-            var guid = Guid.NewGuid().ToString();
+            var guid      = Guid.NewGuid().ToString();
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
             var body = new
             {
-                Action = 1,
-                ItemId = $"PBT=[aptrx] apt.ID=[{guid}] apt.DT=[{timestamp}]",
-                Properties = properties.ToList()
+                IDOName          = ido,
+                RefreshAfterSave = refreshAfterSave,
+                Changes          = new[]
+                {
+                    new
+                    {
+                        Action     = 1,
+                        ItemId     = $"PBT=[aptrx] apt.ID=[{guid}] apt.DT=[{timestamp}]",
+                        Properties = properties.ToList()
+                    }
+                }
             };
 
-            var endpoint = refresh is not null ? "additem/adv" : "additem";
-            var url = $"{_settings.IdoBaseUrl}json/{Uri.EscapeDataString(ido)}/{endpoint}";
-
-            if (refresh is not null || props is not null)
-            {
-                var q = new List<string>();
-                if (refresh is not null) q.Add($"refresh={Uri.EscapeDataString(refresh)}");
-                if (props is not null) q.Add($"props={Uri.EscapeDataString(props)}");
-                url += "?" + string.Join("&", q);
-            }
-
+            var url = $"{_settings.IdoBaseUrl}update/{Uri.EscapeDataString(ido)}";
             return await EjecutarPostAsync(url, body, ct);
         }
 
-        // ── POST /json/{ido}/additems — InsertItems ──────────────────────────
+        // ── POST /update/{ido} — InsertItems (múltiples Changes) ─────────────
 
         public async Task<JsonElement> InsertItemsAsync(
             string ido,
             object payload,
             CancellationToken ct = default)
         {
-            var url = $"{_settings.IdoBaseUrl}json/{Uri.EscapeDataString(ido)}/additems";
+            var url = $"{_settings.IdoBaseUrl}update/{Uri.EscapeDataString(ido)}";
             return await EjecutarPostAsync(url, payload, ct);
         }
 
-        // ── PUT /json/{ido}/updateitem — UpdateItem ──────────────────────────
+        // ── POST /update/{ido} — UpdateItem (Action=2) ───────────────────────
 
         public async Task<JsonElement> UpdateItemAsync(
             string ido,
             object payload,
             CancellationToken ct = default)
         {
-            var url = $"{_settings.IdoBaseUrl}json/{Uri.EscapeDataString(ido)}/updateitem";
-            return await EjecutarPutAsync(url, payload, ct);
+            var url = $"{_settings.IdoBaseUrl}update/{Uri.EscapeDataString(ido)}";
+            return await EjecutarPostAsync(url, payload, ct);
         }
 
-        // ── POST /json/{ido}/deleteitem — DeleteItem ──────────────────────────
+        // ── POST /update/{ido} — DeleteItem (Action=4) ───────────────────────
 
         public async Task<JsonElement> DeleteItemAsync(
             string ido,
             string itemId,
             CancellationToken ct = default)
         {
-            var url = $"{_settings.IdoBaseUrl}json/{Uri.EscapeDataString(ido)}/deleteitem";
-            var body = new { Action = 3, ItemId = itemId };
+            var body = new
+            {
+                IDOName = ido,
+                Changes = new[]
+                {
+                    new { Action = 4, ItemId = itemId }
+                }
+            };
+
+            var url = $"{_settings.IdoBaseUrl}update/{Uri.EscapeDataString(ido)}";
             return await EjecutarPostAsync(url, body, ct);
         }
 
-        // ── GET /json/configurations ──────────────────────────────────────────
+        // ── GET /configurations ───────────────────────────────────────────────
 
         public async Task<JsonElement> ObtenerConfiguracionesAsync(CancellationToken ct = default)
         {
-            var url = $"{_settings.IdoBaseUrl}json/configurations";
+            var url = $"{_settings.IdoBaseUrl}configurations";
             return await EjecutarGetAsync(url, ct);
         }
 
@@ -190,26 +189,11 @@ namespace Infor.Infrastructure.Services
             return await LeerRespuestaAsync(respuesta, ct);
         }
 
-        private async Task<JsonElement> EjecutarPutAsync(string url, object? cuerpo, CancellationToken ct)
-        {
-            using var request = new HttpRequestMessage(HttpMethod.Put, url)
-            {
-                Content = new StringContent(
-                    JsonSerializer.Serialize(cuerpo, _jsonOpts),
-                    Encoding.UTF8, "application/json")
-            };
-            await AgregarAuthHeaderAsync(request);
-            using var respuesta = await _http.SendAsync(request, ct);
-            return await LeerRespuestaAsync(respuesta, ct);
-        }
-
         private async Task AgregarAuthHeaderAsync(HttpRequestMessage request)
         {
             var token = await _tokenService.ObtenerTokenAsync();
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            // Resolver la configuración Mongoose según la empresa del usuario logueado.
-            // Flujo: tid claim → TenantEmpresas[tid] → Configuraciones[empresa] → fallback Configuration.
             var config = ResolverConfiguracionMongoose();
             if (!string.IsNullOrWhiteSpace(config))
                 request.Headers.TryAddWithoutValidation("X-Infor-MongooseConfig", config);
@@ -226,30 +210,28 @@ namespace Infor.Infrastructure.Services
             return _settings.Configuration.Replace("{EMPRESA}", empresa);
         }
 
-        private async Task<JsonElement> LeerRespuestaAsync(
+        private static async Task<JsonElement> LeerRespuestaAsync(
             HttpResponseMessage respuesta, CancellationToken ct)
         {
-            var contenido = await respuesta.Content.ReadAsStringAsync(ct);           
+            var contenido = await respuesta.Content.ReadAsStringAsync(ct);
+
             if (!respuesta.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException(
                     $"Error en API Infor Syteline ({respuesta.StatusCode}): {contenido}");
             }
 
-            // Syteline usa dos códigos de éxito según la operación:
-            //   0   → LoadCollection (GET)
-            //   200 → InsertItem / UpdateItem (POST/PUT)
-            // Cualquier otro código es error de negocio.
             var doc = JsonDocument.Parse(contenido).RootElement.Clone();
-            if (doc.TryGetProperty("MessageCode", out var msgCode) &&
-                msgCode.TryGetInt32(out var code) && code != 200 && code != 0)
+
+            // v2 usa Success:bool — false indica error de negocio
+            if (doc.TryGetProperty("Success", out var success) &&
+                success.ValueKind == JsonValueKind.False)
             {
                 var msg = doc.TryGetProperty("Message", out var m) ? m.GetString() : contenido;
-                throw new InvalidOperationException(
-                    $"Syteline IDO error {code}: {msg}");
+                throw new InvalidOperationException($"Syteline IDO error: {msg}");
             }
 
             return doc;
-        }        
+        }
     }
 }

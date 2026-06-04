@@ -60,6 +60,6 @@ namespace Infor.Infrastructure.Services
 
         /// <summary>URL base del servicio IDO REST</summary>
         public string IdoBaseUrl =>
-            $"{BaseUrl.TrimEnd('/')}/{Tenant}/{AppId}/IDORequestService/MGRestService.svc/";
+            $"{BaseUrl.TrimEnd('/')}/{Tenant}/{AppId}/IDORequestService/ido/";
     }
 }

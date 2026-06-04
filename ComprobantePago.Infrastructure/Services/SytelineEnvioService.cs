@@ -58,7 +58,7 @@ namespace ComprobantePago.Infrastructure.Services
                 dto.InvNum, dto.VendNum, voucher);
 
             var respuesta = await _ido.InsertItemAsync("SLAptrxs", propList,
-                refresh: "PROPS", props: "Voucher", ct: ct);
+                refreshAfterSave: true, ct: ct);
 
             var voucherConfirmado = ExtraerVoucher(respuesta);
             var itemId            = ExtraerItemId(respuesta);
@@ -134,7 +134,6 @@ namespace ComprobantePago.Infrastructure.Services
                     props:     "Voucher",
                     orderBy:   "Voucher DESC",
                     recordCap: 1,
-                    adv:       true,
                     ct:        ct);
 
                 _logger.LogInformation("SLAptrxs MaxVoucher: {Body}", resultado.GetRawText());
@@ -359,12 +358,11 @@ namespace ComprobantePago.Infrastructure.Services
             _          => valor.ToString() ?? ""
         };
 
-        // ── Extraer Voucher del response de additem ───────────────────────────
-        // /additem/adv devuelve UpdatedItems[0].Properties[] con Name/Value.
+        // ── Extraer Voucher del response de update (v2: RefreshItems) ───────────
 
         private static int ExtraerVoucher(JsonElement respuesta)
         {
-            if (respuesta.TryGetProperty("UpdatedItems", out var items) &&
+            if (respuesta.TryGetProperty("RefreshItems", out var items) &&
                 items.GetArrayLength() > 0)
             {
                 var item = items[0];
@@ -387,21 +385,20 @@ namespace ComprobantePago.Infrastructure.Services
             return 0;
         }
 
-        // ── Extraer ItemId del response de additem ────────────────────────────
+        // ── Extraer ItemId del response de update (v2: RefreshItems) ─────────
 
         private static string ExtraerItemId(JsonElement respuesta)
         {
-            if (respuesta.TryGetProperty("UpdatedItems", out var items) &&
+            if (respuesta.TryGetProperty("RefreshItems", out var items) &&
                 items.GetArrayLength() > 0 &&
-                items[0].TryGetProperty("ItemID", out var itemId))
+                items[0].TryGetProperty("ItemId", out var itemId))
             {
                 return itemId.GetString() ?? string.Empty;
             }
             return string.Empty;
         }
 
-        // ── Extraer Voucher del response de LoadCollection (/adv) ─────────────
-        // Items[n] es un array de {Name, Value} — tomamos el primero (orderBy DESC).
+        // ── Extraer Voucher del response de LoadCollection (v2: Items con claves directas) ──
 
         private static int ExtraerVoucherDeItems(JsonElement resultado)
         {
@@ -409,23 +406,7 @@ namespace ComprobantePago.Infrastructure.Services
                 return 0;
 
             var firstItem = items[0];
-
-            // Formato /adv: Items[0] es array de {Name, Value}
-            if (firstItem.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var prop in firstItem.EnumerateArray())
-                {
-                    if (prop.TryGetProperty("Name",  out var name) &&
-                        name.GetString() == "Voucher"              &&
-                        prop.TryGetProperty("Value", out var value) &&
-                        int.TryParse(value.GetString(), out var v))
-                    {
-                        return v;
-                    }
-                }
-            }
-            // Formato sin /adv: Items[0] es objeto con claves directas
-            else if (firstItem.TryGetProperty("Voucher", out var vp))
+            if (firstItem.TryGetProperty("Voucher", out var vp))
             {
                 if (vp.ValueKind == JsonValueKind.Number && vp.TryGetInt32(out var vi)) return vi;
                 if (vp.ValueKind == JsonValueKind.String && int.TryParse(vp.GetString(), out var vs)) return vs;
