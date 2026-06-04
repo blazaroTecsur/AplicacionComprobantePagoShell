@@ -85,28 +85,24 @@ namespace ComprobantePago.Infrastructure.QueryServices
         {
             try
             {
-                var fechaFmt = fecha.ToString("yyyyMMdd") + " 00:00:00.000";
+                var fechaFmt = fecha.ToString("yyyy-MM-dd");
                 var resultado = await _ido.LoadAsync(
-                    ido:    "SLCurrates",
-                    props:  "FromCurrCode,SellRate",
-                    filter: $"EffDate = '{fechaFmt}' AND FromCurrCode='{moneda}'",
-                    adv:    true);
+                    ido:       "SLCurrates",
+                    props:     "FromCurrCode,SellRate,EffDate",
+                    filter:    $"EffDate <= '{fechaFmt}' AND FromCurrCode='{moneda}'",
+                    recordCap: 1,
+                    orderBy:   "EffDate DESC");
 
                 if (resultado.TryGetProperty("Items", out var items) && items.GetArrayLength() > 0)
                 {
-                    // Items es array de arrays: cada fila = [{Name,Value}, ...]
-                    foreach (var campo in items[0].EnumerateArray())
+                    var fila = items[0];
+                    if (fila.TryGetProperty("SellRate", out var valor))
                     {
-                        if (campo.TryGetProperty("Name",  out var nombre) &&
-                            nombre.GetString() == "SellRate" &&
-                            campo.TryGetProperty("Value", out var valor))
-                        {
-                            return decimal.TryParse(
-                                valor.GetString(),
-                                System.Globalization.NumberStyles.Any,
-                                System.Globalization.CultureInfo.InvariantCulture,
-                                out var tasa) ? tasa : 0m;
-                        }
+                        return decimal.TryParse(
+                            valor.GetString(),
+                            System.Globalization.NumberStyles.Any,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            out var tasa) ? tasa : 0m;
                     }
                 }
             }
