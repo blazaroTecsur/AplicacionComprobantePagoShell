@@ -31,7 +31,7 @@ namespace ComprobantePago.Web.Auth
             Dni          = user?.FindFirst("dni")?.Value          ?? "";
 
             var tenantId      = CodTenant;
-            var empresaConfig = configuration.GetSection("TenantEmpresas")[tenantId];
+            var empresaConfig = configuration.GetSection("TenantEmpresaCodigos")[tenantId];
             var empresaClaim  = user?.FindFirst("empresa")?.Value ?? "";
 
             Empresa = !string.IsNullOrEmpty(empresaConfig) ? empresaConfig : empresaClaim;
