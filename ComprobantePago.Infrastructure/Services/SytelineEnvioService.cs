@@ -40,7 +40,6 @@ namespace ComprobantePago.Infrastructure.Services
             SytelineCabeceraDto cabecera,
             CancellationToken ct = default)
         {
-            // Validar que el proveedor tenga VendNum asignado
             var vendNum = FormatearVendNum(cabecera.VendNum);
             if (string.IsNullOrWhiteSpace(vendNum.Trim()) || vendNum.Trim() == "0")
                 throw new InvalidOperationException(
@@ -48,27 +47,29 @@ namespace ComprobantePago.Infrastructure.Services
                     $"asignado en el maestro de proveedores (IdProveedorExternal = 0 o vacío). " +
                     $"Sincronice el maestro de proveedores con Syteline antes de enviar.");
 
-            // Obtener el siguiente número de voucher disponible en Syteline
-            var voucher  = await ObtenerSiguienteVoucherAsync(ct);
-            var dto      = MapearCabecera(cabecera, voucher);
+            // Syteline asigna el Voucher automáticamente cuando se envía -1
+            var dto      = MapearCabecera(cabecera);
             var propList = ConstruirPropiedades(dto);
 
             _logger.LogInformation(
-                "Enviando comprobante {InvNum} de proveedor {VendNum} a SLAptrxs con Voucher {Voucher}...",
-                dto.InvNum, dto.VendNum, voucher);
+                "Enviando comprobante {InvNum} de proveedor {VendNum} a SLAptrxs...",
+                dto.InvNum, dto.VendNum);
 
             var respuesta = await _ido.InsertItemAsync("SLAptrxs", propList,
                 refreshAfterSave: true, ct: ct);
 
-            var voucherConfirmado = ExtraerVoucher(respuesta);
-            var itemId            = ExtraerItemId(respuesta);
-            var finalVoucher      = voucherConfirmado > 0 ? voucherConfirmado : voucher;
+            var voucher = ExtraerVoucher(respuesta);
+            var itemId  = ExtraerItemId(respuesta);
+
+            if (voucher == 0)
+                throw new InvalidOperationException(
+                    $"Syteline no devolvió el Voucher asignado para el comprobante '{cabecera.Factura}'.");
 
             _logger.LogInformation(
                 "Comprobante {InvNum} insertado en SLAptrxs. Voucher: {Voucher} ItemId: {ItemId}",
-                dto.InvNum, finalVoucher, itemId);
+                dto.InvNum, voucher, itemId);
 
-            return (finalVoucher, itemId);
+            return (voucher, itemId);
         }
 
         // ── Insertar múltiples cabeceras ──────────────────────────────────────
@@ -259,13 +260,13 @@ namespace ComprobantePago.Infrastructure.Services
 
         // ── Mapeo SytelineCabeceraDto → SLAptrxsInsertDto ────────────────────
 
-        private SLAptrxsInsertDto MapearCabecera(SytelineCabeceraDto c, int voucher) => new()
+        private SLAptrxsInsertDto MapearCabecera(SytelineCabeceraDto c) => new()
         {
             // "V" para facturas y demás; vacío para NC/ND (07/08) — se omite al filtrar
             Type = c.TipoSunat is "07" or "08" ? "" : "V",
 
             VendNum  = FormatearVendNum(c.VendNum),
-            Voucher  = voucher,
+            Voucher  = -1,  // Syteline asigna el siguiente disponible y lo devuelve en RefreshItems
             InvDate  = c.FechaFactura,
             DistDate = c.FechaDistribucion,
             UbToSite = _settings.Site,
