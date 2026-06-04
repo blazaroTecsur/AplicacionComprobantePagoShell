@@ -1,6 +1,5 @@
 using Maestros.Abstractions.DTOs;
 using Maestros.Abstractions.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Http.Json;
@@ -14,8 +13,8 @@ namespace Maestros.Infrastructure.Services
 
         public MaestrosProveedorService(
             HttpClient http,
-            IHttpContextAccessor ctx,
-            IOptions<MaestrosSettings> settings) : base(ctx)
+            MaestrosTokenService tokenService,
+            IOptions<MaestrosSettings> settings) : base(tokenService)
         {
             _http     = http;
             _settings = settings.Value;
@@ -29,7 +28,7 @@ namespace Maestros.Infrastructure.Services
                 url += $"&filtro={Uri.EscapeDataString(filtro)}";
 
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            PropagateHeaders(request);
+            await AgregarAuthHeaderAsync(request);
 
             using var response = await _http.SendAsync(request, ct);
             response.EnsureSuccessStatusCode();
@@ -45,7 +44,7 @@ namespace Maestros.Infrastructure.Services
         {
             using var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{_settings.Endpoints.Proveedores}/{Uri.EscapeDataString(ruc)}");
-            PropagateHeaders(request);
+            await AgregarAuthHeaderAsync(request);
 
             using var response = await _http.SendAsync(request, ct);
 

@@ -1,30 +1,20 @@
-using Microsoft.AspNetCore.Http;
+using System.Net.Http.Headers;
 
 namespace Maestros.Infrastructure.Services
 {
     public abstract class MaestrosBaseService
     {
-        private readonly IHttpContextAccessor _ctx;
+        private readonly MaestrosTokenService _tokenService;
 
-        protected MaestrosBaseService(IHttpContextAccessor ctx)
+        protected MaestrosBaseService(MaestrosTokenService tokenService)
         {
-            _ctx = ctx;
+            _tokenService = tokenService;
         }
 
-        protected void PropagateHeaders(HttpRequestMessage request)
+        protected async Task AgregarAuthHeaderAsync(HttpRequestMessage request)
         {
-            var headers = _ctx.HttpContext?.Request.Headers;
-            if (headers is null) return;
-
-            foreach (var key in new[]
-            {
-                "X-User-Oid", "X-Tenant-Id", "X-User-Email",
-                "X-User-Name", "X-Session-Id", "X-Schema"
-            })
-            {
-                if (headers.TryGetValue(key, out var val))
-                    request.Headers.TryAddWithoutValidation(key, (string?)val);
-            }
+            var token = await _tokenService.GetTokenAsync();
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
     }
 }
