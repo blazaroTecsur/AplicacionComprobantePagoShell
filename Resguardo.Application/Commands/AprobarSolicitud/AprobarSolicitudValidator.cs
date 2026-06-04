@@ -22,8 +22,7 @@ namespace Resguardo.Application.Commands.AprobarSolicitud
                 .NotEmpty().WithMessage("El id del servicio no es válido")
                 .NotNull().WithMessage("El id del servicio no es válido")
                 .GreaterThan(0).WithMessage("El id del servicio no es válido");
-                servicio.RuleFor(x => x.Cantidad)
-                    .NotEmpty().WithMessage("Debe ingresar la cantidad")
+                servicio.RuleFor(x => x.Cantidad)                    
                     .NotNull().WithMessage("Debe ingresar la cantidad");
             });
         }

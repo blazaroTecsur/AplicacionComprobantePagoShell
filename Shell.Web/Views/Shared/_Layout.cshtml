@@ -201,22 +201,14 @@
 
                 <div style="padding:24px;">
                     <div class="row g-3">
-                        <div class="col-6">
+                        <div class="col-12">
                             <div class="corp-field">
-                                <label class="corp-field__label">Nombre</label>
-                                <input type="text" id="layoutUpdNombre" class="corp-input"
-                                       value="@(Model.Titulo.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault())"
-                                       placeholder="Nombre" />
+                                <label class="corp-field__label">Nombre y Apellido</label>
+                                <input type="text" id="master_txtNombre" class="corp-input"
+                                       value="@Model.Titulo"
+                                       placeholder="Nombres y apellidos" />
                             </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="corp-field">
-                                <label class="corp-field__label">Apellido</label>
-                                <input type="text" id="layoutUpdApellido" class="corp-input"
-                                       value="@(Model.Titulo.Contains(' ') ? Model.Titulo.Substring(Model.Titulo.IndexOf(' ')+1) : "")"
-                                       placeholder="Apellido" />
-                            </div>
-                        </div>
+                        </div>                       
                         <div class="col-12">
                             <div class="corp-field">
                                 <label class="corp-field__label">Correo electrónico</label>
@@ -224,30 +216,30 @@
                                     <span class="corp-input-group__icon corp-input-group__icon--left">
                                         <i class="bi bi-envelope-fill" aria-hidden="true"></i>
                                     </span>
-                                    <input type="email" id="layoutUpdEmail" class="corp-input"
-                                           value="@Model.Correo" placeholder="Correo" />
+                                    <input type="email" id="master_txtEmail" class="corp-input"
+                                           value="@Model.Correo" placeholder="Correo corporativo" />
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="corp-field">
-                                <label class="corp-field__label">Teléfono</label>
+                                <label class="corp-field__label">Empresa</label>
                                 <div class="corp-input-group corp-input-group--icon-left">
                                     <span class="corp-input-group__icon corp-input-group__icon--left">
                                         <i class="bi bi-telephone-fill" aria-hidden="true"></i>
                                     </span>
-                                    <input type="tel" id="layoutUpdTelefono" class="corp-input"
-                                           value="@(ViewData["UserPhone"] as string ?? "")"
-                                           placeholder="Teléfono" />
+                                    <input type="tel" id="master_txtEmpresa" class="corp-input"
+                                           value="@Model.Empresa"
+                                           placeholder="Número de RUC" />
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="corp-field">
-                                <label class="corp-field__label">Ubicación / Oficina</label>
+                                <label class="corp-field__label">Departamento</label>
                                 <input type="text" id="layoutUpdUbicacion" class="corp-input"
                                        value="@(ViewData["UserLocation"] as string ?? "")"
-                                       placeholder="Sede / Piso" />
+                                       placeholder="Código de CR" />
                             </div>
                         </div>
                     </div>

@@ -354,9 +354,9 @@
             }
             url = "/ServicioOperar/AmpliarServicio";
         } else if (estado == "A") {
-            url = "/ServicioOperar/AprobarAmpliacion";
+            url = "/ServicioAprobar/AprobarAmpliacion";
         } else if (estado == "R") {
-            url = "/ServicioOperar/RechazarAmpliacion";
+            url = "/ServicioAprobar/RechazarAmpliacion";
         }
 
         let confirma = confirm("¿Está seguro de realizar esta operación?");

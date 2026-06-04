@@ -1,3 +1,11 @@
+11 - PREVENCION VIAL
+10 - RESGUARDO
+
+SELECT * FROM rpoconfig a WHERE a.CodDpto = '4300' AND a.IdTpoServicio = 10 AND a.Fecha = '2026-05-14'; 
+SELECT * FROM rpoconfig a WHERE a.CodDpto = '4300' AND a.IdTpoServicio = 11 AND a.Fecha = '2026-05-14';
+SELECT a.* FROM rposervicio a INNER JOIN rposolicitud b
+ON a.IdSolicitud = b.IdSolicitud
+WHERE b.CodDpto = '4300' AND a.IdTpoServicio = 11 AND a.Fecha = '2026-05-14';
 
 DELETE FROM rpoefectivo;
 DELETE FROM rpopersonal;
@@ -5,7 +13,7 @@ DELETE FROM rposervicioprov;
 DELETE FROM rposervicio;
 DELETE FROM rposolicitud;
 
-SELECT * FROM rpoefectivo;
+SELECT * FROM rpogenerico;
 SELECT * FROM rpopersonal;
 SELECT * FROM rposervicioprov;
 SELECT * FROM rposervicio;
