@@ -95,9 +95,6 @@ namespace Infor.Infrastructure.Services
             bool refreshAfterSave = false,
             CancellationToken ct = default)
         {
-            var guid      = Guid.NewGuid().ToString();
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-
             var body = new
             {
                 IDOName          = ido,
@@ -107,7 +104,6 @@ namespace Infor.Infrastructure.Services
                     new
                     {
                         Action     = 1,
-                        ItemId     = $"PBT=[aptrx] apt.ID=[{guid}] apt.DT=[{timestamp}]",
                         Properties = properties.ToList()
                     }
                 }
