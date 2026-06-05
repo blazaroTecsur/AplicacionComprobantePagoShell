@@ -4,16 +4,18 @@ using Maestros.Abstractions.Interfaces;
 
 namespace ComprobantePago.Infrastructure.Services.Maestros
 {
-    public class ApiEmpleadoService(IMaestrosEmpleadoService maestros) : IEmpleadoService
+    public class ApiEmpleadoService(IMaestrosProveedorService maestros) : IEmpleadoService
     {
         public async Task<IEnumerable<ComboDto>> ObtenerEmpleadosAsync(string filtro = "")
         {
             var result = await maestros.GetAllAsync(filtro, 1, 100);
-            return result.Items.Select(e => new ComboDto
-            {
-                Codigo      = e.Codigo,
-                Descripcion = e.NombreCompleto,
-            });
+            return result.Items
+                .Where(p => p.TipoPersona == "1" && p.Estado.ToUpper() != "INACTIVO")
+                .Select(p => new ComboDto
+                {
+                    Codigo      = p.Ruc,
+                    Descripcion = $"{p.Ruc} - {p.NombreProveedor}"
+                });
         }
     }
 }
