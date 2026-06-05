@@ -2,6 +2,7 @@ using Infor.Abstractions.DTOs;
 using Infor.Abstractions.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Text;
@@ -21,6 +22,7 @@ namespace Infor.Infrastructure.Services
         private readonly InforSettings _settings;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<InforIdoService> _logger;
 
         private static readonly JsonSerializerOptions _jsonOpts = new()
         {
@@ -33,13 +35,15 @@ namespace Infor.Infrastructure.Services
             IInforTokenService tokenService,
             IOptions<InforSettings> settings,
             IHttpContextAccessor httpContextAccessor,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ILogger<InforIdoService> logger)
         {
             _http                = http;
             _tokenService        = tokenService;
             _settings            = settings.Value;
             _httpContextAccessor = httpContextAccessor;
             _configuration       = configuration;
+            _logger              = logger;
         }
 
         // ── GET /load/{ido} — LoadCollection ─────────────────────────────────
@@ -167,6 +171,7 @@ namespace Infor.Infrastructure.Services
 
         private async Task<JsonElement> EjecutarGetAsync(string url, CancellationToken ct)
         {
+            _logger.LogInformation("IDO GET {Url}", url);
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             await AgregarAuthHeaderAsync(request);
             using var respuesta = await _http.SendAsync(request, ct);
@@ -176,6 +181,7 @@ namespace Infor.Infrastructure.Services
         private async Task<JsonElement> EjecutarPostAsync(string url, object? cuerpo, CancellationToken ct)
         {
             var json = JsonSerializer.Serialize(cuerpo, _jsonOpts);
+            _logger.LogInformation("IDO POST {Url} | Payload: {Payload}", url, json);
             using var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
