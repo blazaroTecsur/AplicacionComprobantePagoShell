@@ -24,7 +24,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
                 .Select(x => new ComboDto
                 {
                     Codigo      = x.Ruc,
-                    Descripcion = $"{x.Ruc} - {x.NombreProveedor}"
+                    Descripcion = x.NombreProveedor ?? string.Empty
                 })
                 .ToListAsync();
         }

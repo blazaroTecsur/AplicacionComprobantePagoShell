@@ -14,7 +14,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
                 .Select(p => new ComboDto
                 {
                     Codigo      = p.Ruc,
-                    Descripcion = $"{p.Ruc} - {p.NombreProveedor}",
+                    Descripcion = p.NombreProveedor,
                 });
         }
     }

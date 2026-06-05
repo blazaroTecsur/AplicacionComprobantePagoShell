@@ -23,8 +23,8 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
                 .OrderBy(x => x.NombreProveedor)
                 .Select(x => new ComboDto
                 {
-                    Codigo = x.Ruc,
-                    Descripcion = $"{x.Ruc} - {x.NombreProveedor}"
+                    Codigo      = x.Ruc,
+                    Descripcion = x.NombreProveedor ?? string.Empty
                 })
                 .ToListAsync();
         }
