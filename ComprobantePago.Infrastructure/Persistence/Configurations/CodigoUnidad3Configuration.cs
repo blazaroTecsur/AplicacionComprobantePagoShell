@@ -13,6 +13,7 @@ namespace ComprobantePago.Infrastructure.Persistence.Configurations
             builder.HasKey(x => x.IdCodigoUnidad3);
             builder.Property(x => x.Codigo).HasMaxLength(10).IsRequired();
             builder.Property(x => x.Descripcion).HasMaxLength(200).IsRequired();
+            builder.Property(x => x.Empresa).HasMaxLength(50).IsRequired();
             builder.Property(x => x.UsuarioReg).HasMaxLength(50).IsRequired();
         }
     }

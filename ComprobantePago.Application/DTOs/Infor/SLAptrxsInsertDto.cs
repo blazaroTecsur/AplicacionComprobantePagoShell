@@ -82,6 +82,9 @@ namespace ComprobantePago.Application.DTOs.Infor
         /// <summary>Código de unidad 1. Campo ApAcctUnit1.</summary>
         public string ApAcctUnit1 { get; init; } = string.Empty;
 
+        /// <summary>Código de unidad 2. Campo ApAcctUnit2.</summary>
+        public string ApAcctUnit2 { get; init; } = string.Empty;
+
         /// <summary>Código de unidad 3. Campo ApAcctUnit3.</summary>
         public string ApAcctUnit3 { get; init; } = string.Empty;
 

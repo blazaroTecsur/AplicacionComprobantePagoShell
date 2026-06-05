@@ -1,4 +1,11 @@
-﻿<div class="panel-contenedor">
+@{
+    bool puedeGuardar   = User.HasClaim("permission", "COMP.GUARDAR");
+    bool puedeAutorizar = User.HasClaim("permission", "COMP.AUTORIZAR");
+    bool puedeAprobar   = User.HasClaim("permission", "COMP.APROBAR");
+    bool puedeReporte   = User.HasClaim("permission", "COMP.RPT");
+}
+
+<div class="panel-contenedor">
 
     <!-- Header -->
     <div class="panel-principal">
@@ -36,25 +43,52 @@
                         id="index_btnBuscar">
                     <i class="bi bi-search"></i> Buscar
                 </button>
-                <button type="button" class="btn btn-primary btn-sm flex-fill justify-content-center"
-                        id="index_btnNuevo">
-                    <i class="bi bi-file-earmark-plus"></i> Nuevo
-                </button>
-                <button type="button" class="btn btn-info btn-sm flex-fill justify-content-center"
-                        id="index_btnEnviarSyteline" disabled
-                        title="Enviar cabecera al IDO SLAptrxs de Infor Syteline">
-                    <i class="bi bi-send"></i> Enviar a Syteline
-                </button>
-                <button type="button" class="btn btn-success btn-sm d-none"
-                        id="index_btnExportarCabecera"
-                        title="Exportar cabecera en Excel (respaldo)">
-                    <i class="bi bi-file-excel"></i> Excel Cabecera
-                </button>
-                <button type="button" class="btn btn-success btn-sm d-none"
-                        id="index_btnExportarImputacion"
-                        title="Exportar imputación en Excel (respaldo)">
-                    <i class="bi bi-file-excel"></i> Excel Imputación
-                </button>
+                @if (puedeGuardar)
+                {
+                    <button type="button" class="btn btn-primary btn-sm flex-fill justify-content-center"
+                            id="index_btnNuevo">
+                        <i class="bi bi-file-earmark-plus"></i> Nuevo
+                    </button>
+                }
+                @if (puedeAutorizar)
+                {
+                    <button type="button" class="btn btn-secondary btn-sm flex-fill justify-content-center"
+                            id="index_btnAutorizarMasivo" disabled
+                            title="Autorizar comprobantes ENVIADOS seleccionados">
+                        <i class="bi bi-pen"></i> Autorizar
+                    </button>
+                }
+                @if (puedeAprobar)
+                {
+                    <button type="button" class="btn btn-secondary btn-sm flex-fill justify-content-center"
+                            id="index_btnAprobarMasivo" disabled
+                            title="Aprobar comprobantes AUTORIZADOS seleccionados">
+                        <i class="bi bi-check2-all"></i> Aprobar
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm flex-fill justify-content-center"
+                            id="index_btnEnviarSyteline" disabled
+                            title="Enviar cabecera al IDO SLAptrxs de Infor Syteline">
+                        <i class="bi bi-send"></i> Enviar a Syteline
+                    </button>
+                }
+                @if (puedeReporte)
+                {
+                    <button type="button" class="btn btn-success btn-sm"
+                            id="index_btnExportarTodo"
+                            title="Exportar todos los registros filtrados a Excel">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Exportar Todo
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm d-none"
+                            id="index_btnExportarCabecera"
+                            title="Exportar cabecera en Excel (respaldo)">
+                        <i class="bi bi-file-excel"></i> Excel Cabecera
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm d-none"
+                            id="index_btnExportarImputacion"
+                            title="Exportar imputación en Excel (respaldo)">
+                        <i class="bi bi-file-excel"></i> Excel Imputación
+                    </button>
+                }
                 <span id="lblSeleccionados" class="badge bg-secondary d-none align-self-center"></span>
                 </div>
             </div>

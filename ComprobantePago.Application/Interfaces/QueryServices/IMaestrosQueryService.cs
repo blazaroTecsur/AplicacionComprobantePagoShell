@@ -13,5 +13,6 @@ namespace ComprobantePago.Application.Interfaces.QueryServices
         Task<IEnumerable<ComboDto>> ObtenerEmpleadosAsync(string filtro = "");
         Task<IEnumerable<ComboDto>> ObtenerCuentasContablesAsync(string filtro = "");
         Task<IEnumerable<ComboDto>> ObtenerCodigosUnidadAsync(string campo, int unidad, string codigo, string filtro = "");
+        Task<decimal> ObtenerTipoCambioAsync(string moneda, DateTime fecha);
     }
 }

@@ -4,7 +4,7 @@
 
 let tablaComprobantes;
 
-$(document).ready(function () {
+$(function () {
     if ($('#index_tblComprobantes').length > 0) {
         inicializarTabla();
         cargarTipos();
@@ -77,7 +77,7 @@ function inicializarTabla() {
 // ── Cargar combos ─────────────────────────────
 function cargarTipos() {
     CorporativoQuery.ajaxGet(
-        '/Comprobante/ObtenerTiposDocumento',
+        BASE_URL+'/Comprobante/ObtenerTiposDocumento',
         function (data) {
             let options = '<option value="">-- Todos --</option>';
             data.forEach(t =>
@@ -89,7 +89,7 @@ function cargarTipos() {
 
 function cargarEstados() {
     CorporativoQuery.ajaxGet(
-        '/Comprobante/ObtenerEstados',
+        BASE_URL+'/Comprobante/ObtenerEstados',
         function (data) {
             let options = '<option value="">-- Todos --</option>';
             data.forEach(e =>
@@ -109,7 +109,7 @@ function buscar() {
     };
 
     CorporativoQuery.ajaxPost(
-        '/Comprobante/Buscar',
+        BASE_URL+'/Comprobante/Buscar',
         filtros,
         function (data) {
             tablaComprobantes.clear().rows.add(data).draw();
@@ -123,12 +123,13 @@ function buscar() {
 // ── Render estado (badge) ─────────────────────
 function renderEstado(estado) {
     const colores = {
-        'REGISTRADO': 'secondary',
-        'ENVIADO': 'primary',
-        'AUTORIZADO': 'info',
-        'APROBADO': 'success',
-        'ANULADO': 'danger',
-        'DERIVADO': 'warning',
+        'REGISTRADO':  'secondary',
+        'ENVIADO':     'primary',
+        'AUTORIZADO':  'info',
+        'APROBADO':    'success',
+        'PAGADO':      'dark',
+        'ANULADO':     'danger',
+        'DERIVADO':    'warning',
         'DERIVADO SYT': 'dark'
     };
     const color = colores[estado] || 'secondary';
@@ -147,9 +148,32 @@ function bindChkTodos() {
 // ── Actualizar botones exportar ───────────────
 function actualizarBotonesExportar() {
     const seleccionados = obtenerSeleccionados();
-    const haySeleccion = seleccionados.length > 0;
-    const soloAprobados = seleccionados.length > 0 &&
-        seleccionados.every(s => s.estado === 'APROBADO');
+    const haySeleccion  = seleccionados.length > 0;
+    const soloAprobados = haySeleccion && seleccionados.every(s => s.estado === 'APROBADO');
+    const soloEnviados  = haySeleccion && seleccionados.every(s => s.estado === 'ENVIADO');
+    const soloAutorizados = haySeleccion && seleccionados.every(s => s.estado === 'AUTORIZADO');
+
+    // Autorizar masivo — solo ENVIADOS
+    $('#index_btnAutorizarMasivo')
+        .prop('disabled', !soloEnviados)
+        .toggleClass('btn-warning', soloEnviados)
+        .toggleClass('btn-secondary', !soloEnviados)
+        .attr('title', !haySeleccion
+            ? 'Seleccione comprobantes para autorizar'
+            : !soloEnviados
+                ? 'Solo se autorizan comprobantes ENVIADOS'
+                : `Autorizar ${seleccionados.length} comprobante(s)`);
+
+    // Aprobar masivo — solo AUTORIZADOS
+    $('#index_btnAprobarMasivo')
+        .prop('disabled', !soloAutorizados)
+        .toggleClass('btn-success', soloAutorizados)
+        .toggleClass('btn-secondary', !soloAutorizados)
+        .attr('title', !haySeleccion
+            ? 'Seleccione comprobantes para aprobar'
+            : !soloAutorizados
+                ? 'Solo se aprueban comprobantes AUTORIZADOS'
+                : `Aprobar ${seleccionados.length} comprobante(s)`);
 
     // Enviar a Syteline — solo aprobados
     $('#index_btnEnviarSyteline')
@@ -204,6 +228,91 @@ function obtenerSeleccionados() {
     return seleccionados;
 }
 
+// ── Autorizar masivo ──────────────────────────
+function autorizarMasivo() {
+    const seleccionados = obtenerSeleccionados();
+    const noEnviados = seleccionados.filter(s => s.estado !== 'ENVIADO');
+    if (noEnviados.length > 0) {
+        CorporativoCore.notificarAdvertencia('Solo se pueden autorizar comprobantes ENVIADOS.');
+        return;
+    }
+    const folios = seleccionados.map(s => s.folio);
+    const token  = $('input[name="__RequestVerificationToken"]').first().val();
+    const $btn   = $('#index_btnAutorizarMasivo');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Autorizando...');
+
+    $.ajax({
+        url: BASE_URL + '/Comprobante/AutorizarMasivo',
+        method: 'POST',
+        contentType: 'application/json',
+        headers: { 'RequestVerificationToken': token },
+        data: JSON.stringify(folios),
+        success: function (resp) {
+            CorporativoCore.notificarExito(resp.mensaje ?? 'Comprobantes autorizados.');
+            buscar();
+        },
+        error: function (xhr) {
+            CorporativoCore.notificarError(xhr.responseJSON?.error ?? 'Error al autorizar.');
+        },
+        complete: function () {
+            $btn.prop('disabled', false).html('<i class="bi bi-pen"></i> Autorizar');
+            actualizarBotonesExportar();
+        }
+    });
+}
+
+// ── Aprobar masivo ────────────────────────────
+function aprobarMasivo() {
+    const seleccionados = obtenerSeleccionados();
+    const noAutorizados = seleccionados.filter(s => s.estado !== 'AUTORIZADO');
+    if (noAutorizados.length > 0) {
+        CorporativoCore.notificarAdvertencia('Solo se pueden aprobar comprobantes AUTORIZADOS.');
+        return;
+    }
+    const folios = seleccionados.map(s => s.folio);
+    const token  = $('input[name="__RequestVerificationToken"]').first().val();
+    const $btn   = $('#index_btnAprobarMasivo');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Aprobando...');
+
+    $.ajax({
+        url: BASE_URL + '/Comprobante/AprobarMasivo',
+        method: 'POST',
+        contentType: 'application/json',
+        headers: { 'RequestVerificationToken': token },
+        data: JSON.stringify(folios),
+        success: function (resp) {
+            CorporativoCore.notificarExito(resp.mensaje ?? 'Comprobantes aprobados.');
+            buscar();
+        },
+        error: function (xhr) {
+            CorporativoCore.notificarError(xhr.responseJSON?.error ?? 'Error al aprobar.');
+        },
+        complete: function () {
+            $btn.prop('disabled', false).html('<i class="bi bi-check2-all"></i> Aprobar');
+            actualizarBotonesExportar();
+        }
+    });
+}
+
+// ── Exportar todos (filtro actual) ─────────────
+function exportarTodo() {
+    const filtros = {
+        tipo:      $('#index_cboTipo').val(),
+        estado:    $('#index_cboEstado').val(),
+        proveedor: $('#index_txtProveedor').val(),
+        folio:     $('#index_txtFolio').val()
+    };
+    const token = $('input[name="__RequestVerificationToken"]').first().val();
+    const form  = $('<form>', { method: 'POST', action: BASE_URL + '/Comprobante/ExportarTodo' });
+    if (token) form.append($('<input>', { type: 'hidden', name: '__RequestVerificationToken', value: token }));
+    Object.entries(filtros).forEach(([k, v]) => {
+        if (v) form.append($('<input>', { type: 'hidden', name: k, value: v }));
+    });
+    $('body').append(form);
+    form.submit();
+    form.remove();
+}
+
 // ── Enviar cabecera a Syteline (IDO SLAptrxs) ─
 function enviarASyteline() {
     const seleccionados = obtenerSeleccionados();
@@ -230,7 +339,7 @@ function enviarASyteline() {
         .html('<span class="spinner-border spinner-border-sm me-1"></span> Enviando...');
 
     $.ajax({
-        url: '/Comprobante/EnviarCabeceraASyteline',
+        url: BASE_URL+'/Comprobante/EnviarCabeceraASyteline',
         method: 'POST',
         contentType: 'application/json',
         headers: { 'RequestVerificationToken': token },
@@ -286,7 +395,7 @@ function exportarCabecera() {
     }
 
     const folios = seleccionados.map(s => s.folio);
-    enviarFormExportar('/Comprobante/ExportarCabeceraSyteline', folios);
+    enviarFormExportar(BASE_URL+'/Comprobante/ExportarCabeceraSyteline', folios);
 }
 
 // ── Exportar imputación Syteline ──────────────
@@ -308,7 +417,7 @@ function exportarImputacion() {
     }
 
     const folios = seleccionados.map(s => s.folio);
-    enviarFormExportar('/Comprobante/ExportarDistribucionSyteline', folios);
+    enviarFormExportar(BASE_URL+'/Comprobante/ExportarDistribucionSyteline', folios);
 }
 
 // ── Enviar form dinámico para descarga ────────
@@ -357,13 +466,13 @@ function bindEventos() {
 
     // Nuevo
     $('#index_btnNuevo').on('click', function () {
-        window.location.href = '/Comprobante/Detalle';
+        window.location.href = BASE_URL+'/Comprobante/Detalle';
     });
 
     // Ver detalle
     $('#index_tblComprobantes').on('click', '.btn-ver', function () {
         const folio = $(this).data('folio');
-        window.location.href = `/Comprobante/Detalle?folio=${folio}`;
+        window.location.href = BASE_URL+`/Comprobante/Detalle?folio=${folio}`;
     });
 
     // Checkbox individual → actualizar botones
@@ -383,8 +492,17 @@ function bindEventos() {
         actualizarBotonesExportar();
     });
 
+    // Autorizar masivo
+    $('#index_btnAutorizarMasivo').on('click', autorizarMasivo);
+
+    // Aprobar masivo
+    $('#index_btnAprobarMasivo').on('click', aprobarMasivo);
+
     // Enviar a Syteline
     $('#index_btnEnviarSyteline').on('click', enviarASyteline);
+
+    // Exportar todos
+    $('#index_btnExportarTodo').on('click', exportarTodo);
 
     // Exportar cabecera
     $('#index_btnExportarCabecera').on('click', exportarCabecera);

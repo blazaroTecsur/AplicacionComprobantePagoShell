@@ -17,6 +17,7 @@ namespace ComprobantePago.Infrastructure.Persistence
         public DbSet<Proveedor> Proveedores { get; set; }
         public DbSet<CuentaContable> CuentasContables { get; set; }
         public DbSet<CodigoUnidad1> CodigosUnidad1 { get; set; }
+        public DbSet<CodigoUnidad2> CodigosUnidad2 { get; set; }
         public DbSet<CodigoUnidad3> CodigosUnidad3 { get; set; }
         public DbSet<CodigoUnidad4> CodigosUnidad4 { get; set; }
 
@@ -24,6 +25,7 @@ namespace ComprobantePago.Infrastructure.Persistence
         public DbSet<Comprobante> Comprobantes { get; set; }
         public DbSet<ImputacionContable> ImputacionesContables { get; set; }
         public DbSet<DocumentoElectronico> DocumentosElectronicos { get; set; }
+        public DbSet<SerieCorrelativo> SeriesCorrelativo { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

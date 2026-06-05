@@ -8,9 +8,8 @@ namespace ComprobantePago.Application.Validations
         public RegistrarComprobanteValidator()
         {
             RuleFor(x => x.Ruc)
-                .NotEmpty().WithMessage("El RUC es obligatorio.")
-                .Length(11).WithMessage("El RUC debe tener exactamente 11 dígitos.")
-                .Matches(@"^\d+$").WithMessage("El RUC solo debe contener dígitos.");
+                .NotEmpty().WithMessage("El número de documento es obligatorio.")
+                .Matches(@"^\d{8}$|^\d{11}$").WithMessage("El número de documento debe tener 8 dígitos (DNI) o 11 dígitos (RUC).");
 
             RuleFor(x => x.RazonSocial)
                 .NotEmpty().WithMessage("La razón social es obligatoria.")
@@ -20,7 +19,8 @@ namespace ComprobantePago.Application.Validations
                 .NotEmpty().WithMessage("El tipo de documento es obligatorio.");
 
             RuleFor(x => x.TipoSunat)
-                .NotEmpty().WithMessage("El tipo SUNAT es obligatorio.");
+                .NotEmpty().WithMessage("El tipo SUNAT es obligatorio.")
+                .When(x => !new[] { "VC", "PV", "PT", "RP" }.Contains(x.TipoDocumento));
 
             RuleFor(x => x.Serie)
                 .NotEmpty().WithMessage("La serie es obligatoria.")
@@ -28,13 +28,19 @@ namespace ComprobantePago.Application.Validations
 
             RuleFor(x => x.Numero)
                 .NotEmpty().WithMessage("El número de comprobante es obligatorio.")
-                .MaximumLength(20).WithMessage("El número no puede superar 20 caracteres.");
+                .When(x => !new[] { "PV", "VC", "PT" }.Contains(x.TipoDocumento));
+            RuleFor(x => x.Numero)
+                .MaximumLength(20).WithMessage("El número no puede superar 20 caracteres.")
+                .When(x => !string.IsNullOrWhiteSpace(x.Numero));
 
             RuleFor(x => x.FechaEmision)
                 .NotEmpty().WithMessage("La fecha de emisión es obligatoria.");
 
             RuleFor(x => x.Moneda)
                 .NotEmpty().WithMessage("La moneda es obligatoria.");
+
+            RuleFor(x => x.PlazoPago)
+                .NotEmpty().WithMessage("El plazo de pago es obligatorio.");
 
             RuleFor(x => x.TasaCambio)
                 .GreaterThanOrEqualTo(0).WithMessage("La tasa de cambio no puede ser negativa.");

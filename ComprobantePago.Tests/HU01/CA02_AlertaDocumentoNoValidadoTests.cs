@@ -6,6 +6,7 @@ using ComprobantePago.Infrastructure.Services;
 using ComprobantePago.Tests.Helpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Seguridad.Abstractions.Interfaces;
 using Xunit;
 
 namespace ComprobantePago.Tests.HU01

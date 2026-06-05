@@ -47,8 +47,8 @@ namespace Infor.Infrastructure.Services
 
         /// <summary>
         /// Nombre de la configuración Mongoose de Syteline.
-        /// Se envía en el header IFS-SL-Config en cada request al IDO REST.
-        /// Ejemplo: "SL_Production", "TECSUR"
+        /// Soporta el placeholder {EMPRESA} que se reemplaza en runtime con la empresa
+        /// del usuario logueado. Ejemplo: "EPXQLSZBRDZWPDCZ_TST_{EMPRESA}"
         /// </summary>
         public string Configuration { get; set; } = string.Empty;
 
@@ -60,6 +60,6 @@ namespace Infor.Infrastructure.Services
 
         /// <summary>URL base del servicio IDO REST</summary>
         public string IdoBaseUrl =>
-            $"{BaseUrl.TrimEnd('/')}/{Tenant}/{AppId}/IDORequestService/MGRestService.svc/";
+            $"{BaseUrl.TrimEnd('/')}/{Tenant}/{AppId}/IDORequestService/ido/";
     }
 }

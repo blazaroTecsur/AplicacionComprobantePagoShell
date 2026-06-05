@@ -27,6 +27,7 @@ namespace Seguridad.Infrastructure.Handler.Authentication
                 CodTenant = usuario.FindFirst("tid")?.Value ?? "";
                 Correo = usuario.FindFirst("email")?.Value ?? "";
                 Titulo = usuario.FindFirst("name")?.Value ?? "";
+                Empresa = usuario.FindFirst("empresa")?.Value ?? "";
                 Permisos = usuario?
                 .FindAll("permission")
                 .Select(c => c.Value)

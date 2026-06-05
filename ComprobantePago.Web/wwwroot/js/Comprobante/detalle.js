@@ -2,7 +2,7 @@
 // DETALLE.JS - Registro de Comprobantes
 // ============================================
 
-$(document).ready(function () {
+$(function () {
     if ($('#tabsDetalle').length > 0) {
         inicializar();
         bindEventos();
@@ -54,7 +54,7 @@ function cargarCombos() {
 }
 
 function cargarTipoDocumento() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerTiposDocumento',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerTiposDocumento',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(t =>
@@ -64,7 +64,7 @@ function cargarTipoDocumento() {
 }
 
 function cargarTipoSunat() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerTiposSunat',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerTiposSunat',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(t =>
@@ -74,7 +74,7 @@ function cargarTipoSunat() {
 }
 
 function cargarMoneda() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerMonedas',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerMonedas',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(m =>
@@ -84,7 +84,7 @@ function cargarMoneda() {
 }
 
 function cargarLugarPago() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerLugaresPago',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerLugaresPago',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(l =>
@@ -94,7 +94,7 @@ function cargarLugarPago() {
 }
 
 function cargarTipoDetraccion() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerTiposDetraccion',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerTiposDetraccion',
         function (data) {
             const combo = $('#ddlTipoDetraccion');
             combo.empty().append(
@@ -110,7 +110,7 @@ function cargarTipoDetraccion() {
 }
 
 function cargarTipoDocumentoAsociado() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerTiposDocumento',
+    CorporativoQuery.ajaxGet(BASE_URL+'/Comprobante/ObtenerTiposDocumento',
         function (data) {
             let options = '<option value="">-- Seleccione --</option>';
             data.forEach(t =>
@@ -122,7 +122,7 @@ function cargarTipoDocumentoAsociado() {
 // ── Cargar comprobante existente ──────────────
 function cargarComprobante(folio) {
     CorporativoQuery.ajaxGet(
-        `/Comprobante/ObtenerDetalle?folio=${folio}`,
+        BASE_URL+`/Comprobante/ObtenerDetalle?folio=${folio}`,
         function (data) {
             if (!data) {
                 CorporativoCore.notificarError(
@@ -139,6 +139,9 @@ function cargarComprobante(folio) {
                 } else {
                     habilitarCamposManual();
                 }
+                if (typeof cargarImputaciones === 'function') {
+                    cargarImputaciones(folio);
+                }
             }, 500);
         });
 }
@@ -154,6 +157,10 @@ function poblarCabecera(data) {
     $('#txtFechaEmision').val(data.fechaEmision);
     $('#txtFechaRecepcion').val(data.fechaRecepcion);
     $('#txtTasaCambio').val(data.tasaCambio);
+    // Fallback: si el XML no trajo tasa (0) y la moneda no es PEN, consultar Syteline
+    if ((!data.tasaCambio || parseFloat(data.tasaCambio) === 0) && data.moneda && data.moneda !== 'PEN') {
+        obtenerTipoCambio(data.moneda, data.fechaEmision);
+    }
     $('#txtCR').val(data.centroResponsabilidad);
     $('#txtDesCR').val(data.descripcionCR);
     $('#txtObservacion').val(data.observacion);
@@ -173,6 +180,7 @@ function poblarCabecera(data) {
 
     // Hidden fields
     $('#hdnCodigoEstado').val(data.codigoEstado);
+    $('#hdnTipoDocumento').val(data.tipoDocumento);
     $('#hdnEsDocumentoElectronico').val(data.esDocumentoElectronico);
     $('#hdnRequiereDetraccion').val(data.requiereDetraccion);
     $('#hdnAplicaIGV').val(data.aplicaIGV);
@@ -294,6 +302,7 @@ function bloquearTodosLosCampos() {
       '#txtMontoIGVCreditoPorcentajeIGV')
         .prop('readonly', true);
     $('#txtFechaEmision, #txtFechaDeposito').prop('disabled', true);
+    $('#txtFechaVencimiento').prop('disabled', true);
     $('.monto').prop('readonly', true);
     // Empleado
     $('#btnBuscarEmpleado').prop('disabled', true);
@@ -314,24 +323,30 @@ function mostrarBotonesSegunEstado(estado) {
         case 'REGISTRADO':
             $('#btnRegistrar, #btnEnviar, #btnLimpiar')
                 .removeClass('d-none');
-            $('#btnImprimirComprobante, #btnVistaPrevia')
-                .removeClass('d-none');
-            $('#btnAnular, #btnModoImputacion')
+            $('#btnImprimirComprobante, #btnVistaPrevia, #btnModoImputacion')
                 .removeClass('d-none');
             break;
         case 'ENVIADO':
             bloquearTodosLosCampos();
             $('#btnAutorizarDetalle, #btnImprimirComprobante')
                 .removeClass('d-none');
-            $('#btnVistaPrevia, #btnAnular').removeClass('d-none');
+            $('#btnVistaPrevia').removeClass('d-none');
+            if ($('#hdnPuedeAutorizar').val() === 'S') $('#btnRevertir').removeClass('d-none');
             break;
         case 'AUTORIZADO':
             bloquearTodosLosCampos();
             $('#btnAprobarDetalle, #btnImprimirComprobante')
                 .removeClass('d-none');
             $('#btnVistaPrevia, #btnAnular').removeClass('d-none');
+            if ($('#hdnHabSegAprob').val() === 'S') $('#btnRevertir').removeClass('d-none');
             break;
         case 'APROBADO':
+            bloquearTodosLosCampos();
+            $('#btnPagar, #btnImprimirComprobante, #btnVistaPrevia')
+                .removeClass('d-none');
+            if ($('#hdnHabSegAprob').val() === 'S') $('#btnRevertir').removeClass('d-none');
+            break;
+        case 'PAGADO':
             bloquearTodosLosCampos();
             $('#btnImprimirComprobante, #btnVistaPrevia')
                 .removeClass('d-none');
@@ -363,23 +378,17 @@ function ocultarTodosLosBotones() {
 function guardarComprobante() {
     if (!validarCabecera()) return;
 
-    // Validar mínimo 3 líneas de imputación (solo si el comprobante ya tiene folio asignado)
-    const folioActual = $('#hdnFolio').val();
-    if (folioActual && typeof listaImputaciones !== 'undefined' && listaImputaciones.length < 3) {
-        CorporativoCore.notificarAdvertencia(
-            'Debe registrar al menos 3 líneas de imputación contable antes de guardar.');
-        return;
-    }
-
     CorporativoQuery.ajaxPost(
-        '/Comprobante/Guardar',
+        BASE_URL+'/Comprobante/Guardar',
         { comprobante: obtenerDatosCabecera() },
         function (response) {
             if (response.exito) {
-                CorporativoCore.notificarExito(
-                    'Comprobante guardado correctamente.');
+                CorporativoCore.notificarExito('Comprobante guardado correctamente.');
                 $('#txtFolio').val(response.folio);
                 $('#hdnFolio').val(response.folio);
+                $('#hdnTipoDocumento').val($('#ddlTipoDocumento').val());
+                if (response.serie)  $('#txtSerie').val(response.serie);
+                if (response.numero) $('#txtNumero').val(response.numero);
                 mostrarBotonesSegunEstado('REGISTRADO');
                 $('#barraOpcionesImputacion').removeClass('d-none');
                 $('#barraAccionesImputacion').removeClass('d-none');
@@ -440,10 +449,13 @@ function obtenerDatosCabecera() {
 
 // ── Validaciones ──────────────────────────────
 function validarCabecera() {
+    const tipoDoc = $('#ddlTipoDocumento').val();
+    const tiposAutoNumero = ['PV', 'VC', 'PT'];
+
     const campos = [
         {
             selector: '#txtNumeroDocumentoIdentidad',
-            msg: 'Debe ingresar el RUC del proveedor.'
+            msg: 'Debe ingresar el número de documento del proveedor.'
         },
         {
             selector: '#ddlTipoDocumento',
@@ -455,7 +467,8 @@ function validarCabecera() {
         },
         {
             selector: '#txtNumero',
-            msg: 'Debe ingresar el número.'
+            msg: 'Debe ingresar el número.',
+            skip: tiposAutoNumero.includes(tipoDoc)
         },
         {
             selector: '#txtFechaEmision',
@@ -465,12 +478,17 @@ function validarCabecera() {
             selector: '#ddlMoneda',
             msg: 'Debe seleccionar la moneda.'
         },
+        {
+            selector: '#txtPlazoPago',
+            msg: 'Debe ingresar el plazo de pago.'
+        },
     ];
 
     for (const campo of campos) {
+        if (campo.skip) continue;
         if (CorporativoCore.esVacio($(campo.selector).val())) {
             CorporativoCore.notificarAdvertencia(campo.msg);
-            $(campo.selector).focus();
+            $(campo.selector).trigger('focus');
             return false;
         }
     }
@@ -647,14 +665,11 @@ function obtenerParametroUrl(nombre) {
 
 // ── Buscar empleado (modal) ───────────────────
 function buscarEmpleado() {
-    CorporativoQuery.ajaxGet('/Comprobante/ObtenerEmpleados',
-        function (data) {
-            if (!data || data.length === 0) {
-                CorporativoCore.notificarInfo('No hay empleados disponibles.');
-                return;
-            }
-            mostrarModalBusqueda(data, 'Seleccionar Empleado', 'seleccionar-empleado');
-        });
+    mostrarModalBusqueda(
+        BASE_URL+'/Comprobante/ObtenerEmpleados',
+        'Seleccionar Empleado',
+        'seleccionar-empleado'
+    );
 }
 
 // ── Recalcular montos en modo manual ──────────
@@ -685,6 +700,17 @@ function bindEventos() {
         if ($(this).is(':checked')) activarModoManual();
     });
 
+    // En modo manual, PV/VC/PT → pre-rellenar serie; número se genera al guardar
+    $('#ddlTipoDocumento').on('change', function () {
+        const tipo = $(this).val();
+        const mapSerie = { PV: 'PV', VC: 'VC', PT: 'PT' };
+        if (!$('#rdoFacturacionManual').is(':checked')) return;
+        if (mapSerie[tipo]) {
+            $('#txtSerie').val(mapSerie[tipo]);
+            $('#txtNumero').val('');
+        }
+    });
+
     $('#rdoFacturacionElectronica').on('change', function () {
         if ($(this).is(':checked')) {
             CorporativoCore.confirmar(
@@ -712,7 +738,7 @@ function bindEventos() {
     $('#btnAtras').on('click', async function () {
         const ok = await CorporativoCore.confirmar(
             '¿Desea salir sin guardar?');
-        if (ok) window.location.href = '/Comprobante/Index';
+        if (ok) window.location.href = BASE_URL+'/Comprobante/Index';
     });
 
     // Anular
@@ -720,6 +746,13 @@ function bindEventos() {
         const ok = await CorporativoCore.confirmar(
             '¿Está seguro de anular este comprobante?');
         if (ok) anularComprobante();
+    });
+
+    // Revertir
+    $('#btnRevertir').on('click', async function () {
+        const ok = await CorporativoCore.confirmar(
+            '¿Desea revertir el comprobante al estado anterior?');
+        if (ok) revertirComprobante();
     });
 
     // Enviar
@@ -741,6 +774,13 @@ function bindEventos() {
         const ok = await CorporativoCore.confirmar(
             '¿Desea aprobar el comprobante?');
         if (ok) aprobarComprobante();
+    });
+
+    // Pagar
+    $('#btnPagar').on('click', async function () {
+        const ok = await CorporativoCore.confirmar(
+            '¿Desea marcar el comprobante como PAGADO?');
+        if (ok) pagarComprobante();
     });
 
     // Derivar
@@ -802,6 +842,17 @@ function bindEventos() {
         }
     });
 
+    // Moneda → tipo de cambio automático desde Syteline (solo manual, moneda != PEN)
+    $('#ddlMoneda').on('change', function () {
+        const moneda = $(this).val();
+        if (!moneda || moneda === 'PEN') {
+            $('#txtTasaCambio').val('1.000');
+            return;
+        }
+        const fecha = $('#txtFechaEmision').val() || '';
+        obtenerTipoCambio(moneda, fecha);
+    });
+
     // Tipo detracción → porcentaje automático
     $('#ddlTipoDetraccion').on('change', function () {
         const porcentaje = $(this).find('option:selected')
@@ -828,20 +879,11 @@ function bindEventos() {
         if (this.files.length > 0) subirArchivoSunat(this.files[0]);
     });
 
-    // Imputación masiva
-    $('#btnExplorar').on('click', function () {
-        $('#inpFile').trigger('click');
-    });
-
-    $('#inpFile').on('change', function () {
-        if (this.files.length > 0) subirImputacionMasiva(this.files[0]);
-    });
-
     // Descargar imputación (PDF descarga directa)
     $('#btnImprimirComprobante').on('click', function () {
         const folio = $('#hdnFolio').val();
         if (!folio) return;
-        window.open(`/Comprobante/ObtenerPdf?folio=${folio}&descargar=true`, '_blank');
+        window.open(BASE_URL+`/Comprobante/ObtenerPdf?folio=${folio}&descargar=true`, '_blank');
     });
 
     // Vista previa PDF
@@ -850,20 +892,17 @@ function bindEventos() {
         if (folio) {
             $('a[href="#tabImpresion"]').tab('show');
             $('#pdfComprobante').attr('src',
-                `/Comprobante/ObtenerPdf?folio=${folio}`);
+                BASE_URL+`/Comprobante/ObtenerPdf?folio=${folio}`);
         }
     });
 
     // ── Proveedor ─────────────────────────────
     $('#btnBuscarProveedorPrincipal').on('click', function () {
-        CorporativoQuery.ajaxGet('/Comprobante/ObtenerProveedores',
-            function (data) {
-                if (!data || data.length === 0) {
-                    CorporativoCore.notificarInfo('No hay proveedores disponibles.');
-                    return;
-                }
-                mostrarModalBusqueda(data, 'Seleccionar Proveedor', 'seleccionar-proveedor');
-            });
+        mostrarModalBusqueda(
+            BASE_URL+'/Comprobante/ObtenerProveedores',
+            'Seleccionar Proveedor',
+            'seleccionar-proveedor'
+        );
     });
 
     $(document).on('click', '.seleccionar-proveedor', function (e) {
@@ -937,7 +976,7 @@ function _accionComprobante(url, estadoDestino, mensajeExito, redirigir = false)
             if (response.exito) {
                 if (redirigir) {
                     CorporativoCore.notificarExito(mensajeExito);
-                    setTimeout(() => window.location.href = '/Comprobante/Index', 1500);
+                    setTimeout(() => window.location.href = BASE_URL+'/Comprobante/Index', 1500);
                 } else {
                     mostrarBotonesSegunEstado(estadoDestino);
                     CorporativoCore.notificarExito(mensajeExito);
@@ -949,24 +988,39 @@ function _accionComprobante(url, estadoDestino, mensajeExito, redirigir = false)
     );
 }
 
+function revertirComprobante() {
+    const estado = $('#hdnCodigoEstado').val();
+    const urls = {
+        'ENVIADO':    BASE_URL + '/Comprobante/RevertirEnviado',
+        'AUTORIZADO': BASE_URL + '/Comprobante/RevertirAprobacion',
+        'APROBADO':   BASE_URL + '/Comprobante/RevertirAprobacion',
+    };
+    const url = urls[estado];
+    if (!url) { CorporativoCore.notificarError('Estado no permite reversión.'); return; }
+    _accionComprobante(url, null, 'Comprobante revertido al estado anterior.', true);
+}
 function enviarComprobante() {
-    _accionComprobante('/Comprobante/Enviar', 'ENVIADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Enviar', 'ENVIADO',
         'Comprobante enviado correctamente.', true);
 }
 function firmarComprobante() {
-    _accionComprobante('/Comprobante/Firmar', 'AUTORIZADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Firmar', 'AUTORIZADO',
         'Comprobante autorizado correctamente.', true);
 }
 function aprobarComprobante() {
-    _accionComprobante('/Comprobante/Aprobar', 'APROBADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Aprobar', 'APROBADO',
         'Comprobante aprobado correctamente.', true);
 }
 function anularComprobante() {
-    _accionComprobante('/Comprobante/Anular', 'ANULADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Anular', 'ANULADO',
         'Comprobante anulado correctamente.', true);
 }
+function pagarComprobante() {
+    _accionComprobante(BASE_URL+'/Comprobante/Pagar', 'PAGADO',
+        'Comprobante marcado como PAGADO correctamente.', true);
+}
 function derivarComprobante() {
-    _accionComprobante('/Comprobante/Derivar', 'REGISTRADO',
+    _accionComprobante(BASE_URL+'/Comprobante/Derivar', 'REGISTRADO',
         'Comprobante derivado correctamente.');
 }
 
@@ -1001,18 +1055,25 @@ function _subirFormData(url, formData, mensajeExito, mensajeError) {
     });
 }
 
+function obtenerTipoCambio(moneda, fecha) {
+    CorporativoQuery.ajaxGet(
+        BASE_URL + '/Comprobante/ObtenerTipoCambio?moneda=' + encodeURIComponent(moneda) +
+        '&fecha=' + encodeURIComponent(fecha || ''),
+        function (data) {
+            if (data.tasa && parseFloat(data.tasa) > 0) {
+                $('#txtTasaCambio').val(parseFloat(data.tasa).toFixed(3));
+            } else {
+                CorporativoCore.notificarAdvertencia('No se encontró tipo de cambio en Syteline para la fecha indicada.');
+            }
+        }
+    );
+}
+
 function subirArchivoSunat(archivo) {
     const fd = new FormData();
     fd.append('file', archivo);
-    _subirFormData('/Comprobante/ValidarSunat', fd,
+    _subirFormData(BASE_URL+'/Comprobante/ValidarSunat', fd,
         'Validación SUNAT completada.',
         'Error al procesar el archivo SUNAT.');
 }
 
-function subirImputacionMasiva(archivo) {
-    const fd = new FormData();
-    fd.append('file', archivo);
-    _subirFormData('/Comprobante/CargarImputacionMasiva', fd,
-        'Imputación cargada correctamente.',
-        'Error al cargar el archivo de imputación.');
-}

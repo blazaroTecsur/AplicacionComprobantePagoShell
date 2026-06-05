@@ -8,6 +8,7 @@ using ComprobantePago.Infrastructure.Services;
 using ComprobantePago.Tests.Helpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Seguridad.Abstractions.Interfaces;
 using Xunit;
 
 namespace ComprobantePago.Tests.HU03
@@ -23,7 +24,7 @@ namespace ComprobantePago.Tests.HU03
         {
             var db      = DbContextFactory.Crear(nombre);
             var uow     = new TestUnitOfWork(db);
-            var usuario = new Mock<ComprobantePago.Application.Interfaces.IUsuarioContexto>();
+            var usuario = new Mock<IUsuarioContexto>();
             usuario.Setup(u => u.Correo).Returns("editor@tecsur.com.pe");
 
             var repo = new ComprobanteRepository(
@@ -39,7 +40,7 @@ namespace ComprobantePago.Tests.HU03
 
         private static async Task<string> CrearComprobanteAsync(ComprobanteRepository repo)
         {
-            return await repo.GuardarAsync(new RegistrarComprobanteCommand
+            return (await repo.GuardarAsync(new RegistrarComprobanteCommand
             {
                 Comprobante = new RegistrarComprobanteDto
                 {
@@ -59,7 +60,7 @@ namespace ComprobantePago.Tests.HU03
                     MontoBruto      = 1180m,
                     TieneDetraccion = false
                 }
-            });
+            })).folio;
         }
 
         private static async Task<int> AgregarImputacionAsync(

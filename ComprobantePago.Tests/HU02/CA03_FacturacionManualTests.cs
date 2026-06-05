@@ -7,6 +7,7 @@ using ComprobantePago.Infrastructure.Services;
 using ComprobantePago.Tests.Helpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Seguridad.Abstractions.Interfaces;
 using Xunit;
 
 namespace ComprobantePago.Tests.HU02
@@ -26,7 +27,7 @@ namespace ComprobantePago.Tests.HU02
         {
             var db      = DbContextFactory.Crear(nombre);
             var uow     = new TestUnitOfWork(db);
-            var usuario = new Mock<ComprobantePago.Application.Interfaces.IUsuarioContexto>();
+            var usuario = new Mock<IUsuarioContexto>();
             usuario.Setup(u => u.Correo).Returns("test@tecsur.com.pe");
 
             var repo = new ComprobanteRepository(
@@ -76,7 +77,7 @@ namespace ComprobantePago.Tests.HU02
         public async Task GuardarManual_SinFolioPrevio_GeneraFolio()
         {
             var (repo, _) = Construir(nameof(GuardarManual_SinFolioPrevio_GeneraFolio));
-            var folio     = await repo.GuardarAsync(Comando("RP"));
+            var (folio, _, _) = await repo.GuardarAsync(Comando("RP"));
             Assert.False(string.IsNullOrWhiteSpace(folio),
                 "Debe generarse un folio al guardar en modo manual.");
         }
@@ -85,7 +86,7 @@ namespace ComprobantePago.Tests.HU02
         public async Task GuardarManual_FolioTieneLongitudCorrecta()
         {
             var (repo, _) = Construir(nameof(GuardarManual_FolioTieneLongitudCorrecta));
-            var folio     = await repo.GuardarAsync(Comando("RP"));
+            var (folio, _, _) = await repo.GuardarAsync(Comando("RP"));
             Assert.True(folio.Length == 10,
                 "El folio debe tener formato YYYYMMNNNN (10 caracteres).");
         }
@@ -102,7 +103,7 @@ namespace ComprobantePago.Tests.HU02
             string tipoDocumento, string descripcion)
         {
             var (repo, _) = Construir($"Tipo_{tipoDocumento}");
-            var folio     = await repo.GuardarAsync(Comando(tipoDocumento));
+            var (folio, _, _) = await repo.GuardarAsync(Comando(tipoDocumento));
             Assert.False(string.IsNullOrWhiteSpace(folio),
                 $"{descripcion} ({tipoDocumento}) debe guardarse correctamente.");
         }
@@ -115,11 +116,11 @@ namespace ComprobantePago.Tests.HU02
             var (repo, db) = Construir(nameof(GuardarManual_ConFolioExistente_ActualizaSinCrearDuplicado));
 
             // Primer guardado
-            var folio = await repo.GuardarAsync(Comando("RP"));
+            var (folio, _, _) = await repo.GuardarAsync(Comando("RP"));
             Assert.False(string.IsNullOrWhiteSpace(folio));
 
             // Segundo guardado con el mismo folio (actualización)
-            var folioActualizado = await repo.GuardarAsync(
+            var (folioActualizado, _, _) = await repo.GuardarAsync(
                 Comando("RP", folio: folio, total: 150m, montoNeto: 150m));
 
             Assert.True(folioActualizado == folio,
@@ -137,7 +138,7 @@ namespace ComprobantePago.Tests.HU02
         {
             var (repo, db) = Construir(nameof(GuardarManual_PersisteDatosDeMontos));
 
-            var folio = await repo.GuardarAsync(
+            var (folio, _, _) = await repo.GuardarAsync(
                 Comando("RP", montoNeto: 250m, igv: 45m, total: 295m));
 
             var registrado = db.Comprobantes.FirstOrDefault(c => c.Folio == folio);
@@ -153,7 +154,7 @@ namespace ComprobantePago.Tests.HU02
             var db  = DbContextFactory.Crear(nameof(GuardarManual_RegistraUsuarioYFechaDigitacion));
             var uow = new TestUnitOfWork(db);
 
-            var usuario = new Mock<ComprobantePago.Application.Interfaces.IUsuarioContexto>();
+            var usuario = new Mock<IUsuarioContexto>();
             usuario.Setup(u => u.Correo).Returns("operador@tecsur.com.pe");
 
             var repo = new ComprobanteRepository(
@@ -163,7 +164,7 @@ namespace ComprobantePago.Tests.HU02
                 usuario.Object,
                 NullLogger<ComprobanteRepository>.Instance);
 
-            var folio      = await repo.GuardarAsync(Comando("RP"));
+            var (folio, _, _) = await repo.GuardarAsync(Comando("RP"));
             var registrado = db.Comprobantes.FirstOrDefault(c => c.Folio == folio);
 
             Assert.NotNull(registrado);
@@ -176,7 +177,7 @@ namespace ComprobantePago.Tests.HU02
         {
             var (repo, db) = Construir(nameof(GuardarManual_EstadoInicialEsRegistrado));
 
-            var folio      = await repo.GuardarAsync(Comando("RP"));
+            var (folio, _, _) = await repo.GuardarAsync(Comando("RP"));
             var registrado = db.Comprobantes.FirstOrDefault(c => c.Folio == folio);
 
             Assert.NotNull(registrado);

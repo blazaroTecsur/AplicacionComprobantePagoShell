@@ -20,5 +20,20 @@ namespace ComprobantePago.Application.Exceptions
             Code         = code;
             StatusCode   = statusCode;
         }
+        public class NotFoundException : AppException
+        {
+            public NotFoundException(string resource)
+                : base("NOT_FOUND", $"El recurso '{resource}' no fue encontrado.", 404) { }
+        }
+        public class BusinessException : AppException
+        {
+            public BusinessException(string code, string userMessage)
+                : base(code, userMessage, 400) { }
+        }
+        public class UnauthorizedException : AppException
+        {
+            public UnauthorizedException()
+                : base("UNAUTHORIZED", "No tienes permisos para realizar esta acción.", 401) { }
+        }
     }
 }

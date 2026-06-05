@@ -1,7 +1,11 @@
 using ComprobantePago.Application.DTOs.Infor;
 using ComprobantePago.Application.DTOs.Responses;
 using ComprobantePago.Application.Interfaces.Services;
-using ComprobantePago.Application.Settings;
+using ComprobantePago.Infrastructure.Persistence;
+using Infor.Abstractions.DTOs;
+using Infor.Abstractions.Interfaces;
+using Infor.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
@@ -13,18 +17,21 @@ namespace ComprobantePago.Infrastructure.Services
     /// </summary>
     public sealed class SytelineEnvioService : ISytelineEnvioService
     {
-        private readonly ISytelineIdoService             _ido;
+        private readonly IInforIdoService                _ido;
         private readonly InforSettings                   _settings;
         private readonly ILogger<SytelineEnvioService>  _logger;
+        private readonly AppDbContext                    _contexto;
 
         public SytelineEnvioService(
-            ISytelineIdoService            ido,
+            IInforIdoService               ido,
             IOptions<InforSettings>        settings,
-            ILogger<SytelineEnvioService>  logger)
+            ILogger<SytelineEnvioService>  logger,
+            AppDbContext                   contexto)
         {
             _ido      = ido;
             _settings = settings.Value;
             _logger   = logger;
+            _contexto = contexto;
         }
 
         // ── Insertar una cabecera ─────────────────────────────────────────────
@@ -33,35 +40,36 @@ namespace ComprobantePago.Infrastructure.Services
             SytelineCabeceraDto cabecera,
             CancellationToken ct = default)
         {
-            // Validar que el proveedor tenga VendNum asignado
-            var vendNum = cabecera.VendNum.PadLeft(7);
+            var vendNum = FormatearVendNum(cabecera.VendNum);
             if (string.IsNullOrWhiteSpace(vendNum.Trim()) || vendNum.Trim() == "0")
                 throw new InvalidOperationException(
                     $"El proveedor del comprobante '{cabecera.Factura}' no tiene VendNum " +
                     $"asignado en el maestro de proveedores (IdProveedorExternal = 0 o vacío). " +
                     $"Sincronice el maestro de proveedores con Syteline antes de enviar.");
 
-            // Obtener el siguiente número de voucher disponible en Syteline
-            var voucher  = await ObtenerSiguienteVoucherAsync(ct);
-            var dto      = MapearCabecera(cabecera, voucher);
+            // Syteline asigna el Voucher automáticamente cuando se envía -1
+            var dto      = MapearCabecera(cabecera);
             var propList = ConstruirPropiedades(dto);
 
             _logger.LogInformation(
-                "Enviando comprobante {InvNum} de proveedor {VendNum} a SLAptrxs con Voucher {Voucher}...",
-                dto.InvNum, dto.VendNum, voucher);
+                "Enviando comprobante {InvNum} de proveedor {VendNum} a SLAptrxs...",
+                dto.InvNum, dto.VendNum);
 
             var respuesta = await _ido.InsertItemAsync("SLAptrxs", propList,
-                refresh: "PROPS", props: "Voucher", ct: ct);
+                refreshAfterSave: true, ct: ct);
 
-            var voucherConfirmado = ExtraerVoucher(respuesta);
-            var itemId            = ExtraerItemId(respuesta);
-            var finalVoucher      = voucherConfirmado > 0 ? voucherConfirmado : voucher;
+            var voucher = ExtraerVoucher(respuesta);
+            var itemId  = ExtraerItemId(respuesta);
+
+            if (voucher == 0)
+                throw new InvalidOperationException(
+                    $"Syteline no devolvió el Voucher asignado para el comprobante '{cabecera.Factura}'.");
 
             _logger.LogInformation(
                 "Comprobante {InvNum} insertado en SLAptrxs. Voucher: {Voucher} ItemId: {ItemId}",
-                dto.InvNum, finalVoucher, itemId);
+                dto.InvNum, voucher, itemId);
 
-            return (finalVoucher, itemId);
+            return (voucher, itemId);
         }
 
         // ── Insertar múltiples cabeceras ──────────────────────────────────────
@@ -112,6 +120,14 @@ namespace ComprobantePago.Infrastructure.Services
 
         public async Task<int> ObtenerSiguienteVoucherAsync(CancellationToken ct = default)
         {
+            // MAX de VoucherSyteline en nuestra BD (cubre vouchers ya asentados/derivados
+            // que desaparecen de SLAptrxs al ser contabilizados en Syteline)
+            var maxLocal = await _contexto.Comprobantes
+                .Where(c => c.VoucherSyteline != null && c.VoucherSyteline > 0)
+                .MaxAsync(c => (int?)c.VoucherSyteline, ct) ?? 0;
+
+            // MAX de Voucher en SLAptrxs (pendientes de asentar en Syteline)
+            int maxSyteline = 0;
             try
             {
                 var resultado = await _ido.LoadAsync(
@@ -119,22 +135,21 @@ namespace ComprobantePago.Infrastructure.Services
                     props:     "Voucher",
                     orderBy:   "Voucher DESC",
                     recordCap: 1,
-                    adv:       true,
                     ct:        ct);
 
                 _logger.LogInformation("SLAptrxs MaxVoucher: {Body}", resultado.GetRawText());
-
-                var max = ExtraerVoucherDeItems(resultado);
-                var siguiente = max + 1;
-
-                _logger.LogInformation("Próximo Voucher a usar: {Voucher}", siguiente);
-                return siguiente;
+                maxSyteline = ExtraerVoucherDeItems(resultado);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "No se pudo obtener el último Voucher de SLAptrxs. Se usará 1.");
-                return 1;
+                _logger.LogWarning(ex, "No se pudo consultar SLAptrxs para el MAX Voucher; se usará el registro local.");
             }
+
+            var siguiente = Math.Max(maxLocal, maxSyteline) + 1;
+            _logger.LogInformation(
+                "Próximo Voucher: {Voucher} (maxLocal={Local}, maxSyteline={Syteline})",
+                siguiente, maxLocal, maxSyteline);
+            return siguiente;
         }
 
         // ── Insertar distribución (SLAptrxds) ─────────────────────────────────
@@ -146,7 +161,7 @@ namespace ComprobantePago.Infrastructure.Services
             CancellationToken ct = default)
         {
             var lista   = lineas.OrderBy(l => l.SecDist).ToList();
-            var vendNum = cabecera.VendNum.PadLeft(7);
+            var vendNum = FormatearVendNum(cabecera.VendNum);
             var distSeq = 5;
 
             if (lista.Count == 0)
@@ -155,9 +170,13 @@ namespace ComprobantePago.Infrastructure.Services
                 return;
             }
 
-            var lineaIgv    = lista.FirstOrDefault(l => l.CodImp == "IGV18");
+            var lineaIgv    = lista.FirstOrDefault(l => l.CodImp.StartsWith("IGV"));
             var lineaExento = lista.FirstOrDefault(l => l.CodImp == "EXO");
             var expenseLines = lista.Where(l => l.EsLineaPrincipal).ToList();
+
+            // En modo fraccionado las líneas EXENTO ya se envían como expense lines;
+            // no agregar una línea EXO separada que las duplicaría.
+            bool exentoYaComoExpense = expenseLines.Any(l => l.CodImp == "EXO");
 
             // 1. Líneas de gasto (una por cada imputación principal)
             foreach (var linea in expenseLines)
@@ -169,9 +188,12 @@ namespace ComprobantePago.Infrastructure.Services
                     DistSeq     = distSeq,
                     Acct        = linea.CuentaContable[..Math.Min(12, linea.CuentaContable.Length)],
                     AcctUnit1   = linea.CodUnidad1.Length > 0 ? linea.CodUnidad1[..Math.Min(4, linea.CodUnidad1.Length)] : "",
+                    AcctUnit2   = linea.CodUnidad2.Length > 0 ? linea.CodUnidad2[..Math.Min(4, linea.CodUnidad2.Length)] : "",
                     AcctUnit3   = linea.CodUnidad3.Length > 0 ? linea.CodUnidad3[..Math.Min(4, linea.CodUnidad3.Length)] : "",
                     AcctUnit4   = linea.CodUnidad4.Length > 0 ? linea.CodUnidad4[..Math.Min(4, linea.CodUnidad4.Length)] : "",
                     Amount      = linea.Importe,
+                    TaxSystem   = linea.CodImp == "EXO" ? "1" : "",
+                    TaxCode     = linea.CodImp == "EXO" ? "EXENTO" : "",
                     DIOTTransType      = linea.EsEmpleado ? "1" : "0",
                     TaxRegNum          = linea.EsEmpleado && linea.NumRegFiscal.Length > 0 ? linea.NumRegFiscal[..Math.Min(25, linea.NumRegFiscal.Length)] : "",
                     TaxRegNumType      = linea.EsEmpleado && !string.IsNullOrEmpty(linea.NumRegFiscal) ? "T" : "",
@@ -197,12 +219,14 @@ namespace ComprobantePago.Infrastructure.Services
                     DistSeq   = distSeq,
                     Acct      = lineaIgv.CuentaContable[..Math.Min(12, lineaIgv.CuentaContable.Length)],
                     AcctUnit1 = lineaIgv.CodUnidad1.Length > 0 ? lineaIgv.CodUnidad1[..Math.Min(4, lineaIgv.CodUnidad1.Length)] : "",
+                    AcctUnit2 = lineaIgv.CodUnidad2.Length > 0 ? lineaIgv.CodUnidad2[..Math.Min(4, lineaIgv.CodUnidad2.Length)] : "",
                     AcctUnit3 = lineaIgv.CodUnidad3.Length > 0 ? lineaIgv.CodUnidad3[..Math.Min(4, lineaIgv.CodUnidad3.Length)] : "",
                     AcctUnit4 = lineaIgv.CodUnidad4.Length > 0 ? lineaIgv.CodUnidad4[..Math.Min(4, lineaIgv.CodUnidad4.Length)] : "",
                     Amount    = lineaIgv.Importe,
                     TaxBasis  = lineaIgv.BaseImp,
-                    TaxCode   = "IGV18",
+                    TaxCode   = lineaIgv.CodImp,
                     TaxSystem = "2",
+                    aptZLA_TipoDocumento = lineaIgv.TipoDoc.Length > 0 ? lineaIgv.TipoDoc[..Math.Min(2, lineaIgv.TipoDoc.Length)] : "",
                 };
                 _logger.LogInformation("IDO SLAptrxds IGV → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
                     voucher, distSeq, dto.Amount);
@@ -210,8 +234,8 @@ namespace ComprobantePago.Infrastructure.Services
                 distSeq += 5;
             }
 
-            // 4. Línea exento
-            if (lineaExento != null)
+            // 4. Línea exento (solo si no fue enviada ya como expense line en modo fraccionado)
+            if (lineaExento != null && !exentoYaComoExpense)
             {
                 var dto = new SLAptrxdsInsertDto
                 {
@@ -220,10 +244,13 @@ namespace ComprobantePago.Infrastructure.Services
                     DistSeq  = distSeq,
                     Acct     = lineaExento.CuentaContable[..Math.Min(12, lineaExento.CuentaContable.Length)],
                     AcctUnit1 = lineaExento.CodUnidad1.Length > 0 ? lineaExento.CodUnidad1[..Math.Min(4, lineaExento.CodUnidad1.Length)] : "",
+                    AcctUnit2 = lineaExento.CodUnidad2.Length > 0 ? lineaExento.CodUnidad2[..Math.Min(4, lineaExento.CodUnidad2.Length)] : "",
                     AcctUnit3 = lineaExento.CodUnidad3.Length > 0 ? lineaExento.CodUnidad3[..Math.Min(4, lineaExento.CodUnidad3.Length)] : "",
                     AcctUnit4 = lineaExento.CodUnidad4.Length > 0 ? lineaExento.CodUnidad4[..Math.Min(4, lineaExento.CodUnidad4.Length)] : "",
                     Amount    = lineaExento.Importe,
-                    TaxCodeE  = "EXE",
+                    TaxSystem = "1",
+                    TaxCode   = "EXENTO",
+                    aptZLA_TipoDocumento = lineaExento.TipoDoc.Length > 0 ? lineaExento.TipoDoc[..Math.Min(2, lineaExento.TipoDoc.Length)] : "",
                 };
                 _logger.LogInformation("IDO SLAptrxds Exento → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
                     voucher, distSeq, dto.Amount);
@@ -233,14 +260,13 @@ namespace ComprobantePago.Infrastructure.Services
 
         // ── Mapeo SytelineCabeceraDto → SLAptrxsInsertDto ────────────────────
 
-        private SLAptrxsInsertDto MapearCabecera(SytelineCabeceraDto c, int voucher) => new()
+        private SLAptrxsInsertDto MapearCabecera(SytelineCabeceraDto c) => new()
         {
             // "V" para facturas y demás; vacío para NC/ND (07/08) — se omite al filtrar
             Type = c.TipoSunat is "07" or "08" ? "" : "V",
 
-            // VendNum: longitud fija de 7 caracteres, rellenado con espacios a la izquierda
-            VendNum  = c.VendNum.PadLeft(7),
-            Voucher  = voucher,
+            VendNum  = FormatearVendNum(c.VendNum),
+            Voucher  = -1,  // Syteline asigna el siguiente disponible y lo devuelve en RefreshItems
             InvDate  = c.FechaFactura,
             DistDate = c.FechaDistribucion,
             UbToSite = _settings.Site,
@@ -266,6 +292,7 @@ namespace ComprobantePago.Infrastructure.Services
             // Cuenta A/P
             ApAcct      = c.CtaCP[..Math.Min(12, c.CtaCP.Length)],
             ApAcctUnit1 = c.CtaCPUnid1[..Math.Min(4, c.CtaCPUnid1.Length)],
+            ApAcctUnit2 = c.CtaCPUnid2[..Math.Min(4, c.CtaCPUnid2.Length)],
             ApAcctUnit3 = c.CtaCPUnid3[..Math.Min(4, c.CtaCPUnid3.Length)],
             ApAcctUnit4 = c.CtaCPUnid4[..Math.Min(4, c.CtaCPUnid4.Length)],
 
@@ -275,7 +302,7 @@ namespace ComprobantePago.Infrastructure.Services
             Authorizer = c.Autorizo[..Math.Min(128, c.Autorizo.Length)],
 
             // Impuesto: EXE cuando no hay IGV o hay monto exento; NR en caso contrario
-            TaxCode1   = (c.ImpVentas2 == 0 || c.MontoExento > 0) ? "EXE" : "NR",
+            TaxCode1   = (c.ImpVentas2 == 0 || c.MontoExento > 0) ? "EXENTO" : "NAR",
             AuthStatus = "F",
 
             // Folio de origen
@@ -288,6 +315,15 @@ namespace ComprobantePago.Infrastructure.Services
             aptZLA_TotalDetraccion      = c.TotalDetraccion,
             aptZLA_TotalDetraccionLocal = c.TotalDetLocal,
         };
+
+        // ── Formatear VendNum ─────────────────────────────────────────────────
+        // Numérico → relleno con espacios a la izquierda hasta 7 chars (legacy Syteline).
+        // Alfanumérico → sin espacios.
+        private static string FormatearVendNum(string vendNum)
+        {
+            var v = vendNum.Trim();
+            return v.All(char.IsDigit) ? v.PadLeft(7) : v;
+        }
 
         // ── Construir lista de IdoProperty ───────────────────────────────────
         // Todos los campos se envían con IsNull=false.
@@ -323,12 +359,11 @@ namespace ComprobantePago.Infrastructure.Services
             _          => valor.ToString() ?? ""
         };
 
-        // ── Extraer Voucher del response de additem ───────────────────────────
-        // /additem/adv devuelve UpdatedItems[0].Properties[] con Name/Value.
+        // ── Extraer Voucher del response de update (v2: RefreshItems) ───────────
 
         private static int ExtraerVoucher(JsonElement respuesta)
         {
-            if (respuesta.TryGetProperty("UpdatedItems", out var items) &&
+            if (respuesta.TryGetProperty("RefreshItems", out var items) &&
                 items.GetArrayLength() > 0)
             {
                 var item = items[0];
@@ -351,21 +386,20 @@ namespace ComprobantePago.Infrastructure.Services
             return 0;
         }
 
-        // ── Extraer ItemId del response de additem ────────────────────────────
+        // ── Extraer ItemId del response de update (v2: RefreshItems) ─────────
 
         private static string ExtraerItemId(JsonElement respuesta)
         {
-            if (respuesta.TryGetProperty("UpdatedItems", out var items) &&
+            if (respuesta.TryGetProperty("RefreshItems", out var items) &&
                 items.GetArrayLength() > 0 &&
-                items[0].TryGetProperty("ItemID", out var itemId))
+                items[0].TryGetProperty("ItemId", out var itemId))
             {
                 return itemId.GetString() ?? string.Empty;
             }
             return string.Empty;
         }
 
-        // ── Extraer Voucher del response de LoadCollection (/adv) ─────────────
-        // Items[n] es un array de {Name, Value} — tomamos el primero (orderBy DESC).
+        // ── Extraer Voucher del response de LoadCollection (v2: Items con claves directas) ──
 
         private static int ExtraerVoucherDeItems(JsonElement resultado)
         {
@@ -373,23 +407,7 @@ namespace ComprobantePago.Infrastructure.Services
                 return 0;
 
             var firstItem = items[0];
-
-            // Formato /adv: Items[0] es array de {Name, Value}
-            if (firstItem.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var prop in firstItem.EnumerateArray())
-                {
-                    if (prop.TryGetProperty("Name",  out var name) &&
-                        name.GetString() == "Voucher"              &&
-                        prop.TryGetProperty("Value", out var value) &&
-                        int.TryParse(value.GetString(), out var v))
-                    {
-                        return v;
-                    }
-                }
-            }
-            // Formato sin /adv: Items[0] es objeto con claves directas
-            else if (firstItem.TryGetProperty("Voucher", out var vp))
+            if (firstItem.TryGetProperty("Voucher", out var vp))
             {
                 if (vp.ValueKind == JsonValueKind.Number && vp.TryGetInt32(out var vi)) return vi;
                 if (vp.ValueKind == JsonValueKind.String && int.TryParse(vp.GetString(), out var vs)) return vs;

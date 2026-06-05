@@ -1,4 +1,4 @@
-using ComprobantePago.Application.Interfaces.Services;
+using Infor.Abstractions.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,11 +13,11 @@ namespace ComprobantePago.Web.Controllers
     [ApiController]
     public class InforDiagnosticoController : ControllerBase
     {
-        private readonly ISytelineIdoService _ido;
+        private readonly IInforIdoService _ido;
         private readonly IWebHostEnvironment _env;
 
         public InforDiagnosticoController(
-            ISytelineIdoService ido,
+            IInforIdoService ido,
             IWebHostEnvironment env)
         {
             _ido = ido;

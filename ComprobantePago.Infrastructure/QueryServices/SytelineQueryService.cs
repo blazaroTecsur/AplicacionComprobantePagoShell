@@ -1,5 +1,6 @@
 using ComprobantePago.Application.DTOs.Responses;
 using ComprobantePago.Application.Interfaces.QueryServices;
+using ComprobantePago.Domain.Entities;
 using ComprobantePago.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -27,30 +28,17 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 .OrderBy(x => x.FechaAprobacion)
                 .ToListAsync();
 
-            // Índice RUC → IdProveedorExternal para resolver VendNum de proveedores
+            // Índice RUC → IdProveedorExternal para todos (proveedores y empleados).
+            // Empleados se identifican por EmpleadoCodigo (= Ruc en tmaproveedor, TipoPersona = "1").
             var rucs = comprobantes
-                .Where(c => !c.EsEmpleado)
-                .Select(c => c.RucReceptor)
+                .Select(c => c.EsEmpleado ? (c.EmpleadoCodigo ?? string.Empty) : c.RucReceptor)
+                .Where(r => !string.IsNullOrEmpty(r))
                 .Distinct()
                 .ToList();
 
             var vendNums = await _contexto.Proveedores
-                .Where(p => rucs.Contains(p.Ruc))
-                .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal.ToString());
-
-            // Índice Codigo → IdEmpleadoExternal para resolver VendNum de empleados
-            var empleadoCodigos = comprobantes
-                .Where(c => c.EsEmpleado && c.EmpleadoCodigo != null)
-                .Select(c => c.EmpleadoCodigo!)
-                .Distinct()
-                .ToList();
-
-            var empleadoExternals = empleadoCodigos.Count > 0
-                ? await _contexto.Empleados
-                    .Where(e => empleadoCodigos.Contains(e.Codigo)
-                             && !string.IsNullOrEmpty(e.IdEmpleadoExternal))
-                    .ToDictionaryAsync(e => e.Codigo, e => e.IdEmpleadoExternal)
-                : new Dictionary<string, string>();
+                .Where(p => rucs.Contains(p.Ruc) && !string.IsNullOrEmpty(p.IdProveedorExternal))
+                .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal!);
 
             var result = new List<SytelineCabeceraDto>();
 
@@ -71,13 +59,8 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 // VendNum: empleados → IdEmpleadoExternal de tmaempleado;
                 // proveedores → IdProveedorExternal de tmaproveedor (0 = no sincronizado,
                 // se devuelve vacío para que el envío falle con mensaje claro).
-                var vendNum = c.EsEmpleado
-                    ? (c.EmpleadoCodigo != null &&
-                       empleadoExternals.TryGetValue(c.EmpleadoCodigo, out var extId)
-                           ? extId : string.Empty)
-                    : vendNums.TryGetValue(c.RucReceptor, out var vn) && vn != "0"
-                        ? vn
-                        : string.Empty;
+                var rucLookup = c.EsEmpleado ? (c.EmpleadoCodigo ?? string.Empty) : c.RucReceptor;
+                var vendNum = vendNums.TryGetValue(rucLookup, out var vn) ? vn : string.Empty;
 
                 result.Add(new SytelineCabeceraDto
                 {
@@ -113,7 +96,8 @@ namespace ComprobantePago.Infrastructure.QueryServices
                                         ?? string.Empty,
                     CtaCPUnid1 = primeraImp?.CodUnidad1Cuenta
                                         ?? string.Empty,
-                    CtaCPUnid2 = string.Empty,
+                    CtaCPUnid2 = primeraImp?.CodUnidad2Cuenta
+                                        ?? string.Empty,
                     CtaCPUnid3 = primeraImp?.CodUnidad3Cuenta
                                         ?? string.Empty,
                     CtaCPUnid4 = primeraImp?.CodUnidad4Cuenta
@@ -169,8 +153,8 @@ namespace ComprobantePago.Infrastructure.QueryServices
 
             var empleadoVendNums = empleadoRucs.Count > 0
                 ? await _contexto.Proveedores
-                    .Where(p => empleadoRucs.Contains(p.Ruc) && p.IdProveedorExternal != 0)
-                    .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal.ToString())
+                    .Where(p => empleadoRucs.Contains(p.Ruc) && !string.IsNullOrEmpty(p.IdProveedorExternal))
+                    .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal!)
                 : new Dictionary<string, string>();
 
             var resultado = new List<SytelineDistribucionDto>();
@@ -184,55 +168,61 @@ namespace ComprobantePago.Infrastructure.QueryServices
 
                 if (!imputaciones.Any()) continue;
 
-                var tieneExento = c.MontoExento > 0;
-                var cantDist    = tieneExento ? 3 : 2;
+                var imputacionesDistribucion = imputaciones.Skip(1).ToList();
+                if (!imputacionesDistribucion.Any()) continue;
 
-                var imputacionesDistribucion = imputaciones.Skip(1).Take(cantDist).ToList();
-                if (imputacionesDistribucion.Count < 2) continue;
+                // Líneas de distribución:
+                // Si las imputaciones tienen TipoLinea (RP fraccionado), cada imputación
+                // es una línea independiente con su propio monto (leído de rcoimputacioncontable).
+                // Si no, se construyen desde los montos del comprobante (flujo normal).
+                bool esFraccionado = imputacionesDistribucion.Any(i => i.TipoLinea != null);
+
+                var distLines = new List<(string sistImpst, string codImp, string descCodImp, decimal baseImp, decimal importe, ImputacionContable imp)>();
+
+                if (esFraccionado)
+                {
+                    var codIgv  = c.PorcentajeIGV == 10 ? "IGV 10" : "IGV18";
+                    var descIgv = c.PorcentajeIGV == 10 ? "IGV 10%" : "IGV 18%";
+                    foreach (var imp in imputacionesDistribucion)
+                    {
+                        var (sist, cod, desc, baseImp) = imp.TipoLinea switch
+                        {
+                            "IGV"    => ("2", codIgv,  descIgv,  c.MontoNeto),
+                            "EXENTO" => ("",  "EXO",   "Exento",  imp.Monto),
+                            _        => ("",  "",      "",        0m)
+                        };
+                        distLines.Add((sist, cod, desc, baseImp, imp.Monto, imp));
+                    }
+                }
+                else
+                {
+                    // Flujo normal: montos desde el comprobante, cuentas desde imputaciones por posición
+                    var codIgv  = c.PorcentajeIGV == 10 ? "IGV 10" : "IGV18";
+                    var descIgv = c.PorcentajeIGV == 10 ? "IGV 10%" : "IGV 18%";
+                    var montoLines = new List<(string sistImpst, string codImp, string descCodImp, decimal baseImp, decimal importe)>();
+                    if (c.MontoNeto > 0)
+                        montoLines.Add(("", "", "", 0, c.MontoNeto));
+                    if (c.MontoIGVCredito > 0)
+                        montoLines.Add(("2", codIgv, descIgv, c.MontoNeto, c.MontoIGVCredito));
+                    if (c.MontoExento > 0)
+                        montoLines.Add(("", "EXO", "Exento", c.MontoExento, c.MontoExento));
+
+                    var totalLineas = Math.Min(montoLines.Count, imputacionesDistribucion.Count);
+                    for (int i = 0; i < totalLineas; i++)
+                        distLines.Add((montoLines[i].sistImpst, montoLines[i].codImp, montoLines[i].descCodImp,
+                                       montoLines[i].baseImp,   montoLines[i].importe, imputacionesDistribucion[i]));
+                }
+
+                if (!distLines.Any()) continue;
 
                 var fechaDist = c.FechaRecepcion.HasValue
                     ? c.FechaRecepcion.Value.ToString("dd/MM/yyyy")
                     : c.FechaEmision.ToString("dd/MM/yyyy");
 
-                for (int idx = 0; idx < imputacionesDistribucion.Count; idx++)
+                for (int idx = 0; idx < distLines.Count; idx++)
                 {
-                    var imp = imputacionesDistribucion[idx];
+                    var (sistImpst, codImp, descCodImp, baseImp, importe, imp) = distLines[idx];
                     int secDist = (idx + 1) * 5;
-
-                    string sistImpst, codImp, descCodImp;
-                    decimal baseImp, importe;
-
-                    switch (idx)
-                    {
-                        case 0:
-                            sistImpst  = string.Empty;
-                            codImp     = string.Empty;
-                            descCodImp = string.Empty;
-                            baseImp    = 0;
-                            importe    = c.MontoNeto;
-                            break;
-                        case 1:
-                            sistImpst  = "2";
-                            codImp     = "IGV18";
-                            descCodImp = "IGV 18%";
-                            baseImp    = c.MontoNeto;
-                            importe    = c.MontoIGVCredito;
-                            break;
-                        case 2:
-                            sistImpst  = string.Empty;
-                            codImp     = "EXO";
-                            descCodImp = "Exento";
-                            baseImp    = c.MontoExento;
-                            importe    = c.MontoExento;
-                            break;
-                        default:
-                            sistImpst  = string.Empty;
-                            codImp     = string.Empty;
-                            descCodImp = string.Empty;
-                            baseImp    = 0;
-                            importe    = imp.Monto;
-                            break;
-                    }
 
                     var proveedorExport = c.EsEmpleado ? (c.EmpleadoCodigo ?? string.Empty) : c.RucReceptor;
                     var nombreExport    = c.EsEmpleado ? (c.EmpleadoNombre ?? string.Empty) : c.RazonSocialReceptor;
@@ -286,9 +276,14 @@ namespace ComprobantePago.Infrastructure.QueryServices
                         CuentaContable    = imp.CuentaContable ?? string.Empty,
                         DescripcionCuenta = imp.DescripcionCuenta ?? string.Empty,
                         CodUnidad1        = imp.CodUnidad1Cuenta ?? string.Empty,
+                        CodUnidad2        = imp.CodUnidad2Cuenta ?? string.Empty,
                         CodUnidad3        = imp.CodUnidad3Cuenta ?? string.Empty,
                         CodUnidad4        = imp.CodUnidad4Cuenta ?? string.Empty,
-                        EsLineaPrincipal     = idx == 0,
+                        // Fraccionado: todas las líneas GRAVADO/EXENTO son líneas de gasto;
+                        // solo IGV queda fuera. Normal: solo la primera línea GRAVADO (idx=0,
+                        // codImp vacío) es línea de gasto; IGV y EXENTO se envían por separado.
+                        EsLineaPrincipal     = esFraccionado ? !codImp.StartsWith("IGV")
+                                                             : (idx == 0 && codImp != "EXO"),
                         EsEmpleado           = c.EsEmpleado,
                         TipoDoc              = c.TipoSunat,
                         AptZCO_APD_VendNum   = aptZCO,

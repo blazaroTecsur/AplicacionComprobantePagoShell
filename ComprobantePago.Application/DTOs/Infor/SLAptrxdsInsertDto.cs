@@ -25,6 +25,9 @@ namespace ComprobantePago.Application.DTOs.Infor
         /// <summary>Unidad de análisis 1 (max 4). Campo AcctUnit1.</summary>
         public string AcctUnit1 { get; init; } = string.Empty;
 
+        /// <summary>Unidad de análisis 2 (max 4). Campo AcctUnit2.</summary>
+        public string AcctUnit2 { get; init; } = string.Empty;
+
         /// <summary>Unidad de análisis 3 (max 4). Campo AcctUnit3.</summary>
         public string AcctUnit3 { get; init; } = string.Empty;
 

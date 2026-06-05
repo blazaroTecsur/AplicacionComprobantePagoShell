@@ -360,8 +360,8 @@ namespace ComprobantePago.Infrastructure.Services
                 ws.Cell(row, col++).Value = d.DescripcionCuenta;
                 // 26-Unidad1
                 ws.Cell(row, col++).Value = d.CodUnidad1;
-                // 27-Unid2 (fijo)
-                ws.Cell(row, col++).Value = "";
+                // 27-Unid2
+                ws.Cell(row, col++).Value = d.CodUnidad2;
                 // 28-Unidad3
                 ws.Cell(row, col++).Value = d.CodUnidad3;
                 // 29-Unidad4

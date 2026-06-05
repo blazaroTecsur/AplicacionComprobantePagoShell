@@ -25,7 +25,8 @@ namespace ComprobantePago.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Ruc).HasMaxLength(20).IsRequired();
             builder.Property(x => x.UsuarioReg).HasMaxLength(30);
             builder.Property(x => x.UsuarioAct).HasMaxLength(30);
-            builder.HasIndex(x => x.IdProveedorExternal).IsUnique();
+            builder.Property(x => x.IdProveedorExternal).HasMaxLength(20);
+            builder.HasIndex(x => x.IdProveedorExternal);
         }
     }
 }
