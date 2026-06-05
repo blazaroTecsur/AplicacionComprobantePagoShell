@@ -11,7 +11,9 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
     {
         public async Task<IEnumerable<ComboDto>> ObtenerCodigosUnidadAsync(int unidad, string filtro = "")
         {
-            var result = await maestros.GetByUnidadAsync(unidad, usuario.Empresa, filtro, 1, 100);
+            // Unidad 4 es global — sin filtro de empresa (igual que DbCatalogoUnidadService)
+            var empresa = unidad == 4 ? string.Empty : usuario.Empresa;
+            var result  = await maestros.GetByUnidadAsync(unidad, empresa, filtro, 1, 100);
             return result.Items.Select(c => new ComboDto
             {
                 Codigo      = c.Codigo,

@@ -9,11 +9,13 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
         public async Task<IEnumerable<ComboDto>> ObtenerProveedoresAsync(string filtro = "")
         {
             var result = await maestros.GetAllAsync(filtro, 1, 100);
-            return result.Items.Select(p => new ComboDto
-            {
-                Codigo      = p.Ruc,
-                Descripcion = p.NombreProveedor,
-            });
+            return result.Items
+                .Where(p => p.Estado.ToUpper() != "INACTIVO")
+                .Select(p => new ComboDto
+                {
+                    Codigo      = p.Ruc,
+                    Descripcion = $"{p.Ruc} - {p.NombreProveedor}",
+                });
         }
     }
 }
