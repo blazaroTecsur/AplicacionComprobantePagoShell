@@ -193,7 +193,7 @@ namespace ComprobantePago.Infrastructure.Services
                     AcctUnit4   = linea.CodUnidad4.Length > 0 ? linea.CodUnidad4[..Math.Min(4, linea.CodUnidad4.Length)] : "",
                     Amount      = linea.Importe,
                     TaxSystem   = linea.CodImp == "EXO" ? "1" : "",
-                    TaxCode     = linea.CodImp == "EXO" ? "EXE" : "",
+                    TaxCode     = linea.CodImp == "EXO" ? "EXENTO" : "",
                     DIOTTransType      = linea.EsEmpleado ? "1" : "0",
                     TaxRegNum          = linea.EsEmpleado && linea.NumRegFiscal.Length > 0 ? linea.NumRegFiscal[..Math.Min(25, linea.NumRegFiscal.Length)] : "",
                     TaxRegNumType      = linea.EsEmpleado && !string.IsNullOrEmpty(linea.NumRegFiscal) ? "T" : "",
@@ -249,7 +249,7 @@ namespace ComprobantePago.Infrastructure.Services
                     AcctUnit4 = lineaExento.CodUnidad4.Length > 0 ? lineaExento.CodUnidad4[..Math.Min(4, lineaExento.CodUnidad4.Length)] : "",
                     Amount    = lineaExento.Importe,
                     TaxSystem = "1",
-                    TaxCode   = "EXE",
+                    TaxCode   = "EXENTO",
                     aptZLA_TipoDocumento = lineaExento.TipoDoc.Length > 0 ? lineaExento.TipoDoc[..Math.Min(2, lineaExento.TipoDoc.Length)] : "",
                 };
                 _logger.LogInformation("IDO SLAptrxds Exento → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
@@ -302,7 +302,7 @@ namespace ComprobantePago.Infrastructure.Services
             Authorizer = c.Autorizo[..Math.Min(128, c.Autorizo.Length)],
 
             // Impuesto: EXE cuando no hay IGV o hay monto exento; NR en caso contrario
-            TaxCode1   = (c.ImpVentas2 == 0 || c.MontoExento > 0) ? "EXE" : "NR",
+            TaxCode1   = (c.ImpVentas2 == 0 || c.MontoExento > 0) ? "EXENTO" : "NAR",
             AuthStatus = "F",
 
             // Folio de origen
