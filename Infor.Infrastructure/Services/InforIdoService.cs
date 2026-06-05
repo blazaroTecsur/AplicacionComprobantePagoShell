@@ -101,8 +101,9 @@ namespace Infor.Infrastructure.Services
         {
             var body = new
             {
-                IDOName = ido,
-                Changes = new[]
+                IDOName          = ido,
+                RefreshAfterSave = refreshAfterSave,
+                Changes          = new[]
                 {
                     new
                     {
