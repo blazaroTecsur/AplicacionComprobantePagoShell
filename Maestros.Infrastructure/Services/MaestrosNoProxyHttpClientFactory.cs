@@ -6,7 +6,7 @@ namespace Maestros.Infrastructure.Services
     {
         public HttpClient GetHttpClient()
         {
-            var handler = new HttpClientHandler { UseProxy = false, Proxy = null };
+            var handler = new HttpClientHandler();
             return new HttpClient(handler);
         }
     }
