@@ -101,9 +101,8 @@ namespace Infor.Infrastructure.Services
         {
             var body = new
             {
-                IDOName          = ido,
-                RefreshAfterSave = refreshAfterSave,
-                Changes          = new[]
+                IDOName = ido,
+                Changes = new[]
                 {
                     new
                     {
@@ -114,6 +113,7 @@ namespace Infor.Infrastructure.Services
             };
 
             var url = $"{_settings.IdoBaseUrl}update/{Uri.EscapeDataString(ido)}";
+            if (refreshAfterSave) url += "?refresh=true";
             return await EjecutarPostAsync(url, body, ct);
         }
 
