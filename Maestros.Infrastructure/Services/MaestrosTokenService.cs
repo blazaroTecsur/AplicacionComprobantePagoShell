@@ -23,6 +23,15 @@ namespace Maestros.Infrastructure.Services
 
         public async Task<string> GetTokenAsync()
         {
+            if (string.IsNullOrWhiteSpace(_settings.Auth.ClientId) ||
+                string.IsNullOrWhiteSpace(_settings.Auth.ClientSecret))
+            {
+                _logger.LogError(
+                    "Maestros Auth no configurado — ClientId o ClientSecret vacíos en ApiMaestros:Auth");
+                throw new InvalidOperationException(
+                    "ApiMaestros:Auth:ClientId y ClientSecret deben estar configurados.");
+            }
+
             _app ??= ConfidentialClientApplicationBuilder
                 .Create(_settings.Auth.ClientId)
                 .WithClientSecret(_settings.Auth.ClientSecret)
@@ -30,16 +39,26 @@ namespace Maestros.Infrastructure.Services
                 .WithHttpClientFactory(_httpFactory)
                 .Build();
 
-            var result = await _app
-                .AcquireTokenForClient(new[] { _settings.Auth.Scope })
-                .ExecuteAsync();
+            try
+            {
+                var result = await _app
+                    .AcquireTokenForClient(new[] { _settings.Auth.Scope })
+                    .ExecuteAsync();
 
-            _logger.LogInformation(
-                "Maestros token obtenido — ClientId: {ClientId} Scope: {Scope} ExpiresOn: {Expiry} FromCache: {Cache}",
-                _settings.Auth.ClientId, _settings.Auth.Scope,
-                result.ExpiresOn, result.AuthenticationResultMetadata.TokenSource);
+                _logger.LogInformation(
+                    "Maestros token obtenido — ClientId: {ClientId} Scope: {Scope} ExpiresOn: {Expiry} FromCache: {Cache}",
+                    _settings.Auth.ClientId, _settings.Auth.Scope,
+                    result.ExpiresOn, result.AuthenticationResultMetadata.TokenSource);
 
-            return result.AccessToken;
+                return result.AccessToken;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Error al obtener token de Maestros — ClientId: {ClientId} Authority: {Authority} Scope: {Scope}",
+                    _settings.Auth.ClientId, _settings.Auth.Authority, _settings.Auth.Scope);
+                throw;
+            }
         }
     }
 }
