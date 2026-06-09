@@ -2,7 +2,7 @@ using Microsoft.Identity.Client;
 
 namespace Maestros.Infrastructure.Services
 {
-    internal class MaestrosNoProxyHttpClientFactory : IMsalHttpClientFactory
+    public class MaestrosNoProxyHttpClientFactory : IMsalHttpClientFactory
     {
         public HttpClient GetHttpClient()
         {

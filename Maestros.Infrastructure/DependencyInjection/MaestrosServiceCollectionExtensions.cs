@@ -3,7 +3,6 @@ using Maestros.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Identity.Client;
 
 namespace Maestros.Infrastructure.DependencyInjection
 {
@@ -14,7 +13,7 @@ namespace Maestros.Infrastructure.DependencyInjection
         {
             services.Configure<MaestrosSettings>(config.GetSection("ApiMaestros"));
 
-            services.AddSingleton<IMsalHttpClientFactory, MaestrosNoProxyHttpClientFactory>();
+            services.AddSingleton<MaestrosNoProxyHttpClientFactory>();
             services.AddSingleton<MaestrosTokenService>();
 
             services.AddHttpClient<IMaestrosProveedorService, MaestrosProveedorService>(
