@@ -3,7 +3,7 @@ using Infor.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Notificacion.Infrastructure.DependencyInjection
+namespace Infor.Infrastructure.DependencyInjection
 {
     public static class InforServiceCollectionExtensions
     {

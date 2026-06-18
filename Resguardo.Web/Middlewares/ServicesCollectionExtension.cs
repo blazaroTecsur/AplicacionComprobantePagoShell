@@ -37,6 +37,7 @@ using Resguardo.Infrastructure.QueryServices;
 using Resguardo.Infrastructure.Repositorios;
 using Resguardo.Infrastructure.Services;
 using Seguridad.Infrastructure.DependencyInjection;
+using Infor.Infrastructure.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 
