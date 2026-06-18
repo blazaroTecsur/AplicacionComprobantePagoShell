@@ -1,0 +1,147 @@
+@model IEnumerable<Reciclaje.Aplicacion.DTOs.Reciclaje.TareaOrdenCompraDto>
+
+@{
+    ViewData["Titulo"] = "Órdenes de Compra SyteLine";
+}
+
+<div class="panel-contenedor">
+
+    <!-- ── Header ── -->
+    <div class="panel-principal">
+        <h5><i class="bi bi-cart3"></i> Órdenes de Compra SyteLine</h5>
+    </div>
+
+    <!-- ── Barra de acciones ── -->
+    <div class="barra-acciones">
+        <a asp-action="Crear" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Nueva Orden de Compra
+        </a>
+    </div>
+
+    <!-- ── Tabla ── -->
+    <div class="panel-tabla">
+
+        @if (TempData["Exito"] != null)
+        {
+            <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+                 style="background:#EAF3DE; border-left:3px solid #3B6D11;
+                                color:#3B6D11; font-size:13px; font-weight:500;">
+                <i class="bi bi-check-circle-fill"></i> @TempData["Exito"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+                 style="background:#FDECEA; border-left:3px solid #9B1B10;
+                                color:#9B1B10; font-size:13px; font-weight:500;">
+                <i class="bi bi-x-circle-fill"></i> @TempData["Error"]
+            </div>
+        }
+
+        <table id="tblOrdenesCompra" class="tabla-corporativa w-100">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Año</th>
+                    <th>Mes</th>
+                    <th>Nombre PO</th>
+                    <th>Sitio</th>
+                    <th style="display:none">Estado</th>
+                    <th style="display:none">UID SyteLine</th>
+                    <th style="display:none">Creado por</th>
+                    <th style="display:none">Modificado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="badge badge-registrado"
+                                  style="font-family:'Courier New',monospace;">
+                                #@item.Id
+                            </span>
+                        </td>
+                        <td>@item.Anno</td>
+                        <td>@item.Mes.ToString("D2")</td>
+                        <td>
+                            <span class="badge badge-enviado"
+                                  style="font-family:'Courier New',monospace;">
+                                @item.NombrePo
+                            </span>
+                        </td>
+                        <td>@(item.Sitio ?? "—")</td>
+                        <td style="display:none">
+                            @if (!string.IsNullOrEmpty(item.Estado))
+                            {
+                                var badgeClass = item.Estado switch
+                                {
+                                    "Activo" => "badge-registrado",
+                                    "Cerrado" => "badge-confirmado",
+                                    _ => "badge-pendiente"
+                                };
+                                <span class="badge @badgeClass">@item.Estado</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td style="display:none">
+                            <span style="font-family:'Courier New',monospace; font-size:11px;">
+                                @(item.UidSyteLine ?? "—")
+                            </span>
+                        </td>
+                        <td style="display:none">
+                            <span>@item.UsuarioCreacion</span><br />
+                            <span class="text-muted" style="font-size:11px;">
+                                @item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")
+                            </span>
+                        </td>
+                        <td style="display:none">
+                            <span>@(item.UsuarioModificacion ?? "—")</span><br />
+                            <span class="text-muted" style="font-size:11px;">
+                                @(item.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "—")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a asp-action="Editar" asp-route-id="@item.Id"
+                                   class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                <a asp-action="Eliminar" asp-route-id="@item.Id"
+                                   class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#tblOrdenesCompra').DataTable({
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                },
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
+                order: [[1, 'desc'], [2, 'desc']],
+                columnDefs: [
+                    { orderable: false, targets: 9 }
+                ],
+                responsive: true,
+                autoWidth: false
+            });
+        });
+    </script>
+}

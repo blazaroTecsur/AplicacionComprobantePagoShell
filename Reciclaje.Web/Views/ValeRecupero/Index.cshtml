@@ -1,0 +1,456 @@
+@model Reciclaje.Aplicacion.DTOs.Reciclaje.ValeRecuperoViewModel
+
+@{
+    ViewData["Titulo"] = "Convertir Vale de Recupero";
+}
+
+<style>
+    /* ── Checkboxes ── */
+    .check-accion {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 13px;
+        color: var(--corp-text);
+        user-select: none;
+    }
+
+        .check-accion input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--corp-blue);
+            cursor: pointer;
+        }
+
+    /* ── Badges de estado SRO ── */
+    .estado-revision {
+        background: #FAEEDA !important;
+        color: #854F0B !important;
+    }
+
+    .estado-devuelto {
+        background: #FCEBEB !important;
+        color: #A32D2D !important;
+    }
+
+    .estado-aprobado {
+        background: #EAF3DE !important;
+        color: #3B6D11 !important;
+    }
+
+    .estado-default {
+        background: var(--corp-gray) !important;
+        color: var(--corp-gray-dark) !important;
+    }
+
+    /* ── Forzar que la columna checkbox no ordene y quede centrada ── */
+    #tblLineasSro th.col-check,
+    #tblLineasSro td.col-check {
+        text-align: center;
+        width: 46px;
+    }
+
+    /* ── Overlay bloqueo de página ── */
+    #overlayBloqueo {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+        #overlayBloqueo.activo {
+            display: flex;
+        }
+
+        #overlayBloqueo .bloqueo-spinner {
+            width: 52px;
+            height: 52px;
+            border: 5px solid rgba(255,255,255,0.25);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: girar 0.75s linear infinite;
+        }
+
+        #overlayBloqueo .bloqueo-texto {
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+        }
+
+    @@keyframes girar {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* ── Flechas DataTables visibles sobre thead gris ── */
+    table.dataTable thead .sorting::before,
+    table.dataTable thead .sorting::after,
+    table.dataTable thead .sorting_asc::before,
+    table.dataTable thead .sorting_asc::after,
+    table.dataTable thead .sorting_desc::before,
+    table.dataTable thead .sorting_desc::after {
+        color: var(--corp-gray-dark) !important;
+        opacity: 0.6;
+    }
+</style>
+
+<div class="panel-contenedor">
+
+    <!-- ── Overlay de bloqueo ── -->
+    <div id="overlayBloqueo">
+        <div class="bloqueo-spinner"></div>
+        <div class="bloqueo-texto" id="overlayTexto">Procesando...</div>
+    </div>
+
+    <!-- ── Header ── -->
+    <div class="panel-principal">
+        <h5><i class="bi bi-recycle"></i> Convertir Vale de Recupero</h5>
+    </div>
+
+    <!-- ── Alertas ── -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#EAF3DE; border-left:3px solid #3B6D11; color:#3B6D11; font-size:13px;">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Exito"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#FCEBEB; border-left:3px solid #A32D2D; color:#A32D2D; font-size:13px;">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+        </div>
+    }
+
+    <!-- Alerta de error SyteLine (oculta por defecto) -->
+    <div id="alertaSyteLine" class="d-none d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+         style="background:#FCEBEB; border-left:3px solid #A32D2D; color:#A32D2D; font-size:13px;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span id="alertaSyteLineMsg"></span>
+    </div>
+
+    <!-- ── Alerta de período sin configurar ── -->
+    @if (ViewBag.TienePeriodoActual == false)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#FFF3CD; border-left:3px solid #856404; color:#664D03; font-size:13px;">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span>@ViewBag.PeriodoActualMsg</span>
+        </div>
+    }
+
+    <!-- ══════════════════════════════════════════
+         FORM BÚSQUEDA
+    ══════════════════════════════════════════ -->
+    <form asp-action="Buscar" method="post" id="formBusqueda">
+        @Html.AntiForgeryToken()
+
+        <!-- ── Sección filtros ── -->
+        <div class="seccion-panel m-3">
+            <div class="seccion-header">
+                <strong><i class="bi bi-search me-1"></i> Filtros de Búsqueda</strong>
+            </div>
+            <div class="seccion-body">
+                <div class="row g-2 align-items-end">
+
+                    <div class="col-md-3">
+                        <label class="form-label">SRO</label>
+                        <input name="NumeroSro" value="@Model.Filtros.NumeroSro"
+                               class="form-control form-control-sm" placeholder="Ej: SRO001" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Transacción</label>
+                        <input name="FechaTransaccion" type="date"
+                               value="@(Model.Filtros.FechaTransaccion?.ToString("yyyy-MM-dd"))"
+                               class="form-control form-control-sm" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Código Artículo No Inventariado</label>
+                        <input type="text" name="ArticuloNoInv"
+                               class="form-control form-control-sm" placeholder="Código artículo..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Descripción Artículo No Inventariado</label>
+                        <input name="DescripcionArticulo" value="@Model.Filtros.DescripcionArticulo"
+                               class="form-control form-control-sm" placeholder="Buscar descripción..." />
+                    </div>
+
+                    <div class="col-12 d-flex align-items-center gap-4 flex-wrap pt-1">
+                        <!-- Checkboxes tipo de vale -->
+                        <label class="check-accion">
+                            <input type="checkbox" name="GenerarEspecifico" value="true"
+                                   @(Model.Filtros.GenerarEspecifico ? "checked" : "")
+                                   id="chkEspecifico" />
+                            Generar Vale Específico
+                        </label>
+                        <label class="check-accion">
+                            <input type="checkbox" name="GenerarConsolidado" value="true"
+                                   @(Model.Filtros.GenerarConsolidado ? "checked" : "")
+                                   id="chkConsolidado" />
+                            Generar Vale Consolidado
+                        </label>
+                        <!-- Botón buscar alineado a la derecha -->
+                        <button type="button" class="btn btn-primary btn-sm ms-auto" id="btnBuscar"
+                                @(ViewBag.TienePeriodoActual == false ? "disabled title=\"Configure la Orden de Compra del período actual para habilitar la búsqueda\"" : "")>
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- ══════════════════════════════════════════
+         TABLA LÍNEAS SRO (solo si hubo búsqueda)
+    ══════════════════════════════════════════ -->
+    @if (Model.BusquedaRealizada)
+    {
+        <form asp-action="Generar" method="post" id="formGenerar">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="NumeroSro" value="@Model.Filtros.NumeroSro" />
+            <input type="hidden" name="FechaTransaccion" value="@(Model.Filtros.FechaTransaccion?.ToString("yyyy-MM-dd"))" />
+            <input type="hidden" name="ArticuloNoInv" value="@Model.Filtros.ArticuloNoInv" />
+            <input type="hidden" name="DescripcionArticulo" value="@Model.Filtros.DescripcionArticulo" />
+            <input type="hidden" name="GenerarEspecifico" id="hEspecifico" value="@Model.Filtros.GenerarEspecifico.ToString().ToLower()" />
+            <input type="hidden" name="GenerarConsolidado" id="hConsolidado" value="@Model.Filtros.GenerarConsolidado.ToString().ToLower()" />
+
+            <!-- ── Sección tabla ── -->
+            <div class="seccion-panel mx-3 mb-3">
+                <div class="seccion-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-table me-1"></i> Líneas SRO</strong>
+                    @if (Model.Lineas.Any())
+                    {
+                        <span class="text-white" style="font-size:12px; font-weight:400;">
+                            Total: <strong>@Model.Lineas.Count</strong> línea(s)
+                        </span>
+                    }
+                </div>
+                <div class="seccion-body p-0">
+
+                    <table id="tblLineasSro" class="tabla-corporativa w-100">
+                        <thead>
+                            <tr>
+                                <th>SRO</th>
+                                <th>Línea SRO</th>
+                                <th>Cód. Art. No Inv.</th>
+                                <th>Cantidad</th>
+                                <th>U/M</th>
+                                <th style="display:none">Supervisor</th>
+                                <th style="display:none">RUC</th>
+                                <th>Sub Contratista</th>
+                                <th>OC</th>
+                                <th>Cód. Art. Reciclaje</th>
+                                <th style="display:none">Desc. Reciclaje</th>
+                                <th>F. Transacción</th>
+                                <th>U/M Reciclaje</th>
+                                <th>Estado Línea</th>
+                                <th class="col-check">
+                                    <input type="checkbox" id="chkTodos"
+                                           title="Seleccionar todos"
+                                           style="width:15px;height:15px;accent-color:var(--corp-blue);cursor:pointer;" />
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var linea in Model.Lineas)
+                            {
+                                var estadoClass = linea.EstadoSro?.ToUpper() switch
+                                {
+                                    var e when e != null && e.Contains("REVISION") => "estado-revision",
+                                    var e when e != null && e.Contains("DEVUELTO") => "estado-devuelto",
+                                    var e when e != null && e.Contains("APROBAD") => "estado-aprobado",
+                                    _ => "estado-default"
+                                };
+                                <tr>
+                                    <td><strong>@linea.NumeroSro</strong></td>
+                                    <td><strong>@linea.SroLineaSL</strong></td>
+                                    <td>@linea.ArticuloNoInv</td>
+                                    <td>@(linea.CantidadNoInv?.ToString("N4") ?? "—")</td>
+                                    <td>@(linea.UmnoInv ?? "—")</td>
+                                    <td style="display:none">@(linea.CodigoSupervisorNoInv ?? "—")</td>
+                                    <td style="display:none">@(linea.Ruc ?? "—")</td>
+                                    <td>@(linea.DescripcionSubcontratista ?? "—")</td>
+                                    <td>@(linea.OrdenCompra ?? "—")</td>
+                                    <td>@(linea.ArticuloReciclaje ?? "—")</td>
+                                    <td style="display:none">@(linea.DescripcionAlmacenNoInv ?? "—")</td>
+                                    <td>@(linea.FechaTransaccion?.ToString("dd/MM/yyyy") ?? "—")</td>
+                                    <td>@(linea.UMReciclaje ?? "—")</td>
+                                    <td>
+                                        @{
+                                            var estadoLineaClass = linea.EstadoLinea switch
+                                            {
+                                                "Creación" => "estado-revision",
+                                                "Procesado" => "estado-aprobado",
+                                                _ => "estado-default"
+                                            };
+                                        }
+                                        <span class="badge @estadoLineaClass">
+                                            @(linea.EstadoLinea ?? "—")
+                                        </span>
+                                    </td>
+                                    <td class="col-check">
+                                        <input type="checkbox" name="LineasSeleccionadas"
+                                               value="@linea.SrolineaId"
+                                               class="chk-linea"
+                                               data-estado="@(linea.EstadoLinea ?? "")"
+                                               style="width:15px;height:15px;accent-color:var(--corp-blue);cursor:pointer;" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <!-- ── Botón generar ── -->
+            @if (Model.Lineas.Any())
+            {
+                <div class="d-flex justify-content-end px-3 pb-3">
+                    <button type="submit" class="btn btn-success btn-sm"
+                            @(ViewBag.TienePeriodoActual == false ? "disabled title=\"Configure la Orden de Compra del período actual para habilitar la generación\"" : "")>
+                        <i class="bi bi-lightning-fill"></i> Generar Vale
+                    </button>
+                </div>
+            }
+
+        </form>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        // ── Inicializar DataTable solo si la tabla existe en el DOM ──
+        $(function () {
+            if ($('#tblLineasSro').length) {
+                $('#tblLineasSro').DataTable({
+                    language: {
+                        url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                    },
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
+                    order: [[0, 'asc']],
+                    columnDefs: [
+                        { orderable: false, targets: 14 }
+                    ],
+                    scrollX: true,
+                    autoWidth: false,
+                    responsive: false
+                });
+            }
+        });
+
+        // ── Helper: bloquear / desbloquear página ──────────────────────
+        function bloquearPagina(texto) {
+            document.getElementById('overlayTexto').textContent = texto || 'Procesando...';
+            document.getElementById('overlayBloqueo').classList.add('activo');
+        }
+        function desbloquearPagina() {
+            document.getElementById('overlayBloqueo').classList.remove('activo');
+        }
+
+        // ── Botón Buscar: llama a /api/syteline/run y luego hace submit ──
+        document.getElementById('btnBuscar').addEventListener('click', async function () {
+            if (this.disabled) return;   // bloqueo extra por si se intenta invocar vía JS
+            const sroNum = document.querySelector('input[name="NumeroSro"]').value.trim();
+            const btn    = this;
+            const alerta = document.getElementById('alertaSyteLine');
+            const alertaMsg = document.getElementById('alertaSyteLineMsg');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Sincronizando SyteLine...';
+            alerta.classList.add('d-none');
+            bloquearPagina('Sincronizando con SyteLine...');
+
+            try {
+                // Solo llama al servidor si se ingresó un número de SRO
+                if (sroNum) {
+                    const response = await fetch('/api/syteline/run', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sroNum })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error ?? `Error ${response.status}`);
+                    }
+
+                    // Opcional: log en consola con el resumen de lo sincronizado
+                    console.log('SyteLine sync:', data);
+                }
+
+                // Hacer submit del formulario de búsqueda
+                document.getElementById('formBusqueda').submit();
+
+            } catch (error) {
+                console.error('Error al sincronizar con SyteLine:', error);
+                alertaMsg.textContent = `No se pudo sincronizar con SyteLine: ${error.message}`;
+                alerta.classList.remove('d-none');
+                desbloquearPagina();
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-search"></i> Buscar';
+            }
+        });
+
+        // ── Botón Generar Vale: validar EstadoLinea y bloquear página ──
+        document.getElementById('formGenerar')?.addEventListener('submit', function (e) {
+            const seleccionadas = [...document.querySelectorAll('.chk-linea:checked')];
+
+            const procesadas = seleccionadas.filter(
+                chk => chk.dataset.estado === 'Procesado'
+            );
+
+            if (procesadas.length > 0) {
+                e.preventDefault();
+                const numeros = procesadas
+                    .map(chk => chk.closest('tr')
+                        ?.querySelector('td:first-child')?.textContent?.trim() ?? chk.value)
+                    .join(', ');
+                alert(`No se puede generar el vale. Las siguientes líneas ya fueron procesadas:\n${numeros}`);
+                return;
+            }
+
+            bloquearPagina('Generando Vale de Recupero...');
+        });
+
+        // ── Seleccionar / deseleccionar todos (compatible con DataTables) ──
+        document.getElementById('chkTodos')?.addEventListener('change', function () {
+            document.querySelectorAll('.chk-linea')
+                .forEach(c => c.checked = this.checked);
+        });
+
+        // ── Sincronizar checkboxes de tipo de vale (mutuamente excluyentes) ──
+        document.getElementById('chkEspecifico')?.addEventListener('change', function () {
+            document.getElementById('hEspecifico').value = this.checked;
+            if (this.checked) {
+                document.getElementById('chkConsolidado').checked = false;
+                document.getElementById('hConsolidado').value = false;
+            }
+        });
+        document.getElementById('chkConsolidado')?.addEventListener('change', function () {
+            document.getElementById('hConsolidado').value = this.checked;
+            if (this.checked) {
+                document.getElementById('chkEspecifico').checked = false;
+                document.getElementById('hEspecifico').value = false;
+            }
+        });
+    </script>
+}

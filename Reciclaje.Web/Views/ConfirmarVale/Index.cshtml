@@ -1,0 +1,506 @@
+@model Reciclaje.Aplicacion.DTOs.Reciclaje.ValeConfirmacionListaViewModel
+@{
+    ViewData["Titulo"] = "Confirmar Vale de Recupero";
+}
+
+<style>
+    .tipo-especifico {
+        background: #dbeafe !important;
+        color: #1e40af !important;
+    }
+
+    .tipo-consolidado {
+        background: #ede9fe !important;
+        color: #5b21b6 !important;
+    }
+
+    .estado-pendiente {
+        background: #fef3c7 !important;
+        color: #92400e !important;
+    }
+
+    .estado-recepcionado {
+        background: #EAF3DE !important;
+        color: #3B6D11 !important;
+    }
+
+    .estado-confirmado {
+        background: #dcfce7 !important;
+        color: #14532d !important;
+    }
+
+    #tblVales th.col-check, #tblVales td.col-check {
+        text-align: center;
+        width: 80px;
+    }
+
+    #tblVales th.col-sel, #tblVales td.col-sel {
+        text-align: center;
+        width: 50px;
+    }
+
+    table.dataTable thead .sorting::before, table.dataTable thead .sorting::after,
+    table.dataTable thead .sorting_asc::before, table.dataTable thead .sorting_asc::after,
+    table.dataTable thead .sorting_desc::before, table.dataTable thead .sorting_desc::after {
+        color: var(--corp-gray-dark) !important;
+        opacity: 0.6;
+    }
+
+
+
+    /* ── Overlay bloqueo de página ── */
+    #overlayBloqueo {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+        #overlayBloqueo.activo {
+            display: flex;
+        }
+
+        #overlayBloqueo .bloqueo-spinner {
+            width: 52px;
+            height: 52px;
+            border: 5px solid rgba(255,255,255,0.25);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: girarConf 0.75s linear infinite;
+        }
+
+        #overlayBloqueo .bloqueo-texto {
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+        }
+
+    @@keyframes girarConf {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1055;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.activo {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 8px 32px rgba(30,45,90,0.22);
+        padding: 2rem 2.2rem;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+    }
+
+        .modal-box .icono-modal {
+            font-size: 2.4rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .modal-box h3 {
+            font-size: 1.1rem;
+            margin: 0 0 0.6rem;
+        }
+
+        .modal-box p {
+            font-size: 0.9rem;
+            color: #5a6a8a;
+            margin: 0 0 1.4rem;
+        }
+
+        .modal-box .acciones {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+        }
+</style>
+
+<div class="panel-contenedor">
+
+    <!-- ── Overlay de bloqueo ── -->
+    <div id="overlayBloqueo">
+        <div class="bloqueo-spinner"></div>
+        <div class="bloqueo-texto" id="overlayTexto">Procesando...</div>
+    </div>
+
+    <!-- ── Header ── -->
+    <div class="panel-principal">
+        <h5><i class="bi bi-check2-circle"></i> Confirmar Vale de Recupero</h5>
+    </div>
+
+    <!-- ── Alertas ── -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#EAF3DE; border-left:3px solid #3B6D11; color:#3B6D11; font-size:13px;">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Exito"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#FCEBEB; border-left:3px solid #A32D2D; color:#A32D2D; font-size:13px;">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+        </div>
+    }
+    @if (TempData["Aviso"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#fef3c7; border-left:3px solid #f59e0b; color:#92400e; font-size:13px;">
+            <i class="bi bi-exclamation-circle-fill"></i> @TempData["Aviso"]
+        </div>
+    }
+
+    <!-- ══ FORM BÚSQUEDA ══ -->
+    <form asp-controller="ConfirmarVale" asp-action="BuscarValesConfirmacion" method="post" id="formBusqueda"
+          onsubmit="bloquearPagina('Buscando vales...')">
+        @Html.AntiForgeryToken()
+
+        <div class="seccion-panel m-3">
+            <div class="seccion-header">
+                <strong><i class="bi bi-search me-1"></i> Filtros de Búsqueda</strong>
+            </div>
+            <div class="seccion-body">
+                <div class="row g-2 align-items-end">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Nro SRO</label>
+                        <input name="NumeroSro" id="fNumeroSro" value="@Model.Filtros.NumeroSro"
+                               class="form-control form-control-sm" placeholder="Ej: SRO001" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Nro Vale</label>
+                        <input name="NumeroVale" id="fNumeroVale" value="@Model.Filtros.NumeroVale"
+                               class="form-control form-control-sm" placeholder="Ej: VALE-2026-00001" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Código Artículo Reciclaje</label>
+                        <input name="CodigoArticuloReciclaje" id="fCodigoArticulo" value="@Model.Filtros.CodigoArticuloReciclaje"
+                               class="form-control form-control-sm" placeholder="Código..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Descripción Artículo Reciclaje</label>
+                        <input name="DescripcionArticuloReciclaje" id="fDescripcion" value="@Model.Filtros.DescripcionArticuloReciclaje"
+                               class="form-control form-control-sm" placeholder="Descripción..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha de Vale</label>
+                        <input name="FechaVale" id="fFechaVale" type="date"
+                               value="@(Model.Filtros.FechaVale?.ToString("yyyy-MM-dd"))"
+                               class="form-control form-control-sm" />
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end pt-1">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- ══ TABLA VALES ══ -->
+    @if (Model.BusquedaRealizada)
+    {
+        <form asp-controller="ConfirmarVale" asp-action="GuardarConfirmacion" method="post" id="formConfirmacion">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="accion" id="accionFormulario" value="Confirmar" />
+            <input type="hidden" name="filtros.NumeroSro" value="@Model.Filtros.NumeroSro" />
+            <input type="hidden" name="filtros.NumeroVale" value="@Model.Filtros.NumeroVale" />
+
+            <div class="seccion-panel mx-3 mb-3">
+                <div class="seccion-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-table me-1"></i> Vales de Recupero — Confirmación</strong>
+                    @if (Model.Vales.Any())
+                    {
+                        <span class="text-white" style="font-size:12px; font-weight:400;">
+                            Total: <strong>@Model.Vales.Count</strong> vale(s)
+                        </span>
+                    }
+                </div>
+                <div class="seccion-body p-0">
+
+                    <table id="tblVales" class="tabla-corporativa w-100">
+                        <thead>
+                            <tr>
+                                <th class="col-sel" style="display:none">
+                                    <input type="checkbox" id="selTodos" title="Seleccionar todos"
+                                           style="width:15px;height:15px;cursor:pointer;" />
+                                </th>
+                                <th>Nro Vale</th>
+                                <th>Tipo</th>
+                                <th>Art.No Inventariado</th>
+                                <th>SRO</th>
+                                <th>RowPointer</th>
+                                <th>Contratista</th>
+
+                                <th>U/M Reciclaje</th>
+                                <th>Cant. Reciclaje</th>
+                                <th>OC Anual</th>
+                                <th>Cód. Art. Reciclaje</th>
+                                <th>Cantidad Real</th>
+                                <th>Peso</th>
+                                <th>Cant. Pendiente</th>
+                                <th>Estado</th>
+                                <th class="col-check">Check Confirmación</th>
+                                <th>Fecha Confirmación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Vales.Count; i++)
+                            {
+                                var vale = Model.Vales[i];
+                                var tipoClass = vale.TipoVale == "Especifico" ? "tipo-especifico" : "tipo-consolidado";
+                                var estadoClass = vale.Estado == "Confirmado" ? "estado-confirmado"
+                                : vale.Estado == "Recepcionado" ? "estado-recepcionado"
+                                : "estado-pendiente";
+                                var esRecepcionado = vale.Estado == "Recepcionado";
+                                <tr data-sronum="@vale.NumeroSro" data-rowpointer="@vale.RowPointer">
+                                    <td class="col-sel" style="display:none">
+                                        <input type="hidden" name="confirmaciones[@i].ValeId" value="@vale.ValeId" />
+                                        <input type="checkbox" name="confirmaciones[@i].Seleccionado"
+                                               value="true" class="chk-seleccion"
+                                               style="width:15px;height:15px;accent-color:var(--corp-blue);cursor:pointer;" />
+                                    </td>
+                                    <td><strong>@vale.NumeroVale</strong></td>
+                                    <td><span class="badge @tipoClass">@vale.TipoVale</span></td>
+                                    <td><strong>@vale.ArticuloNoInventariado</strong></td>
+                                    <td>@vale.NumeroSro</td>
+                                    <td>
+                                        <span title="@vale.RowPointer"
+                                              style="font-family:monospace;font-size:0.78rem;display:inline-block;
+                                                                             max-width:120px;overflow:hidden;text-overflow:ellipsis;
+                                                                             white-space:nowrap;vertical-align:middle;">
+                                            @(vale.RowPointer ?? "—")
+                                        </span>
+                                    </td>
+                                    <td>@(vale.Contratista ?? "—")</td>
+                                    <td>@(vale.UmReciclaje ?? "—")</td>
+                                    <td>@(vale.CantidadReciclaje?.ToString("N4") ?? "—")</td>
+                                    <td>@(vale.OcAnual ?? "—")</td>
+                                    <td>
+                                        <input type="text"
+                                               name="confirmaciones[@i].ArticuloReciclaje"
+                                               value="@vale.CodigoArticuloReciclaje"
+                                               class="form-control form-control-sm"
+                                               maxlength="10" style="width:110px;"
+                                               @(esRecepcionado ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.0001"
+                                               name="confirmaciones[@i].CantidadRecibida"
+                                               value="@vale.CantidadReal"
+                                               class="form-control form-control-sm"
+                                               style="width:105px;"
+                                               @(esRecepcionado ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.0001"
+                                               name="confirmaciones[@i].PesoRecibido"
+                                               value="@vale.Peso"
+                                               class="form-control form-control-sm"
+                                               style="width:90px;"
+                                               @(esRecepcionado ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <span class="badge @estadoClass">
+                                            @(vale.CantidadPendiente?.ToString("N4") ?? "0")
+                                        </span>
+                                    </td>
+                                    <td><span class="badge @estadoClass">@vale.Estado</span></td>
+                                    <td class="col-check">
+                                        @if (esRecepcionado)
+                                        {
+                                            <input type="checkbox"
+                                                   name="confirmaciones[@i].CheckConfirmacion"
+                                                   value="true"
+                                                   @(vale.CheckConfirmacion ? "checked" : "")
+                                                   class="chk-confirmacion"
+                                                   style="width:17px;height:17px;accent-color:var(--corp-blue);cursor:pointer;" />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="confirmaciones[@i].CheckConfirmacion" value="false" />
+                                            <input type="checkbox" @(vale.CheckConfirmacion ? "checked" : "") disabled
+                                                   style="width:17px;height:17px;cursor:not-allowed;opacity:0.45;" />
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (vale.FechaConfirmacion.HasValue)
+                                        {
+                                            <span>@vale.FechaConfirmacion.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        }
+                                        else
+                                        {
+
+                                            <span style="color:#5a6a8a;">—</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+
+                @if (Model.Vales.Any())
+                {
+                    <div class="d-flex justify-content-end gap-2 p-3"
+                         style="border-top: 1px solid var(--corp-gray);">
+                        <a asp-controller="ConfirmarVale" asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+
+                        <!-- ── Botón Reporte Excel ── -->
+                        <a id="btnReporteExcel"
+                           href="#"
+                           target="_blank"
+                           class="btn btn-sm"
+                           style="background:#217346; color:#fff; border:none;"
+                           title="Descargar reporte Excel con los resultados actuales">
+                            <i class="bi bi-file-earmark-excel-fill"></i> Reporte Excel
+                        </a>
+
+                        <button type="button" class="btn btn-danger btn-sm" id="btnRechazar" style="display:none">
+                            <i class="bi bi-slash-circle"></i> Rechazar
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm" id="btnConfirmar">
+                            <i class="bi bi-floppy-fill"></i> Guardar Confirmación
+                        </button>
+                    </div>
+                }
+            </div>
+        </form>
+    }
+
+</div>
+<!-- ══ MODAL DE RECHAZO ══ -->
+<div class="modal-overlay" id="modalRechazo">
+    <div class="modal-box">
+        <div class="icono-modal"><i class="bi bi-slash-circle text-danger" style="font-size:2.4rem;"></i></div>
+        <h3>Rechazar Vales Seleccionados</h3>
+        <p>Los vales seleccionados volverán al estado <strong>Pendiente</strong> y se limpiarán los datos de recepción. ¿Desea continuar?</p>
+        <div class="acciones">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnCancelarModal">Cancelar</button>
+            <button type="button" class="btn btn-danger btn-sm" id="btnConfirmarRechazo">Sí, Rechazar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ── Helper: bloquear / desbloquear página ──────────────────────
+        function bloquearPagina(texto) {
+            document.getElementById('overlayTexto').textContent = texto || 'Procesando...';
+            document.getElementById('overlayBloqueo').classList.add('activo');
+        }
+        function desbloquearPagina() {
+            document.getElementById('overlayBloqueo').classList.remove('activo');
+        }
+
+        $(function () {
+            if ($('#tblVales').length) {
+                $('#tblVales').DataTable({
+                    language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
+                    order: [[1, 'asc']],
+                    columnDefs: [{ orderable: false, targets: [0, 11, 12, 15] }],
+                    scrollX: true, autoWidth: false, responsive: false
+                });
+            }
+        });
+
+        document.getElementById('selTodos')?.addEventListener('change', function () {
+            document.querySelectorAll('.chk-seleccion').forEach(c => c.checked = this.checked);
+        });
+
+        document.getElementById('btnConfirmar')?.addEventListener('click', function () {
+            const checks = document.querySelectorAll('.chk-confirmacion:checked');
+            if (checks.length === 0) {
+                alert('Debe marcar al menos un Check Confirmación para guardar.');
+                return;
+            }
+            document.getElementById('accionFormulario').value = 'Confirmar';
+            bloquearPagina('Guardando confirmación...');
+            document.getElementById('formConfirmacion').submit();
+        });
+
+        document.getElementById('btnRechazar')?.addEventListener('click', function () {
+            if (!document.querySelectorAll('.chk-seleccion:checked').length) {
+                alert('Debe seleccionar al menos un vale para rechazar.');
+                return;
+            }
+            document.getElementById('modalRechazo').classList.add('activo');
+        });
+
+        document.getElementById('btnCancelarModal')?.addEventListener('click', () =>
+            document.getElementById('modalRechazo').classList.remove('activo'));
+
+        document.getElementById('btnConfirmarRechazo')?.addEventListener('click', () => {
+            document.getElementById('accionFormulario').value = 'Rechazar';
+            document.getElementById('modalRechazo').classList.remove('activo');
+            bloquearPagina('Rechazando vales...');
+            document.getElementById('formConfirmacion').submit();
+        });
+
+        document.getElementById('modalRechazo')?.addEventListener('click', function (e) {
+            if (e.target === this) this.classList.remove('activo');
+        });
+
+        // ── Construir URL del reporte Excel con los filtros actuales ──
+        (function () {
+            const btn = document.getElementById('btnReporteExcel');
+            if (!btn) return;
+
+            const p = new URLSearchParams();
+
+            const sro  = document.getElementById('fNumeroSro')?.value?.trim();
+            const vale = document.getElementById('fNumeroVale')?.value?.trim();
+            const cod  = document.getElementById('fCodigoArticulo')?.value?.trim();
+            const desc = document.getElementById('fDescripcion')?.value?.trim();
+            const fec  = document.getElementById('fFechaVale')?.value?.trim();
+
+            if (sro)  p.append('NumeroSro',  sro);
+            if (vale) p.append('NumeroVale', vale);
+            if (cod)  p.append('CodigoArticuloReciclaje', cod);
+            if (desc) p.append('DescripcionArticuloReciclaje', desc);
+            if (fec)  p.append('FechaVale', fec);
+
+            const qs = p.toString();
+            btn.href = '/ConfirmarVale/GenerarReporteExcel' + (qs ? '?' + qs : '');
+
+            // Bloquear página al hacer clic en Reporte Excel
+            btn.addEventListener('click', function () {
+                bloquearPagina('Generando reporte Excel...');
+                // Desbloquear tras 4 s (el archivo se descarga, la página no recarga)
+                setTimeout(desbloquearPagina, 4000);
+            });
+        })();
+    </script>
+}
