@@ -21,6 +21,7 @@ namespace Seguridad.Infrastructure.Handler.Authentication
         }
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {            
+            //-- Paso 1: Lectura de headers enviados por el shell
             var codUsuario = Request.Headers["X-User-Oid"].FirstOrDefault();
             var codTenant = Request.Headers["X-Tenant-Id"].FirstOrDefault();
             var usuCorreo = Request.Headers["X-User-Email"].FirstOrDefault();
@@ -37,6 +38,7 @@ namespace Seguridad.Infrastructure.Handler.Authentication
                 string.IsNullOrEmpty(schema))
                 return AuthenticateResult.Fail("Internal Auth ha fallado.");
 
+            //-- Paso 2: Creación de claims
             var claims = new List<Claim>
             {                
                 new Claim("oid", codUsuario),
@@ -51,6 +53,8 @@ namespace Seguridad.Infrastructure.Handler.Authentication
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
             return AuthenticateResult.Success(ticket);
+            
+            //-- Continua la ejecución de PermisosClaimsTransformation.cs
         }
     }
 }

@@ -29,5 +29,14 @@ namespace Seguridad.Infrastructure.DependencyInjection
 
             return services;
         }
+        public static IServiceCollection AddSeguridadLegacy(this IServiceCollection services, IConfiguration config)
+        {
+            services.Configure<SeguridadSetting>(config.GetSection("ApiSettings:Seguridad"));
+            services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
+            services.AddSingleton<SeguridadTokenService>();
+            services.AddHttpClient<ISeguridadService, SeguridadService>();
+
+            return services;
+        }
     }
 }

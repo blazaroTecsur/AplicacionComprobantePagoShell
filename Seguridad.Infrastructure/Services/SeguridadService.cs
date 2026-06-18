@@ -16,7 +16,7 @@ namespace Seguridad.Infrastructure.Services
             _tokenService = tokenService;
         }
         public async Task<IEnumerable<SeguridadRolResponse>> ObtenerPermisos(
-            string type, string codTenant, string codUsuario, string codApp)
+            string type, string codUsuario, string codApp)
         {
             var token = await _tokenService.GetTokenAsync(type);
             var config = _tokenService.GetConfiguration(type);
@@ -26,8 +26,7 @@ namespace Seguridad.Infrastructure.Services
             var query =
                 new Dictionary<string, string>
                 {
-                    ["codUsuario"] = codUsuario,
-                    ["codTenant"] = codTenant,
+                    ["codUsuario"] = codUsuario,                    
                     ["codApp"] = codApp
                 };
 

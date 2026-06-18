@@ -24,21 +24,22 @@ namespace Seguridad.Infrastructure.Handler.Authorization
             if (identity.HasClaim(c => c.Type == "permission"))
                 return principal;
 
-            var codUsuario = identity.FindFirst("oid")?.Value;
-            var codTenant = identity.FindFirst("tid")?.Value;
+            //-- Paso 3: Lectura de valores almacenados en los claims
+            var codUsuario = identity.FindFirst("oid")?.Value;            
             var codApp = identity.FindFirst("app")?.Value;
             var schema = identity.FindFirst("schema")?.Value;
             var sessionId = identity.FindFirst("session_id")?.Value;
-            if (string.IsNullOrEmpty(codUsuario) ||
-                string.IsNullOrEmpty(codTenant) ||
+            if (string.IsNullOrEmpty(codUsuario) ||                
                 string.IsNullOrEmpty(codApp) ||
+                string.IsNullOrEmpty(schema) ||
                 string.IsNullOrEmpty(sessionId))
                 return principal;
 
+            //-- Paso 4: Consulta de permisos de bd y almacen en cache
             var key = $"permisos-{codApp}:{sessionId}";
             if (!_cache.TryGetValue(key, out List<string> permisos))
             {
-                var permisosBD = await _seguridad.ObtenerPermisos(schema, codTenant, codUsuario, codApp);
+                var permisosBD = await _seguridad.ObtenerPermisos(schema, codUsuario, codApp);
                 permisos = permisosBD?.Select(x => x.Codigo).ToList() ?? new();
                 _cache.Set(key, permisos, new MemoryCacheEntryOptions
                 {
@@ -49,6 +50,8 @@ namespace Seguridad.Infrastructure.Handler.Authorization
 
             identity.AddClaims(permisos.Select(p => new Claim("permission", p)));
             return principal;
+
+            //-- Continua la ejecución de UsuarioContexto.cs
         }
     }
 }
