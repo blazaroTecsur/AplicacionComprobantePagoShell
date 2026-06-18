@@ -7,13 +7,13 @@ namespace Maestros.Infrastructure.Services
     public class MaestrosTokenService
     {
         private readonly MaestrosSettings _settings;
-        private readonly IMsalHttpClientFactory _httpFactory;
+        private readonly MaestrosNoProxyHttpClientFactory _httpFactory;
         private readonly ILogger<MaestrosTokenService> _logger;
         private IConfidentialClientApplication? _app;
 
         public MaestrosTokenService(
             IOptions<MaestrosSettings> settings,
-            IMsalHttpClientFactory httpFactory,
+            MaestrosNoProxyHttpClientFactory httpFactory,
             ILogger<MaestrosTokenService> logger)
         {
             _settings    = settings.Value;

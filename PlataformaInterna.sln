@@ -41,6 +41,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{
 	ProjectSection(SolutionItems) = preProject
 		..\AplicacionComprobantePago\ComprobantePago\scripts\create_all_tables.sql = ..\AplicacionComprobantePago\ComprobantePago\scripts\create_all_tables.sql
 		..\AplicacionComprobantePago\ComprobantePago\scripts\insert_tmacodigounidad1.sql = ..\AplicacionComprobantePago\ComprobantePago\scripts\insert_tmacodigounidad1.sql
+		..\PlataformaInterna_v2_bk\scripts\permisos-comprobante.sql = ..\PlataformaInterna_v2_bk\scripts\permisos-comprobante.sql
+		seguridad_comprobante_pagar.sql = seguridad_comprobante_pagar.sql
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8C313CB-FC37-4727-82E1-4C80BB1C93DE}"
