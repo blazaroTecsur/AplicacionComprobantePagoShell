@@ -2,7 +2,7 @@
     Layout = "_Layout";
 }
 
-@model Shell.Web.Models.UsuarioViewModel
+@model Shell.Web.Models.ObtenerUsuario.UsuarioViewModel
 
 @* ═══════════════════════════════════════════════════════════
    WELCOME BANNER
@@ -48,30 +48,27 @@
             </div>
             <div class="db-panel-body">
                 <div class="db-quicklinks">
-                    @{
-                        var apps = Model.Menus.Select(m => new Shell.Web.Models.AppViewModel()
 
-            {
-
-                Codigo = m.App.Codigo,
-
-                Nombre = m.App.Nombre,
-
-                Ruta = m.App.Ruta,
-
-                Icono = m.App.Icono
-
-            }).DistinctBy(a => new { a.Codigo, a.Nombre, a.Ruta, a.Icono }).ToList();
-                    }
-                    @foreach (var app in apps)
-                    {                        
-                        @foreach (var menu in Model.Menus.Where(m => m.App.Codigo == app.Codigo))
+                    @if (Model.FlagDatos)
+                    {
+                        var apps = Model.Menus.Select(m => new Shell.Web.Models.ObtenerUsuario.AppViewModel()
                         {
-                            <button class="db-quicklink blue"
-                                    onclick="window.open('@($"{app.Ruta}{menu.Ruta}")', '_blank')"
-                                    app="@app.Codigo" menu="@menu.Codigo">
-                                <i class="bi bi-folder2-open" aria-hidden="true"></i> @menu.Nombre
-                            </button>
+                            Codigo = m.App.Codigo,
+                            Nombre = m.App.Nombre,
+                            Ruta = m.App.Ruta,
+                            Icono = m.App.Icono
+                        }).DistinctBy(a => new { a.Codigo, a.Nombre, a.Ruta, a.Icono }).ToList();
+
+                        foreach (var app in apps)
+                        {
+                            @foreach (var menu in Model.Menus.Where(m => m.App.Codigo == app.Codigo))
+                            {
+                                <button class="db-quicklink blue"
+                                        onclick="window.open('@($"{app.Ruta}{menu.Ruta}")', '_blank')"
+                                        app="@app.Codigo" menu="@menu.Codigo">
+                                    <i class="bi bi-folder2-open" aria-hidden="true"></i> @menu.Nombre
+                                </button>
+                            }
                         }
                     }
                 </div>

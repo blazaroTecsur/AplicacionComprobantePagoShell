@@ -1,4 +1,4 @@
-﻿namespace Shell.Web.Models
+﻿namespace Shell.Web.Models.ObtenerUsuario
 {
     public class UsuarioViewModel
     {
@@ -11,6 +11,7 @@
         public string? Departamento { get; set; }
         public string? Empresa { get; set; }
         public string? Dni { get; set; }
+        public bool FlagDatos { get; set; }
         public ICollection<MenuViewModel> Menus { get; set; } = new List<MenuViewModel>();
     }
 }

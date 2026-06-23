@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Shell.Web.Models;
+using Shell.Web.Models.ActualizarDatos;
+using Shell.Web.Models.ObtenerUsuario;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 
 namespace Shell.Web.Services
@@ -9,27 +11,20 @@ namespace Shell.Web.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _httpClient;
-        private readonly IConfiguration _configuration;
-        private readonly ILogger<ApiService> _logger;
-
+        private readonly IConfiguration _configuration;        
         public ApiService(
             IHttpContextAccessor httpContextAccessor,
             IConfiguration configuration,
-            HttpClient httpClient,
-            ILogger<ApiService> logger)
+            HttpClient httpClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
-            _httpClient = httpClient;
-            _logger = logger;
+            _httpClient = httpClient;            
         }
-
         public async Task<UsuarioViewModel> ObtenerUsuario()
         {
             var context = _httpContextAccessor.HttpContext;
             var token = await context.GetTokenAsync("access_token");
-
-            _logger.LogInformation($"token: {token}");
 
             if (string.IsNullOrWhiteSpace(token))
                 throw new Exception("No se encontró access_token");
@@ -57,6 +52,39 @@ namespace Shell.Web.Services
                 throw new Exception(apiResponse.Error?.UserMessage);
 
             return apiResponse.Data;
+        }
+        public async Task ActualizarDatos(ActualizarViewModel usuario)
+        {
+            var context = _httpContextAccessor.HttpContext;
+            var token = await context.GetTokenAsync("access_token");
+
+            if (string.IsNullOrWhiteSpace(token))
+                throw new Exception("No se encontró access_token");
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var url = _configuration["ApiSettings:Actualizar"];
+            var json = JsonSerializer.Serialize(usuario);
+            using var contentJson = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync(url, contentJson);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"API ERROR: {(int)response.StatusCode} - {content}");
+            if (string.IsNullOrWhiteSpace(content))
+                throw new Exception("API retornó contenido vacío");
+
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<bool>>(content,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+            if (apiResponse == null)
+                throw new Exception("Respuesta inválida");
+            if (!apiResponse.Success)
+                throw new Exception(apiResponse.Error?.UserMessage);            
         }
     }
 }

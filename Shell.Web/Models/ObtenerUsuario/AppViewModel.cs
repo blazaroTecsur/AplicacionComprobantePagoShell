@@ -1,4 +1,4 @@
-﻿namespace Shell.Web.Models
+﻿namespace Shell.Web.Models.ObtenerUsuario
 {
     public class AppViewModel
     {
