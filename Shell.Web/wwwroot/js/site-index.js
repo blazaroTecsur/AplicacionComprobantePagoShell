@@ -150,9 +150,16 @@
             });
 
             if (!response.ok) {
-                var txt = await response.text();
-                console.error(txt || response.statusText);
-                CorporateDS.Toast.danger('Hubo un error al actualizar sus datos. Inténtelo nuevamente.');
+                
+                const error = await response.json();
+                if (error.validationErrors) {
+                    let mensajes = [];
+                    Object.values(error.validationErrors).forEach(lista => mensajes.push(...lista));
+                    const detalle = mensajes.join('<br>');
+                    CorporateDS.Toast.danger(`${error.userMessage}<br>${detalle}`);
+                    return;
+                }
+                CorporateDS.Toast.danger(error.userMessage || 'Hubo un error al actualizar sus datos.');
                 return;
             }
 

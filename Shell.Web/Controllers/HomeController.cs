@@ -30,16 +30,25 @@ namespace Shell.Web.Controllers
             return View(usuario);
         }
         public async Task<IActionResult> ActualizarDatos([FromBody] ActualizarViewModel usuario)
-        {            
+        {
             try
-            {                
-                await _apiService.ActualizarDatos(usuario);
+            {
+                var result = await _apiService.ActualizarDatos(usuario);
+                if (!result.Success)
+                    return BadRequest(result.Error);
                 return Ok();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                return BadRequest(new { message = "Hubo un error al actualizar sus datos." });
+
+                return StatusCode(500,
+                    new ApiErrorDetail
+                    {
+                        Code = "INTERNAL_ERROR",
+                        UserMessage =
+                            "Ocurrió un error inesperado. Inténtelo nuevamente."
+                    });
             }
         }
     }

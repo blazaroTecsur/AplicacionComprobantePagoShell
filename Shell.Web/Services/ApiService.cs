@@ -53,7 +53,7 @@ namespace Shell.Web.Services
 
             return apiResponse.Data;
         }
-        public async Task ActualizarDatos(ActualizarViewModel usuario)
+        public async Task<ApiResponse<string>> ActualizarDatos(ActualizarViewModel usuario)
         {
             var context = _httpContextAccessor.HttpContext;
             var token = await context.GetTokenAsync("access_token");
@@ -69,22 +69,37 @@ namespace Shell.Web.Services
 
             var response = await _httpClient.PutAsync(url, contentJson);
             var content = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception($"API ERROR: {(int)response.StatusCode} - {content}");
+            
             if (string.IsNullOrWhiteSpace(content))
-                throw new Exception("API retornó contenido vacío");
-
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<bool>>(content,
+            {
+                return ApiResponse<string>.Fail(
+                    new ApiErrorDetail
+                    {
+                        Code = "EMPTY_RESPONSE",
+                        UserMessage = "El servidor no devolvió información."
+                    });
+            }
+            ApiResponse<string>? apiResponse;
+            try
+            {
+                apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(
+                    content,
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
+            }
+            catch
+            {
+                return ApiResponse<string>.Fail(
+                    new ApiErrorDetail
+                    {
+                        Code = "INVALID_JSON",
+                        UserMessage = "La respuesta del servidor no tiene un formato válido."
+                    });
+            }
 
-            if (apiResponse == null)
-                throw new Exception("Respuesta inválida");
-            if (!apiResponse.Success)
-                throw new Exception(apiResponse.Error?.UserMessage);            
+            return apiResponse;
         }
     }
 }
