@@ -21,7 +21,7 @@ namespace Shell.Web.Services
             _configuration = configuration;
             _httpClient = httpClient;            
         }
-        public async Task<UsuarioViewModel> ObtenerUsuario()
+        public async Task<ApiResponse<UsuarioViewModel>> ObtenerUsuario()
         {
             var context = _httpContextAccessor.HttpContext;
             var token = await context.GetTokenAsync("access_token");
@@ -35,23 +35,36 @@ namespace Shell.Web.Services
             var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
 
-            if (!response.IsSuccessStatusCode)
-                throw new Exception($"API ERROR: {(int)response.StatusCode} - {content}");
             if (string.IsNullOrWhiteSpace(content))
-                throw new Exception("API retornó contenido vacío");
-
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<UsuarioViewModel>>(content,
+            {
+                return ApiResponse<UsuarioViewModel>.Fail(
+                    new ApiErrorDetail
+                    {
+                        Code = "EMPTY_RESPONSE",
+                        UserMessage = "El servidor no devolvió información."
+                    });
+            }
+            ApiResponse<UsuarioViewModel>? apiResponse;
+            try
+            {
+                apiResponse = JsonSerializer.Deserialize<ApiResponse<UsuarioViewModel>>(
+                    content,
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
+            }
+            catch
+            {
+                return ApiResponse<UsuarioViewModel>.Fail(
+                    new ApiErrorDetail
+                    {
+                        Code = "INVALID_JSON",
+                        UserMessage = "La respuesta del servidor no tiene un formato válido."
+                    });
+            }
 
-            if (apiResponse == null)
-                throw new Exception("Respuesta inválida");
-            if (!apiResponse.Success)
-                throw new Exception(apiResponse.Error?.UserMessage);
-
-            return apiResponse.Data;
+            return apiResponse;            
         }
         public async Task<ApiResponse<string>> ActualizarDatos(ActualizarViewModel usuario)
         {

@@ -20,10 +20,13 @@ namespace Shell.Web.Controllers
         }
         public async Task<IActionResult> Index()
         {
+            var result = await _apiService.ObtenerUsuario();
+            if (!result.Success)
+                return RedirectToAction("Error", "Error", new { code = result.Error?.Code, traceId = result.Error?.TraceId });
+
             var assembly = Assembly.GetExecutingAssembly();
             var version = assembly.GetName().Version?.ToString();
-
-            var usuario = await _apiService.ObtenerUsuario();
+            var usuario = result.Data!;
             ViewBag.Tenant = usuario.NomTenant;
             ViewBag.Entorno = _env.EnvironmentName;
             ViewBag.Version = version;
