@@ -2,6 +2,7 @@
 {
     public class ConsultarCapatazQuery
     {
+        public string? Proveedor { get; set; }
         public string? Filtro { get; set; }
     }
 }

@@ -36,9 +36,9 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
         }
         public async Task<RegistrarSolicitudResponse> Ejecutar(RegistrarSolicitudCommand formulario)
         {
-            var validacion = await _fluentv.ValidateAsync(formulario);
-            if (!validacion.IsValid)
-                throw new ValidationException(validacion.Errors);
+            var validacionForm = await _fluentv.ValidateAsync(formulario);
+            if (!validacionForm.IsValid)
+                throw new ValidationException(validacionForm.Errors);
 
             var solicitud = _mapeo.Map<Solicitud>(formulario);
 
@@ -65,6 +65,10 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
             if (orden is null)
                 throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
                     "No se pudo obtener la orden");
+            var validacionOrden = await _fluentv.ValidateAsync(formulario);
+            if (!validacionOrden.IsValid)
+                throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
+                    "Algunos campos de la SRO requeridos para la solicitud están vacíos");
 
             DateTime fecActual = DateTime.Now;
             ValidationResult resultado = new(false, string.Empty);
@@ -75,7 +79,7 @@ namespace Resguardo.Application.Commands.RegistrarSolicitud
             solicitud.NomActv = orden.NomActv;
             solicitud.CodSupr = orden.CodSupr;
             solicitud.NomSupr = orden.NomSupr;
-            solicitud.RucSctta = orden.RucSctta;
+            solicitud.RucSctta = orden.CodSctta;
             solicitud.NomSctta = orden.NomSctta;
             solicitud.FechaFoc = orden.FechaFoc;
             solicitud.Coordenada = orden.Coordenada;

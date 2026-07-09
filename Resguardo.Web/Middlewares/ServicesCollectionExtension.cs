@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using Infor.Infrastructure.DependencyInjection;
+using Maestros.Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Notificacion.Abstractions;
 using Notificacion.Application;
@@ -18,7 +20,9 @@ using Resguardo.Application.Commands.RegistrarSolicitud;
 using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Common.Services;
 using Resguardo.Application.Interfaces;
+using Resguardo.Application.Queries.ConsultarCapataz;
 using Resguardo.Application.Queries.ConsultarSolicitud;
+using Resguardo.Application.Queries.ListarDepartamento;
 using Resguardo.Application.Queries.ListarEfectivos;
 using Resguardo.Application.Queries.ListarLimites;
 using Resguardo.Application.Queries.ListarServicio;
@@ -37,7 +41,6 @@ using Resguardo.Infrastructure.QueryServices;
 using Resguardo.Infrastructure.Repositorios;
 using Resguardo.Infrastructure.Services;
 using Seguridad.Infrastructure.DependencyInjection;
-using Infor.Infrastructure.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 
@@ -120,6 +123,7 @@ namespace Resguardo.Web.Middlewares
             services.AddScoped<AsignarEfectivoHandler>();
             services.AddScoped<CerrarServicioHandler>();
             services.AddScoped<ObtenerPersonalHandler>();
+            services.AddScoped<ListarDptoHandler>();
             services.AddScoped<ListarLimitesHandler>();
             services.AddScoped<ObtenerLimitesHandler>();
             services.AddScoped<RegistrarConfigHandler>();
@@ -130,10 +134,11 @@ namespace Resguardo.Web.Middlewares
             services.AddScoped<ReporteSolicitudHandler>();
             services.AddScoped<ReporteEfectivoHandler>();
             services.AddScoped<ObtenerSolicitudFolioHandler>();
+            services.AddScoped<ConsultarCapatazHandler>();
             services.AddSeguridad(config);
-            services.AddInfor(config);            
-            services.AddScoped<IInforService, InforService>();
-            services.AddHttpClient<IMaestroService, MaestroService>();
+            services.AddInfor(config);
+            services.AddMaestros(config);
+            services.AddScoped<IInforService, InforService>();            
             services.AddMemoryCache();
 
             return services;

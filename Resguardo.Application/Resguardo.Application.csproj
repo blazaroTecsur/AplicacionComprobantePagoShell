@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infor.Abstractions\Infor.Abstractions.csproj" />
+    <ProjectReference Include="..\Maestros.Abstractions\Maestros.Abstractions.csproj" />
     <ProjectReference Include="..\Notificacion.Abstractions\Notificacion.Abstractions.csproj" />
     <ProjectReference Include="..\Resguardo.Domain\Resguardo.Domain.csproj" />
     <ProjectReference Include="..\Seguridad.Abstractions\Seguridad.Abstractions.csproj" />

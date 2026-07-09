@@ -36,8 +36,8 @@ namespace Resguardo.Infrastructure.Services
                 NomActv = item.GetProperty("SROTypeDesc").GetString(),
                 CodSupr = "SUP001",
                 NomSupr = "Juan Pérez",
-                RucSctta = "12345678901",
-                NomSctta = "Constructora XYZ S.A.",
+                CodSctta = "GR00003",
+                NomSctta = "GRUPO DE CONTRATISTAS INTERNACIONALES",
                 FechaFoc = DateTime.Now.AddDays(-10),
                 Coordenada = "-12.1726108,-76.9724007",
                 Direccion = item.TryGetProperty("PagerAddr", out var addr) ? addr.GetString() : null

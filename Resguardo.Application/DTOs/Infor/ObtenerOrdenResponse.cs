@@ -7,7 +7,7 @@
         public string Descripcion { get; set; } = null!;
         public string CodDpto { get; set; } = null!;
         public string NomDpto { get; set; } = null!;
-        public string RucSctta { get; set; } = null!;
+        public string CodSctta { get; set; } = null!;
         public string NomSctta { get; set; } = null!;
         public string CodActv { get; set; } = null!;
         public string NomActv { get; set; } = null!;
