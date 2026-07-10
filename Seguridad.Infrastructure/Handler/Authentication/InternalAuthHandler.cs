@@ -1,26 +1,26 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Seguridad.Infrastructure.Services;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 
 namespace Seguridad.Infrastructure.Handler.Authentication
 {
     public class InternalAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
-    {        
-        private readonly IConfiguration _config;
+    {
+        private readonly ApplicationSetting _application;
         public InternalAuthHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
-            ILoggerFactory logger,     
+            ILoggerFactory logger,
             UrlEncoder encoder,
-            IConfiguration config)
+            IOptions<ApplicationSetting> application)
             : base(options, logger, encoder)
-        {            
-            _config = config;
+        {
+            _application = application.Value;
         }
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
-        {            
+        {
             //-- Paso 1: Lectura de headers enviados por el shell
             var codUsuario = Request.Headers["X-User-Oid"].FirstOrDefault();
             var codTenant = Request.Headers["X-Tenant-Id"].FirstOrDefault();
@@ -28,8 +28,8 @@ namespace Seguridad.Infrastructure.Handler.Authentication
             var nomUsuario = Request.Headers["X-User-Name"].FirstOrDefault();
             var sessionId = Request.Headers["X-Session-Id"].FirstOrDefault();
             var schema = Request.Headers["X-Schema"].FirstOrDefault();
-            var codApp = _config["codApplication"];
-            
+            var codApp = _application.Code;
+
             if (string.IsNullOrEmpty(codUsuario) ||
                 string.IsNullOrEmpty(codTenant) ||
                 string.IsNullOrEmpty(codApp) ||
@@ -40,7 +40,7 @@ namespace Seguridad.Infrastructure.Handler.Authentication
 
             //-- Paso 2: Creación de claims
             var claims = new List<Claim>
-            {                
+            {
                 new Claim("oid", codUsuario),
                 new Claim("tid", codTenant),
                 new Claim("email", usuCorreo),
@@ -48,12 +48,12 @@ namespace Seguridad.Infrastructure.Handler.Authentication
                 new Claim("session_id", sessionId),
                 new Claim("app", codApp),
                 new Claim("schema", schema)
-            };           
+            };
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
             return AuthenticateResult.Success(ticket);
-            
+
             //-- Continua la ejecución de PermisosClaimsTransformation.cs
         }
     }

@@ -10,27 +10,28 @@ namespace Seguridad.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly SeguridadTokenService _tokenService;
-        public SeguridadService(HttpClient httpClient, SeguridadTokenService tokenService)
+        private readonly SecuritySetting _settings;
+        public SeguridadService(HttpClient httpClient, SeguridadTokenService tokenService, SecuritySetting settings)
         {
             _httpClient = httpClient;
             _tokenService = tokenService;
+            _settings = settings;
         }
         public async Task<IEnumerable<SeguridadRolResponse>> ObtenerPermisos(
             string type, string codUsuario, string codApp)
         {
             var token = await _tokenService.GetTokenAsync(type);
-            var config = _tokenService.GetConfiguration(type);
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var query =
                 new Dictionary<string, string>
                 {
-                    ["codUsuario"] = codUsuario,                    
+                    ["codUsuario"] = codUsuario,
                     ["codApp"] = codApp
                 };
 
-            var url = QueryHelpers.AddQueryString(config.ObtenerPermisos, query);
+            var url = QueryHelpers.AddQueryString(_settings.Endpoints.ObtenerPermisos, query);
             var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
