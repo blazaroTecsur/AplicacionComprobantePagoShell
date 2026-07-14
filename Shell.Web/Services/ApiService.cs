@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
 using Shell.Web.Models.ActualizarDatos;
 using Shell.Web.Models.ObtenerUsuario;
+using Shell.Web.Settings;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -10,15 +12,15 @@ namespace Shell.Web.Services
     public class ApiService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
-        private readonly IConfiguration _configuration;        
+        private readonly HttpClient _httpClient;        
+        private readonly ApiSettings _apiSettings;
         public ApiService(
             IHttpContextAccessor httpContextAccessor,
-            IConfiguration configuration,
+            IOptions<ApiSettings> options,
             HttpClient httpClient)
         {
             _httpContextAccessor = httpContextAccessor;
-            _configuration = configuration;
+            _apiSettings = options.Value;
             _httpClient = httpClient;            
         }
         public async Task<ApiResponse<UsuarioViewModel>> ObtenerUsuario()
@@ -31,7 +33,7 @@ namespace Shell.Web.Services
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var url = _configuration["ApiSettings:Autenticar"];
+            var url = $"{_apiSettings.Seguridad.BaseUrl}{_apiSettings.Seguridad.Endpoints.Autenticar}";
             var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
 
@@ -76,7 +78,7 @@ namespace Shell.Web.Services
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var url = _configuration["ApiSettings:Actualizar"];
+            var url = $"{_apiSettings.Seguridad.BaseUrl}{_apiSettings.Seguridad.Endpoints.Actualizar}";            
             var json = JsonSerializer.Serialize(usuario);
             using var contentJson = new StringContent(json, Encoding.UTF8, "application/json");
 

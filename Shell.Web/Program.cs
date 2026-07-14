@@ -11,6 +11,7 @@ using Serilog.Events;
 using Shell.Web.Helpers;
 using Shell.Web.Middleware;
 using Shell.Web.Services;
+using Shell.Web.Settings;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,11 @@ builder.Configuration
    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
    .AddEnvironmentVariables();
 
+var logPath = builder.Configuration["Loggings:Path"] ?? "logs";
+var storagePath = builder.Configuration["Storages:Path"] ?? "storage";
+Directory.CreateDirectory(logPath);
+Directory.CreateDirectory(storagePath);
+
 Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Information()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -30,7 +36,7 @@ Log.Logger = new LoggerConfiguration()
         .Enrich.WithThreadId()
         .WriteTo.Console()
         .WriteTo.File(
-            path: "Logs/she-web-.log",
+            path: Path.Combine(logPath, "web-shell-.log"),            
             rollingInterval: RollingInterval.Day,
             retainedFileCountLimit: 14
         ).CreateLogger();
@@ -43,9 +49,10 @@ var mvcBuilder = builder.Services.AddControllersWithViews(options =>
 if (builder.Environment.IsDevelopment())
     mvcBuilder.AddRazorRuntimeCompilation();
 
+builder.Services.Configure<AzureSettings>(builder.Configuration.GetSection("AzureAd"));
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
 builder.Services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
 builder.Services.AddHttpClient<ApiService>();
-
 builder.Services
     .AddAuthentication(options =>
     {
@@ -57,7 +64,6 @@ builder.Services
     {
         ConfigureOpenId(
             options,
-            builder.Configuration.GetSection($"AzureAd:{Constante.SCHEMA_CORPORATE}"),
             builder.Configuration,
             Constante.SCHEMA_CORPORATE);
         options.BackchannelHttpHandler =
@@ -71,7 +77,6 @@ builder.Services
     {
         ConfigureOpenId(
             options,
-            builder.Configuration.GetSection($"AzureAd:{Constante.SCHEMA_EXTERNAL}"),
             builder.Configuration,
             Constante.SCHEMA_EXTERNAL);
         options.BackchannelHttpHandler =
@@ -88,15 +93,25 @@ builder.Services.AddInMemoryTokenCaches();
 
 void ConfigureOpenId(
     OpenIdConnectOptions options,
-    IConfigurationSection section,
     IConfiguration configuration,
     string schema)
 {
-    options.Authority = section["Authority"];
-    options.MetadataAddress = $"{section["Authority"]}/v2.0/.well-known/openid-configuration";
-    options.ClientId = section["ClientId"];
-    options.ClientSecret = section["ClientSecret"];
-    options.CallbackPath = section["CallbackPath"];
+    var azureAd = configuration
+    .GetSection("AzureAd")
+    .Get<AzureSettings>();
+    var apiSeguridad = configuration
+    .GetSection("ApiSettings:Seguridad")
+    .Get<SeguridadSettings>();
+    var appBaseUrl = configuration["AppBaseUrl"];
+
+    TenantSettings tenant = schema == Constante.SCHEMA_EXTERNAL ? azureAd.External : azureAd.Corporate;
+    string scope = schema == Constante.SCHEMA_EXTERNAL ? apiSeguridad.ScopeExternal : apiSeguridad.ScopeCorporate;
+
+    options.Authority = tenant.Authority;
+    options.MetadataAddress = $"{tenant.Authority}/v2.0/.well-known/openid-configuration";
+    options.ClientId = tenant.ClientId;
+    options.ClientSecret = tenant.ClientSecret;
+    options.CallbackPath = tenant.CallbackPath;
     options.ResponseType = "code";
     options.ResponseMode = "form_post";
     options.UsePkce = true;
@@ -108,7 +123,7 @@ void ConfigureOpenId(
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("offline_access");
-    options.Scope.Add(configuration[$"ApiSettings:Scope{schema}"]);
+    options.Scope.Add(scope);
     options.BackchannelHttpHandler = new HttpClientHandler
     {
         UseProxy = false,
@@ -135,7 +150,7 @@ void ConfigureOpenId(
         },
         OnRedirectToIdentityProviderForSignOut = context =>
         {
-            context.ProtocolMessage.PostLogoutRedirectUri = configuration["AppBaseUrl"];
+            context.ProtocolMessage.PostLogoutRedirectUri = appBaseUrl;
             return Task.CompletedTask;
         },
         OnRedirectToIdentityProvider = context =>
