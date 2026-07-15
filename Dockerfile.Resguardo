@@ -10,7 +10,7 @@ COPY . .
 
 RUN dotnet restore
 
-RUN dotnet publish Resguardo.Web/Shell.Web.csproj \
+RUN dotnet publish Resguardo.Web/Resguardo.Web.csproj \
     -c Release \
     -o /app/publish
 

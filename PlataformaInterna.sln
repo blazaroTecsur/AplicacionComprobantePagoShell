@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.6.11822.322 stable
+VisualStudioVersion = 18.6.11822.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resguardo.Web", "Resguardo.Web\Resguardo.Web.csproj", "{6ACA4A85-F0ED-480D-A7ED-FD4ABCA587F4}"
 EndProject
@@ -88,6 +88,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reciclaje.Infraestructura", "Reciclaje.Infraestructura\Reciclaje.Infraestructura.csproj", "{6FB3BE2B-839D-6177-2781-1FC669555636}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reciclaje.Web", "Reciclaje.Web\Reciclaje.Web.csproj", "{38371AFE-3391-4263-EA10-225ABBCF577D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deploy", "deploy", "{6FCBA4F0-44B3-4CD7-B8C8-6423A9ECC12F}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		Dockerfile.Resguardo = Dockerfile.Resguardo
+		Dockerfile.Shell = Dockerfile.Shell
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -59,6 +59,11 @@ namespace Resguardo.Web.Middlewares
         }
         public static WebApplicationBuilder AddSeriLog(this WebApplicationBuilder builder, IConfiguration config)
         {
+            var logPath = builder.Configuration["Loggings:Path"] ?? "logs";
+            var storagePath = builder.Configuration["Storages:Path"] ?? "storage";
+            Directory.CreateDirectory(logPath);
+            Directory.CreateDirectory(storagePath);
+
             Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -68,7 +73,7 @@ namespace Resguardo.Web.Middlewares
             .Enrich.WithThreadId()
             .WriteTo.Console()
             .WriteTo.File(
-                path: "Logs/rpo-web-.log",
+                path: Path.Combine(logPath, "web-resguardo-.log"),                
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 14
             ).CreateLogger();
