@@ -1,9 +1,8 @@
 ﻿using FluentValidation;
 using Infor.Infrastructure.DependencyInjection;
-using Maestros.Infrastructure.DependencyInjection;
+using Maestro.Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Notificacion.Abstractions;
-using Notificacion.Application;
 using Notificacion.Infrastructure.DependencyInjection;
 using Notificacion.Infrastructure.Email;
 using Resguardo.Application.Commands.ActualizarSolicitud;

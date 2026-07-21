@@ -1,4 +1,4 @@
-﻿using Maestros.Abstractions.Interfaces;
+﻿using Maestro.Abstractions.Interfaces;
 using Resguardo.Application.Common;
 
 namespace Resguardo.Application.Queries.ListarDepartamento

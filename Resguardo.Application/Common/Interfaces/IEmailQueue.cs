@@ -1,4 +1,4 @@
-﻿using Notificacion.Domain.Models;
+﻿using Notificacion.Abstractions;
 
 namespace Resguardo.Application.Common.Interfaces
 {

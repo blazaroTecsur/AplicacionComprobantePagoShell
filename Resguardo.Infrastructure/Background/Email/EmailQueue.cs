@@ -1,4 +1,4 @@
-﻿using Notificacion.Domain.Models;
+﻿using Notificacion.Abstractions;
 using Resguardo.Application.Common.Interfaces;
 using System.Threading.Channels;
 
