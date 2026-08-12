@@ -16,9 +16,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Infor.Abstractions" Version="1.0.0" />
+    <PackageReference Include="Seguridad.Abstractions" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ComprobantePago.Domain\ComprobantePago.Domain.csproj" />
-    <ProjectReference Include="..\Infor.Abstractions\Infor.Abstractions.csproj" />
-    <ProjectReference Include="..\Seguridad.Abstractions\Seguridad.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
