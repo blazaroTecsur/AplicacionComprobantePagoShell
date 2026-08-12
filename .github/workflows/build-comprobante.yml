@@ -1,0 +1,56 @@
+name: Build WEB Comprobante
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'ComprobantePago.*/**'
+      - 'Dockerfile.Comprobante'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Debug
+      run: |
+        echo "ACTOR=${{ github.actor }}"
+        echo "OWNER=${{ github.repository_owner }}"
+        echo "REPO=${{ github.repository }}"
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Login GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract Metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/web-comprobante
+        tags: |
+          type=raw,value=1.0.${{ github.run_number }}
+
+    - name: Build and Push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.Comprobante
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        build-args: |
+          NUGET_USERNAME=${{ github.actor }}
+          NUGET_TOKEN=${{ secrets.GITHUB_TOKEN }}
