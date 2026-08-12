@@ -14,15 +14,15 @@ using ComprobantePago.Infrastructure.Services;
 using ComprobantePago.Infrastructure.Services.Maestros;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Notificacion.Infrastructure.DependencyInjection;
 using ComprobantePago.Web.Auth;
 using Seguridad.Abstractions.Interfaces;
-using Maestros.Infrastructure.DependencyInjection;
+using Maestro.Infrastructure.DependencyInjection;
 using Seguridad.Infrastructure.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using System.Text.Json;
+using Infor.Infrastructure.DependencyInjection;
 
 namespace ComprobantePago.Web.Middlewares
 {
