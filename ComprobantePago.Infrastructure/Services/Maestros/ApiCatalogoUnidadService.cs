@@ -1,6 +1,6 @@
 using ComprobantePago.Application.DTOs.Comprobante.Common;
 using ComprobantePago.Application.Interfaces.Services.Maestros;
-using Maestros.Abstractions.Interfaces;
+using Maestro.Abstractions.Interfaces;
 using Seguridad.Abstractions.Interfaces;
 
 namespace ComprobantePago.Infrastructure.Services.Maestros
@@ -13,7 +13,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
         {
             // Unidad 4 es global — sin filtro de empresa (igual que DbCatalogoUnidadService)
             var empresa = unidad == 4 ? string.Empty : usuario.Empresa;
-            var result  = await maestros.GetByUnidadAsync(unidad, empresa, filtro, 1, 100);
+            var result  = await maestros.GetAllAsync(unidad, empresa, "", filtro, 1, 100);
             return result.Items.Select(c => new ComboDto
             {
                 Codigo      = c.Codigo,

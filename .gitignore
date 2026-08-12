@@ -370,3 +370,4 @@ FodyWeavers.xsd
 **/appsettings.Development.json
 **/appsettings.Production.json
 **/appsettings.Local.json
+ComprobantePago.Web/wwwroot/lib/

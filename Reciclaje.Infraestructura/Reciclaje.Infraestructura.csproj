@@ -22,4 +22,8 @@
     <Folder Include="Scaffold\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Reciclaje.Dominio\Reciclaje.Dominio.csproj" />
+  </ItemGroup>
+
 </Project>

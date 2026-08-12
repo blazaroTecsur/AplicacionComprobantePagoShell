@@ -1,6 +1,6 @@
 using ComprobantePago.Application.DTOs.Comprobante.Common;
 using ComprobantePago.Application.Interfaces.Services.Maestros;
-using Maestros.Abstractions.Interfaces;
+using Maestro.Abstractions.Interfaces;
 
 namespace ComprobantePago.Infrastructure.Services.Maestros
 {
