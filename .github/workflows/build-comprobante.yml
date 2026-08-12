@@ -51,3 +51,6 @@ jobs:
         file: ./Dockerfile.Comprobante
         push: true
         tags: ${{ steps.meta.outputs.tags }}
+        build-args: |
+          NUGET_USERNAME=${{ github.actor }}
+          NUGET_TOKEN=${{ secrets.GITHUB_TOKEN }}
