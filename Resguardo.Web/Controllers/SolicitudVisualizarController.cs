@@ -8,37 +8,35 @@ using Resguardo.Application.Queries.ListarServicio;
 using Resguardo.Application.Queries.ListarServicioProv;
 using Resguardo.Application.Queries.ObtenerSolicitud;
 using Resguardo.Application.Services;
-using Seguridad.Infrastructure.Handler.Authorization;
 using Resguardo.Web.Models;
+using Seguridad.Infrastructure.Handler.Authorization;
 
 namespace Resguardo.Web.Controllers
 {
-    [Permission("SOLC.VER")]    
+    [Permission("SOLC.VER")]
     public class SolicitudVisualizarController : Controller
-    {        
+    {
         private readonly ObtenerSolicitudHandler _obtenerSolicitud;
         private readonly ConsultarSolicitudHandler _consultarSolicitud;
         private readonly ListarGenericoHandler _listarGenerico;
-        private readonly ListarServicioHandler _listarServicio;
-        private readonly ListarServicioProvHandler _listarServicioCtta;
+        private readonly ListarServicioHandler _listarServicio;        
         private readonly IInforService _orden;
-        private readonly IMaestroService _maestro;
-        public SolicitudVisualizarController(         
+        private readonly ConsultarCapatazHandler _capataz;
+        public SolicitudVisualizarController(
             ObtenerSolicitudHandler obtenerSolicitud,
             ConsultarSolicitudHandler consultarSolicitud,
             ListarGenericoHandler listarGenerico,
             ListarServicioHandler listarServicio,
             ListarServicioProvHandler listarServicioCtta,
             IInforService orden,
-            IMaestroService maestro)
-        {           
+            ConsultarCapatazHandler capataz)
+        {
             _obtenerSolicitud = obtenerSolicitud;
             _consultarSolicitud = consultarSolicitud;
             _listarGenerico = listarGenerico;
-            _listarServicio = listarServicio;
-            _listarServicioCtta = listarServicioCtta;
+            _listarServicio = listarServicio;            
             _orden = orden;
-            _maestro = maestro;
+            _capataz = capataz;
         }
 
         #region Vistas        
@@ -61,7 +59,7 @@ namespace Resguardo.Web.Controllers
         public IActionResult Mapa()
         {
             return PartialView("_Mapa");
-        }        
+        }
         #endregion
 
         #region Metodos
@@ -83,7 +81,7 @@ namespace Resguardo.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConsultarCapataces([FromBody] GridRequest<ConsultarCapatazQuery> grid)
         {
-            var capataces = await _maestro.ConsultarCapataz(grid);
+            var capataces = await _capataz.Ejecutar(grid);            
             return Ok(ApiResponse<GridResponse<ConsultarCapatazResponse>>.Ok(capataces));
         }
         [HttpGet]

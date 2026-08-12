@@ -1,4 +1,4 @@
-@model Shell.Web.Models.UsuarioViewModel
+@model Shell.Web.Models.ObtenerUsuario.UsuarioViewModel
 
 <!DOCTYPE html>
 <html lang="es">
@@ -52,28 +52,28 @@
         </button>
 
         <nav class="layout-sb-nav" aria-label="Menú principal">
-            @{
 
-
-
-                var apps = Model.Menus.Select(m => new Shell.Web.Models.AppViewModel()
+            @if (Model.FlagDatos)
             {
-                Codigo = m.App.Codigo,
-                Nombre = m.App.Nombre,
-                Ruta = m.App.Ruta,
-                Icono = m.App.Icono
-            }).DistinctBy(a=> new {  a.Codigo, a.Nombre, a.Ruta, a.Icono } ).ToList();
-            }
-            @foreach (var app in apps)
-            {
-                    <span class="layout-nav-section">@app.Nombre</span>
-                @foreach (var menu in Model.Menus.Where(m => m.App.Codigo == app.Codigo))
+                var apps = Model.Menus.Select(m => new Shell.Web.Models.ObtenerUsuario.AppViewModel()
                 {
-                            <div class="layout-nav-item">
-                                <a class="layout-nav-link" href="@($"{app.Ruta}{menu.Ruta}")" target="_blank" app="@app.Codigo" menu="@menu.Codigo" >
-                                    <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i> @menu.Nombre
-                                </a>
-                            </div>
+                    Codigo = m.App.Codigo,
+                    Nombre = m.App.Nombre,
+                    Ruta = m.App.Ruta,
+                    Icono = m.App.Icono
+                }).DistinctBy(a => new { a.Codigo, a.Nombre, a.Ruta, a.Icono }).ToList();
+
+                foreach (var app in apps)
+                {
+                    <span class="layout-nav-section">@app.Nombre</span>
+                    @foreach (var menu in Model.Menus.Where(m => m.App.Codigo == app.Codigo))
+                    {
+                        <div class="layout-nav-item">
+                            <a class="layout-nav-link" href="@($"{app.Ruta}{menu.Ruta}")" target="_blank" app="@app.Codigo" menu="@menu.Codigo">
+                                <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i> @menu.Nombre
+                            </a>
+                        </div>
+                    }
                 }
             }
         </nav>
@@ -118,35 +118,7 @@
     ══════════════════════════════════════════════════════════════ *@
     <main class="layout-main" id="mainContent" role="main">
         <div class="layout-page-body">
-
-            @* ── Mensajes flash (TempData) ────────────────────────── *@
-            @if (TempData["SuccessMessage"] != null)
-            {
-                    <div class="corp-alert corp-alert--success mb-3" role="alert">
-                        <i class="bi bi-check-circle-fill corp-alert__icon" aria-hidden="true"></i>
-                        <div class="corp-alert__body">@TempData["SuccessMessage"]</div>
-                        <button class="corp-alert__close" aria-label="Cerrar">✕</button>
-                    </div>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                    <div class="corp-alert corp-alert--danger mb-3" role="alert">
-                        <i class="bi bi-x-circle-fill corp-alert__icon" aria-hidden="true"></i>
-                        <div class="corp-alert__body">@TempData["ErrorMessage"]</div>
-                        <button class="corp-alert__close" aria-label="Cerrar">✕</button>
-                    </div>
-            }
-            @if (TempData["WarningMessage"] != null)
-            {
-                    <div class="corp-alert corp-alert--warning mb-3" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill corp-alert__icon" aria-hidden="true"></i>
-                        <div class="corp-alert__body">@TempData["WarningMessage"]</div>
-                        <button class="corp-alert__close" aria-label="Cerrar">✕</button>
-                    </div>
-            }
-
             @RenderBody()
-
         </div>
     </main>
 
@@ -158,109 +130,16 @@
             <div class="layout-ud-email">@Model.Correo</div>
         </div>
         <div style="padding:6px 0;">
-            <button class="layout-ud-item" onclick="Layout.abrirModalActualizar()" role="menuitem">
-                <i class="bi bi-person-fill-gear" aria-hidden="true"></i> Actualizar datos
-            </button>            
+            @if (!Model.FlagDatos)
+            {
+                <button class="layout-ud-item" onclick="Layout.abrirModalActualizar()" role="menuitem">
+                    <i class="bi bi-person-fill-gear" aria-hidden="true"></i> Actualizar datos
+                </button>
+            }
             <div class="layout-ud-divider"></div>
             <button class="layout-ud-item danger" onclick="Layout.confirmarLogout()" role="menuitem">
                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión
             </button>
-        </div>
-    </div>
-
-    @* ══════════════════════════════════════════════════════════════
-    MODAL: ACTUALIZAR DATOS DE USUARIO
-    Definido aquí para que esté disponible desde el dropdown
-    de usuario en CUALQUIER vista, no solo en Dashboard.
-    ══════════════════════════════════════════════════════════════ *@
-    <div class="modal fade" id="layoutUpdateModal" tabindex="-1"
-         aria-labelledby="layoutUpdateModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content"
-                 style="border:none; border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-lg);">
-
-                <div style="background:var(--corp-blue); padding:16px 20px;
-                        display:flex; align-items:center; justify-content:space-between;">
-                    <div style="font-family:var(--font-display); font-weight:var(--fw-bold);
-                            font-size:var(--text-base); color:#fff;
-                            display:flex; align-items:center; gap:8px;"
-                         id="layoutUpdateModalTitle">
-                        <i class="bi bi-person-fill-gear" aria-hidden="true"></i>
-                        Actualizar Datos Personales
-                    </div>
-                    <button style="background:rgba(255,255,255,.15); border:none; width:30px; height:30px;
-                               border-radius:var(--radius-sm); color:#fff; cursor:pointer;
-                               display:flex; align-items:center; justify-content:center; font-size:.9rem;
-                               transition:background var(--transition-fast);"
-                            onmouseover="this.style.background='rgba(255,255,255,.28)'"
-                            onmouseout="this.style.background='rgba(255,255,255,.15)'"
-                            data-bs-dismiss="modal" aria-label="Cerrar">
-                        <i class="bi bi-x-lg" aria-hidden="true"></i>
-                    </button>
-                </div>
-
-                <div style="padding:24px;">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="corp-field">
-                                <label class="corp-field__label">Nombre</label>
-                                <input type="text" id="layoutUpdNombre" class="corp-input"
-                                       value="@(Model.Titulo.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault())"
-                                       placeholder="Nombre" />
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="corp-field">
-                                <label class="corp-field__label">Apellido</label>
-                                <input type="text" id="layoutUpdApellido" class="corp-input"
-                                       value="@(Model.Titulo.Contains(' ') ? Model.Titulo.Substring(Model.Titulo.IndexOf(' ')+1) : "")"
-                                       placeholder="Apellido" />
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="corp-field">
-                                <label class="corp-field__label">Correo electrónico</label>
-                                <div class="corp-input-group corp-input-group--icon-left">
-                                    <span class="corp-input-group__icon corp-input-group__icon--left">
-                                        <i class="bi bi-envelope-fill" aria-hidden="true"></i>
-                                    </span>
-                                    <input type="email" id="layoutUpdEmail" class="corp-input"
-                                           value="@Model.Correo" placeholder="Correo" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="corp-field">
-                                <label class="corp-field__label">Teléfono</label>
-                                <div class="corp-input-group corp-input-group--icon-left">
-                                    <span class="corp-input-group__icon corp-input-group__icon--left">
-                                        <i class="bi bi-telephone-fill" aria-hidden="true"></i>
-                                    </span>
-                                    <input type="tel" id="layoutUpdTelefono" class="corp-input"
-                                           value="@(ViewData["UserPhone"] as string ?? "")"
-                                           placeholder="Teléfono" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="corp-field">
-                                <label class="corp-field__label">Ubicación / Oficina</label>
-                                <input type="text" id="layoutUpdUbicacion" class="corp-input"
-                                       value="@(ViewData["UserLocation"] as string ?? "")"
-                                       placeholder="Sede / Piso" />
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
-                        <button class="corp-btn corp-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
-                        <button class="corp-btn corp-btn--primary" id="layoutBtnGuardarUpd"
-                                onclick="Layout.guardarActualizacion()">
-                            <i class="bi bi-check-lg" aria-hidden="true"></i> Guardar cambios
-                        </button>
-                    </div>
-                </div>
-
-            </div>
         </div>
     </div>
 
@@ -274,16 +153,16 @@
                  style="border:none; border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-lg);">
 
                 <div style="background:var(--corp-danger); padding:16px 20px;
-                        display:flex; align-items:center; justify-content:space-between;">
+                    display:flex; align-items:center; justify-content:space-between;">
                     <div style="font-family:var(--font-display); font-weight:var(--fw-bold);
-                            font-size:var(--text-base); color:#fff;
-                            display:flex; align-items:center; gap:8px;"
+                        font-size:var(--text-base); color:#fff;
+                        display:flex; align-items:center; gap:8px;"
                          id="layoutLogoutModalTitle">
                         <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión
                     </div>
                     <button style="background:rgba(255,255,255,.15); border:none; width:30px; height:30px;
-                               border-radius:var(--radius-sm); color:#fff; cursor:pointer;
-                               display:flex; align-items:center; justify-content:center; font-size:.9rem;"
+                        border-radius:var(--radius-sm); color:#fff; cursor:pointer;
+                        display:flex; align-items:center; justify-content:center; font-size:.9rem;"
                             data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="bi bi-x-lg" aria-hidden="true"></i>
                     </button>
@@ -291,17 +170,17 @@
 
                 <div style="padding:24px; text-align:center;">
                     <div style="width:56px; height:56px; border-radius:50%;
-                            background:var(--corp-danger-light); margin:0 auto 14px;
-                            display:flex; align-items:center; justify-content:center;
-                            font-size:1.5rem; color:var(--corp-danger);" aria-hidden="true">
+                        background:var(--corp-danger-light); margin:0 auto 14px;
+                        display:flex; align-items:center; justify-content:center;
+                        font-size:1.5rem; color:var(--corp-danger);" aria-hidden="true">
                         <i class="bi bi-box-arrow-right"></i>
                     </div>
                     <div style="font-family:var(--font-display); font-weight:var(--fw-bold);
-                            font-size:var(--text-md); color:var(--corp-gray-800); margin-bottom:6px;">
+                        font-size:var(--text-md); color:var(--corp-gray-800); margin-bottom:6px;">
                         ¿Cerrar sesión?
                     </div>
                     <div style="font-size:var(--text-sm); color:var(--corp-gray-400);
-                            line-height:1.5; margin-bottom:20px;">
+                        line-height:1.5; margin-bottom:20px;">
                         ¿Está seguro que desea desconectarse de tu cuenta?
                     </div>
                     <div style="display:flex; gap:10px; justify-content:center;">
@@ -311,7 +190,6 @@
                         </a>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -322,6 +200,21 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/ui-corporativo/corp-design-system.js" asp-append-version="true"></script>
     <script src="~/js/site-index.js" asp-append-version="true"></script>
+
+    @* ══════════════════════════════════════════════════════════════
+    MODAL: ACTUALIZAR DATOS DE USUARIO
+    Definido aquí para que esté disponible desde el dropdown
+    de usuario en CUALQUIER vista, no solo en Dashboard.
+    ══════════════════════════════════════════════════════════════ *@
+
+    @if (!Model.FlagDatos)
+    {
+        @await Html.PartialAsync("_UserData", Model)
+
+        <script type="text/javascript">
+            Layout.abrirModalActualizar();
+        </script>
+    }
 
 </body>
 </html>

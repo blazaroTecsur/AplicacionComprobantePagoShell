@@ -1,0 +1,239 @@
+﻿@{
+    string Web = "SISTEMA RECUPERO";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>:: @Web - @ViewData["Titulo"]</title>
+    <!-- Bootstrap + Icons -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="~/lib/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- UI Corporativo -->
+    <link href="~/lib/ui-corporativo/corp-design-system.min.css" rel="stylesheet" />
+    <!-- DataTables -->
+    <link href="~/lib/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <!-- SweetAlert2 -->
+    <link href="~/lib/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet" />
+    <!-- Estilos propios -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        .navbar-brand-title {
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+            color: var(--corp-blue-dark, #1e2d5a) !important;
+        }
+
+        .navbar .nav-link {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--corp-text, #2c3e50) !important;
+            padding: 0.45rem 0.75rem;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+
+            .navbar .nav-link:hover,
+            .navbar .nav-link:focus {
+                background: rgba(30, 45, 90, 0.07);
+            }
+
+            .navbar .nav-link.active {
+                background: rgba(30, 45, 90, 0.12);
+                color: var(--corp-blue-dark, #1e2d5a) !important;
+                font-weight: 600;
+            }
+
+        .navbar .dropdown-menu {
+            border: 1px solid rgba(30, 45, 90, 0.12);
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(30, 45, 90, 0.14);
+            padding: 0.4rem 0;
+            min-width: 220px;
+        }
+
+        .navbar .dropdown-item {
+            font-size: 0.845rem;
+            padding: 0.45rem 1rem;
+            color: var(--corp-text, #2c3e50);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .navbar .dropdown-item:hover {
+                background: rgba(30, 45, 90, 0.07);
+                color: var(--corp-blue-dark, #1e2d5a);
+            }
+
+        .navbar .dropdown-header {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--corp-gray-dark, #6c7a8a);
+            padding: 0.5rem 1rem 0.2rem;
+        }
+
+        .navbar .dropdown-divider {
+            margin: 0.3rem 0;
+            border-color: rgba(30, 45, 90, 0.08);
+        }
+
+        .nav-badge-menu {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 20px;
+            background: var(--corp-blue-dark, #1e2d5a);
+            color: #fff;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-md navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+
+                <!-- ── Brand ── -->
+                <a class="navbar-brand navbar-brand-title d-flex align-items-center gap-2"
+                   asp-controller="ValeRecupero" asp-action="Index">
+                    <i class="bi bi-recycle" style="font-size:1.25rem; color:var(--corp-blue-dark,#1e2d5a);"></i>
+                    @Web
+                </a>
+
+                <!-- ── Toggler móvil ── -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarMain" aria-controls="navbarMain"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- ── Menús ── -->
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-md-0">
+
+                        <!-- ① Vales de Recupero -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="menuVales"
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-file-earmark-text me-1"></i> Vales de Recupero
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="menuVales">
+                                <li><h6 class="dropdown-header">Gestión de Vales</h6></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ValeRecupero" asp-action="Index">
+                                        <i class="bi bi-plus-circle"></i> Generar Vale
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><h6 class="dropdown-header">Flujo de Aprobación</h6></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="RecepcionarVale" asp-action="Index">
+                                        <i class="bi bi-box-seam"></i> Recepcionar Vale
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ConfirmarVale" asp-action="Index">
+                                        <i class="bi bi-check2-circle"></i> Confirmar Vale
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- ② Órdenes de Compra -->
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="TareaOrdenCompra" asp-action="Index">
+                                <i class="bi bi-cart3 me-1"></i> Órdenes de Compra
+                            </a>
+                        </li>
+
+                        <!-- ③ Mantenimiento -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="menuMant"
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear me-1"></i> Mantenimiento
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="menuMant">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Conversionarticulo" asp-action="Index">
+                                        <i class="bi bi-arrow-left-right"></i> Conversión de Artículos
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                    </ul>
+
+                    <!-- ── Indicador página activa ── -->
+                    <span class="d-none d-md-inline text-muted me-3"
+                          style="font-size:0.78rem; border-left:2px solid var(--corp-gray,#dee2e6); padding-left:0.75rem;">
+                        <i class="bi bi-display me-1"></i>@ViewData["Titulo"]
+                    </span>
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid">
+        <main role="main" class="pb-3">
+            <!-- Loading global -->
+            <div id="loading" style="display:none; position:fixed; top:50%; left:50%;
+                 z-index:9999; transform:translate(-50%,-50%);">
+                <div class="d-flex align-items-center gap-2 bg-white p-3 rounded shadow">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span>Cargando información...</span>
+                </div>
+            </div>
+            <!-- Contenedor de modales dinámicos -->
+            <div id="modalContainer"></div>
+            @Html.AntiForgeryToken()
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted text-center">
+        <div class="container mt-2">
+            &copy; @DateTime.Now.Year - @Web
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables -->
+    <script src="~/lib/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="~/lib/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    <!-- UI Corporativo -->
+    <script src="~/lib/ui-corporativo/corp-design-system.js"></script>
+    <!-- Global JS propio -->
+    <script src="~/js/global.js" asp-append-version="true"></script>
+
+    <script>
+        // ── Marcar nav-link activo según la URL actual ──────────────────
+        (function () {
+            const path = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.navbar-nav .nav-link, .navbar-nav .dropdown-item')
+                .forEach(function (el) {
+                    const href = (el.getAttribute('href') || '').toLowerCase();
+                    if (href && href !== '#' && path.startsWith(href)) {
+                        el.classList.add('active');
+                        // Si está dentro de un dropdown, activar también el toggle padre
+                        const toggle = el.closest('.dropdown')?.querySelector('.dropdown-toggle');
+                        if (toggle) toggle.classList.add('active');
+                    }
+                });
+        })();
+    </script>
+
+    <!-- Scripts por vista -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

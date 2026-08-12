@@ -15,7 +15,8 @@ namespace Seguridad.Infrastructure.DependencyInjection
     {
         public static IServiceCollection AddSeguridad(this IServiceCollection services, IConfiguration config)
         {
-            services.Configure<SeguridadSetting>(config.GetSection("ApiSettings:Seguridad"));            
+            services.Configure<SecuritySetting>(config.GetSection("ApiSettings:Seguridad"));
+            services.Configure<ApplicationSetting>(config.GetSection("Application"));
             services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
             services.AddSingleton<SeguridadTokenService>();
             services.AddHttpClient<ISeguridadService, SeguridadService>();
@@ -26,6 +27,16 @@ namespace Seguridad.Infrastructure.DependencyInjection
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
             services.AddScoped<IClaimsTransformation, PermisosClaimsTransformation>();
             services.AddScoped<IUsuarioContexto, UsuarioContexto>();
+
+            return services;
+        }
+        public static IServiceCollection AddSeguridadLegacy(this IServiceCollection services, IConfiguration config)
+        {
+            services.Configure<SecuritySetting>(config.GetSection("ApiSettings:Seguridad"));
+            services.Configure<ApplicationSetting>(config.GetSection("Application"));
+            services.AddSingleton<IMsalHttpClientFactory, NoProxyMsalHttpClientFactory>();
+            services.AddSingleton<SeguridadTokenService>();
+            services.AddHttpClient<ISeguridadService, SeguridadService>();
 
             return services;
         }

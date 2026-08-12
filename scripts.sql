@@ -1,3 +1,11 @@
+11 - PREVENCION VIAL
+10 - RESGUARDO
+
+SELECT * FROM rpoconfig a WHERE a.CodDpto = '4300' AND a.IdTpoServicio = 10 AND a.Fecha = '2026-05-14'; 
+SELECT * FROM rpoconfig a WHERE a.CodDpto = '4300' AND a.IdTpoServicio = 11 AND a.Fecha = '2026-05-14';
+SELECT a.* FROM rposervicio a INNER JOIN rposolicitud b
+ON a.IdSolicitud = b.IdSolicitud
+WHERE b.CodDpto = '4300' AND a.IdTpoServicio = 11 AND a.Fecha = '2026-05-14';
 
 DELETE FROM rpoefectivo;
 DELETE FROM rpopersonal;
@@ -5,21 +13,17 @@ DELETE FROM rposervicioprov;
 DELETE FROM rposervicio;
 DELETE FROM rposolicitud;
 
-
-SELECT * FROM rpoefectivo;
+SELECT * FROM rpogenerico;
 SELECT * FROM rpopersonal;
 SELECT * FROM rposervicioprov;
 SELECT * FROM rposervicio;
-SELECT * FROM rposolicitud;
+SELECT * FROM rpoconfig;
 SELECT * FROM rpoaprobador;
-UPDATE rposolicitud SET CodDpto = '4001'
 
-﻿
 INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
 VALUES ('PROVEEDOR', '20601088186', 'EULEN', 'DBO', NOW());
 INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
 VALUES ('PROVEEDOR', '20224088186', 'SEGUMAX', 'DBO', NOW());
-
 INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
 VALUES ('ESTADO', '01', 'INGRESADO', 'DBO', NOW());
 INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
@@ -34,10 +38,6 @@ INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
 VALUES ('FLUJO', '02', 'URGENCIA', 'DBO', NOW());
 INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
 VALUES ('TIPO', '01', 'SOLICITUD', 'DBO', NOW());
-INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
-VALUES ('TIPO', '02', 'AMPLIACION', 'DBO', NOW());
-INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
-VALUES ('TIPO', '02', 'TRASLADO', 'DBO', NOW());
 INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
 VALUES ('SERVICIO', '01', 'RESGUARDO', 'DBO', NOW());
 INSERT INTO rpogenerico (Tipo, Codigo, Descripcion, UsuarioReg, FechaReg)
@@ -56,6 +56,7 @@ CREATE TABLE  `rpogenerico` (
 	FechaAct DATETIME,
 	PRIMARY KEY(`IdGenerico`)
 );
+ALTER TABLE rpogenerico ADD CONSTRAINT unq_tipo_codigo UNIQUE (Tipo, Codigo);
 
 CREATE TABLE  `rposolicitud` (
 	`IdSolicitud` INT NOT NULL AUTO_INCREMENT UNIQUE,
@@ -93,12 +94,12 @@ CREATE TABLE  `rposolicitud` (
 ALTER TABLE `rposolicitud` ADD FOREIGN KEY(`IdTipo`) REFERENCES `rpogenerico`(`IdGenerico`);
 ALTER TABLE `rposolicitud` ADD FOREIGN KEY(`IdEstado`) REFERENCES `rpogenerico`(`IdGenerico`);
 ALTER TABLE `rposolicitud` ADD FOREIGN KEY(`IdFlujo`) REFERENCES `rpogenerico`(`IdGenerico`);
-
-ALTER TABLE rposervicio ADD HraAmplia CHAR(5) NULL;
+ALTER TABLE rposolicitud ADD CONSTRAINT unq_folio UNIQUE (Folio);
 
 CREATE TABLE  `rposervicio` (
 	`IdServicio` INT NOT NULL AUTO_INCREMENT UNIQUE,
 	`IdSolicitud` INT NOT NULL,
+	`Folio` VARCHAR(9) NOT NULL,
 	`IdTpoServicio` INT NOT NULL,
 	`Fecha` DATE NOT NULL,
 	Turno CHAR(1) NOT NULL,
@@ -119,18 +120,19 @@ CREATE TABLE  `rposervicio` (
 
 ALTER TABLE `rposervicio` ADD FOREIGN KEY(`IdSolicitud`) REFERENCES `rposolicitud`(`IdSolicitud`);
 ALTER TABLE `rposervicio` ADD FOREIGN KEY(`IdTpoServicio`) REFERENCES `rpogenerico`(`IdGenerico`);
-
+ALTER TABLE rposervicio ADD CONSTRAINT unq_folio UNIQUE (Folio);
 
 CREATE TABLE rposervicioprov ( 
 IdServicioProv INT NOT NULL AUTO_INCREMENT UNIQUE,
 IdServicio INT NOT NULL,
 IdProveedor INT NOT NULL,
 Cantidad INT NOT NULL,
-Estado CHAR(2) NOT NULL
+Estado CHAR(2) NOT NULL,
 PRIMARY KEY(`IdServicioProv`)
 );
 ALTER TABLE `rposervicioprov` ADD FOREIGN KEY(`IdServicio`) REFERENCES `rposervicio`(`IdServicio`);
 ALTER TABLE `rposervicioprov` ADD FOREIGN KEY(`IdProveedor`) REFERENCES `rpogenerico`(`IdGenerico`);
+ALTER TABLE rposervicioprov ADD CONSTRAINT unq_serv_prov UNIQUE (IdServicio, IdProveedor);
 
 CREATE TABLE  `rpopersonal` (
 	`IdPersonal` INT NOT NULL AUTO_INCREMENT UNIQUE,
@@ -144,10 +146,7 @@ CREATE TABLE  `rpopersonal` (
 	FechaAct DATETIME,
 	PRIMARY KEY(`IdPersonal`)
 );
-
-SELECT * FROM rposervicio
-SELECT * FROM rpoefectivo
-ALTER TABLE rpoefectivo DROP COLUMN AmpliaApro
+ALTER TABLE rpopersonal ADD CONSTRAINT unq_dni UNIQUE (Dni);
 
 CREATE TABLE  `rpoefectivo` (
 	`IdEfectivo` INT NOT NULL AUTO_INCREMENT UNIQUE,
@@ -173,14 +172,7 @@ CREATE TABLE  `rpoefectivo` (
 
 ALTER TABLE `rpoefectivo` ADD FOREIGN KEY(`IdServicioProv`) REFERENCES `rposervicioprov`(`IdServicioProv`);
 ALTER TABLE `rpoefectivo` ADD FOREIGN KEY(`IdPersonal`) REFERENCES `rpopersonal`(`IdPersonal`);
-
-SELECT * FROM rpoconfig;
-DELETE FROM rpoconfig;
-ALTER TABLE rpoconfig DROP COLUMN NomDpto;
-ALTER TABLE rpoconfig DROP COLUMN Turno;
-ALTER TABLE rpoconfig DROP COLUMN Cantidad;
-ALTER TABLE rpoconfig ADD COLUMN Diurno INT NOT NULL;
-ALTER TABLE rpoconfig ADD COLUMN Nocturno INT NOT NULL;
+ALTER TABLE rpoefectivo ADD CONSTRAINT unq_serv_pers UNIQUE (IdServicioProv, IdPersonal);
 
 CREATE TABLE  `rpoconfig` (
 	`IdConfig` INT NOT NULL AUTO_INCREMENT UNIQUE,
@@ -195,22 +187,6 @@ CREATE TABLE  `rpoconfig` (
 	FechaAct DATETIME,
 	PRIMARY KEY(`IdConfig`)
 );
-
 ALTER TABLE `rpoconfig` ADD FOREIGN KEY(`IdTpoServicio`) REFERENCES `rpogenerico`(`IdGenerico`);
-
-CREATE TABLE  `rpoaprobador` (
-	`IdAprobador` INT NOT NULL AUTO_INCREMENT UNIQUE,	
-	`CodSocio` VARCHAR(15) NOT NULL,
-	`NomSocio` VARCHAR(50) NOT NULL,
-	`CodUnidad` VARCHAR(15) NOT NULL,
-	`DscUnidad` VARCHAR(50) NOT NULL,
-	UsuarioReg VARCHAR(50) NOT NULL,
-	FechaReg DATETIME NOT NULL,
-	UsuarioAct VARCHAR(50),
-	FechaAct DATETIME,
-	PRIMARY KEY(`IdAprobador`)
-);
--- ALTER TABLE `rpoaprobador` ADD FOREIGN KEY(`IdCapataz`) REFERENCES `rposolicitud`(`IdCapataz`);
--- ALTER TABLE `rpoaprobador` ADD FOREIGN KEY(`IdSolicitante`) REFERENCES `rposolicitud`(`IdSolicitante`);
-
+ALTER TABLE rpoconfig ADD CONSTRAINT unq_fecha_serv UNIQUE (Fecha, CodDpto, IdTpoServicio);
 

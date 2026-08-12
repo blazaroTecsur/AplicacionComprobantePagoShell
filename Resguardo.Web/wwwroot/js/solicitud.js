@@ -38,14 +38,19 @@
         });
         $("#btnAceptar").click(function () {
             if ($.trim($("#txtComentario").val()) == "") {
-                CorporativoCore.mostrarToast('Debe ingresar el momentario', 'error');
+                CorporativoCore.mostrarToast('Debe ingresar el comentario', 'error');
                 return;
             }
             var url = $("#modalAprobar").attr('url');
             fncSolicitud.aprobarSolicitud(url);
         });
-        $("#lnkCapataz").click(function () {
-            console.log("lnkCapataz");
+        $("#lnkCapataz").click(function () {     
+
+            if ($("#txtSctta").attr('codSctta') == "") {
+                CorporativoCore.mostrarToast("No se ha identificado el código del subcontratista.", "error");
+                return;
+            }
+
             $("#modalContainerMaestro").load(BASE_URL + "/SolicitudVisualizar/Capataz", function () {
                 fncMaestro.init();
             });
@@ -151,7 +156,8 @@
                 var data = response;
                 $("#txtDpto").val(data.codDpto + " = " + data.nomDpto);
                 $('#txtActv').val(data.codActv + " = " + data.nomActv);
-                $("#txtSctta").val(data.rucSctta + " = " + data.nomSctta);
+                $("#txtSctta").val(data.codSctta + " = " + data.nomSctta);
+                $("#txtSctta").attr('codSctta', data.codSctta);
                 $("#txtCoordenada").val(data.coordenada);
                 if (data.coordenada && data.coordenada.indexOf(',') > 0) {
                     $("#txtCoordenada").attr("def", data.coordenada);
@@ -258,6 +264,7 @@
                     $('#txtDpto').val(data.codDpto + " = " + data.nomDpto);
                     $('#txtActv').val(data.codActv + " = " + data.nomActv);
                     $("#txtSctta").val(data.rucSctta + " = " + data.nomSctta);
+                    $("#txtSctta").attr('codSctta', data.rucSctta);
                     $("#txtCodCapataz").val(data.codCapataz);
                     $("#txtNomCapataz").val(data.nomCapataz);
                     $("#txtCelular").val(data.celular);

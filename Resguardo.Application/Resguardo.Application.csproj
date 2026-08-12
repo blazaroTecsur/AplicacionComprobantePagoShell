@@ -7,23 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Interfaces\IAutorizacionServicio.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.0" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="Infor.Abstractions" Version="1.0.0" />
+    <PackageReference Include="Maestro.Abstractions" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.3.9" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.9" />
+    <PackageReference Include="Notificacion.Abstractions" Version="1.0.2" />
+    <PackageReference Include="Seguridad.Abstractions" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Infor.Abstractions\Infor.Abstractions.csproj" />
-    <ProjectReference Include="..\Notificacion.Abstractions\Notificacion.Abstractions.csproj" />
     <ProjectReference Include="..\Resguardo.Domain\Resguardo.Domain.csproj" />
-    <ProjectReference Include="..\Seguridad.Abstractions\Seguridad.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

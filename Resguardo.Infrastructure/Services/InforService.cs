@@ -1,5 +1,6 @@
 ﻿using Infor.Abstractions.DTOs;
 using Infor.Abstractions.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Resguardo.Application.DTOs.Infor;
 using Resguardo.Application.Exceptions;
 using Resguardo.Application.Services;
@@ -16,37 +17,31 @@ namespace Resguardo.Infrastructure.Services
         }
         public async Task<ObtenerOrdenResponse> ObtenerOrden(string numSro)
         {
-            var infor = await _idoService.LoadAsync("FSSROs", "SroNum,Description,StatCode,Dept,SroType,PagerAddr,DeptDescription,SROTypeDesc", $"SroNum='{numSro}'", 1, null, true);
+            var infor = await _idoService.LoadAsync("FSSROs", "SroNum,Description,StatCode,Dept,SroType,PagerAddr,DeptDescription,SROTypeDesc", $"SroNum='{numSro}'", 1);
             var result = infor.Deserialize<IdoResponse>();
 
             if (result is null || result.Items.Count == 0)
-                throw new NotFoundException($"SRO {numSro}");
+                throw new BusinessException(StatusCodes.Status400BadRequest.ToString(), $"La SRO {numSro} no existe");
 
-            var items = result.Items.Select(row =>
+            var item = result.Items.First();
+            return new ObtenerOrdenResponse
             {
-                var dict = row.ToDictionary(x => x.Name, x => x.Value);
-                return new ObtenerOrdenResponse
-                {
-                    Id = dict.GetValueOrDefault("_ItemId"),
-                    NumSro = dict.GetValueOrDefault("SroNum")?.Trim(),
-                    Descripcion = dict.GetValueOrDefault("Description"),
-                    CodDpto = dict.GetValueOrDefault("Dept"),
-                    NomDpto = dict.GetValueOrDefault("DeptDescription"),
-                    Estado = dict.GetValueOrDefault("StatCode"),
-                    CodActv = dict.GetValueOrDefault("SroType"),
-                    NomActv = dict.GetValueOrDefault("SROTypeDesc"),
-                    CodSupr = "SUP001",
-                    NomSupr = "Juan Pérez",
-                    RucSctta = "12345678901",
-                    NomSctta = "Constructora XYZ S.A.",
-                    FechaFoc = DateTime.Now.AddDays(-10),
-                    Coordenada = "-12.1726108,-76.9724007",
-                    Direccion = dict.GetValueOrDefault("PagerAddr")
-                };
-            }).ToList();
-
-            var sro = items.FirstOrDefault(x => x.NumSro == numSro);
-            return sro;
+                Id = item.GetProperty("_ItemId").GetString(),
+                NumSro = item.GetProperty("SroNum").GetString()?.Trim(),
+                Descripcion = item.GetProperty("Description").GetString(),
+                CodDpto = item.GetProperty("Dept").GetString(),
+                NomDpto = item.GetProperty("DeptDescription").GetString(),
+                Estado = item.TryGetProperty("StatCode", out var stat) ? stat.GetString() : null,
+                CodActv = item.GetProperty("SroType").GetString(),
+                NomActv = item.GetProperty("SROTypeDesc").GetString(),
+                CodSupr = "SUP001",
+                NomSupr = "Juan Pérez",
+                CodSctta = "GR00003",
+                NomSctta = "GRUPO DE CONTRATISTAS INTERNACIONALES",
+                FechaFoc = DateTime.Now.AddDays(-10),
+                Coordenada = "-12.1726108,-76.9724007",
+                Direccion = item.TryGetProperty("PagerAddr", out var addr) ? addr.GetString() : null
+            };            
         }
     }
 }

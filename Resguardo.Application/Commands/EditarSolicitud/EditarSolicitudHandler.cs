@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Notificacion.Abstractions;
-using Notificacion.Domain.Models;
 using Resguardo.Application.Common;
 using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Exceptions;

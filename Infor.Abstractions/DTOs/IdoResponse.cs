@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Infor.Abstractions.DTOs
 {
     public class IdoResponse
@@ -6,6 +8,6 @@ namespace Infor.Abstractions.DTOs
         public string Message        { get; set; } = string.Empty;
         public string Bookmark       { get; set; } = string.Empty;
         public bool   MoreRowsExist  { get; set; }
-        public List<List<IdoItemsResponse>> Items { get; set; } = new();
+        public List<JsonElement> Items { get; set; } = new();
     }
 }

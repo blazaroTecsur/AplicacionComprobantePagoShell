@@ -1,0 +1,114 @@
+﻿@model Reciclaje.Aplicacion.DTOs.Reciclaje.ConversionarticuloEditarDto
+
+@{
+    ViewData["Titulo"] = "Editar Conversión";
+}
+
+<div class="panel-contenedor">
+
+    <!-- ── Header ── -->
+    <div class="panel-principal">
+        <h5><i class="bi bi-pencil-square"></i> Editar Conversión de Artículo</h5>
+    </div>
+
+    <!-- ── Barra de acciones ── -->
+    <div class="barra-acciones">
+        <a asp-action="Index" class="btn btn-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Volver al listado
+        </a>
+    </div>
+
+    <!-- ── Formulario ── -->
+    <div class="p-3">
+
+        <!-- ── Aviso de edición ── -->
+        <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded"
+             style="background:#FAEEDA; border-left:3px solid #854F0B;
+                    color:#854F0B; font-size:13px;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Está modificando el registro
+            <strong style="font-family:'Courier New',monospace;">#@Model.ConversionId</strong>.
+            Los cambios quedarán registrados con su usuario y la fecha actual.
+        </div>
+
+        <form asp-action="Editar" method="post">
+            @Html.AntiForgeryToken()
+            <input asp-for="ConversionId" type="hidden" />
+
+            <!-- ── Sección: Datos ── -->
+            <div class="seccion-panel mb-3">
+                <div class="seccion-header">
+                    <strong><i class="bi bi-arrow-repeat me-1"></i> Datos de la Conversión</strong>
+                </div>
+                <div class="seccion-body">
+                    <div class="row g-3">
+
+                        <!-- ID (solo lectura) -->
+                        <div class="col-12">
+                            <label class="form-label">ID de Conversión</label>
+                            <div>
+                                <span class="badge badge-registrado"
+                                      style="font-family:'Courier New',monospace; font-size:12px;">
+                                    # @Model.ConversionId
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ArticuloNoInventariado" class="form-label">
+                                Art. No Inventariado <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ArticuloNoInventariado"
+                                   class="form-control form-control-sm"
+                                   maxlength="10" />
+                            <span asp-validation-for="ArticuloNoInventariado"
+                                  class="text-danger small"></span>
+                            <div class="form-text">Máximo 10 caracteres</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ArticuloReciclaje" class="form-label">
+                                Art. Reciclaje <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ArticuloReciclaje"
+                                   class="form-control form-control-sm"
+                                   maxlength="10" />
+                            <span asp-validation-for="ArticuloReciclaje"
+                                  class="text-danger small"></span>
+                            <div class="form-text">Máximo 10 caracteres</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="DescripcionArticuloReciclaje" class="form-label">
+                                Descripción (Código) <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="DescripcionArticuloReciclaje"
+                                   class="form-control form-control-sm" />
+                            <span asp-validation-for="DescripcionArticuloReciclaje"
+                                  class="text-danger small"></span>
+                            <div class="form-text">Código numérico de descripción del artículo de reciclaje</div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Footer botones ── -->
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-warning btn-sm">
+                    <i class="bi bi-floppy"></i> Guardar Cambios
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

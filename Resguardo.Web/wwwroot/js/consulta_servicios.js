@@ -55,7 +55,8 @@ var fncConsulta = {
                     IdTpoServicio: parseInt($("#consulta_cboServicio").val()) || null,
                     Folio: $("#consulta_txtFolio").val() || null,                    
                     FechaIni: $("#consulta_txtFechaIni").val() || null,
-                    FechaFin: $("#consulta_txtFechaFin").val() || null
+                    FechaFin: $("#consulta_txtFechaFin").val() || null,
+                    NumSro: $("#consulta_txtNumSro").val() || null                    
                 };
             },
             columns: [
@@ -66,13 +67,13 @@ var fncConsulta = {
                         var pos = cell.getRow().getPosition();
                         
                         if (cell._cell.row.data.asignar && CorporativoCore.tienePermiso(window.ROLES, ["SERV.ASIGNAR"])) {                            
-                            acciones = acciones + "<button class='btn btn-sm btn-success' title='Asignar efectivos' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'AS')\"><i class='bi bi-person-plus'></i></button>";
+                            acciones = acciones + "<button class='btn btn-sm btn-success' title='Asignar efectivos' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'AS')\"><i class='bi bi-person-plus'></i></button>&nbsp;&nbsp;";
                         }
                         if (cell._cell.row.data.ampliar && CorporativoCore.tienePermiso(window.ROLES, ["SERV.AMPLIAR"])) {
-                            acciones = acciones + "<button class='btn btn-sm btn-secondary' title='Ampliar horario' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'AH')\"><i class='bi bi-clock-history'></i></button>&nbsp;&nbsp;";
-                        }
+                            acciones = acciones + "<button class='btn btn-sm btn-secondary' title='Ampliar horario' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'AH')\"><i class='bi bi-clock-history'></i></button>&nbsp;&nbsp;";    
+                        }                        
                         if (cell._cell.row.data.aprobar && CorporativoCore.tienePermiso(window.ROLES, ["SERV.APROBAMP"])) {
-                            acciones = acciones + "<button class='btn btn-sm btn-warning' title='Aprobar amplicación' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'AA')\"><i class='bi bi-calendar-check'></i></button>&nbsp;&nbsp;";
+                            acciones = acciones + "<button class='btn btn-sm btn-warning' title='Aprobar ampliación' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'AA')\"><i class='bi bi-calendar-check'></i></button>&nbsp;&nbsp;";
                         }
                         if (cell._cell.row.data.cerrar && CorporativoCore.tienePermiso(window.ROLES, ["SERV.CERRAR"])) {
                             acciones = acciones + "<button class='btn btn-sm btn-success' title='Cerrar atención' onclick=\"fncConsulta.ejecutarAccion(" + pos + ", 'CE')\"><i class='bi bi-hand-thumbs-up'></i></button>&nbsp;&nbsp;";

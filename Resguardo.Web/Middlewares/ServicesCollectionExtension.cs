@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
+using Infor.Infrastructure.DependencyInjection;
+using Maestro.Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Notificacion.Abstractions;
-using Notificacion.Application;
 using Notificacion.Infrastructure.DependencyInjection;
 using Notificacion.Infrastructure.Email;
 using Resguardo.Application.Commands.ActualizarSolicitud;
@@ -18,7 +19,9 @@ using Resguardo.Application.Commands.RegistrarSolicitud;
 using Resguardo.Application.Common.Interfaces;
 using Resguardo.Application.Common.Services;
 using Resguardo.Application.Interfaces;
+using Resguardo.Application.Queries.ConsultarCapataz;
 using Resguardo.Application.Queries.ConsultarSolicitud;
+using Resguardo.Application.Queries.ListarDepartamento;
 using Resguardo.Application.Queries.ListarEfectivos;
 using Resguardo.Application.Queries.ListarLimites;
 using Resguardo.Application.Queries.ListarServicio;
@@ -55,6 +58,11 @@ namespace Resguardo.Web.Middlewares
         }
         public static WebApplicationBuilder AddSeriLog(this WebApplicationBuilder builder, IConfiguration config)
         {
+            var logPath = builder.Configuration["Loggings:Path"] ?? "logs";
+            var storagePath = builder.Configuration["Storages:Path"] ?? "storage";
+            Directory.CreateDirectory(logPath);
+            Directory.CreateDirectory(storagePath);
+
             Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -64,7 +72,7 @@ namespace Resguardo.Web.Middlewares
             .Enrich.WithThreadId()
             .WriteTo.Console()
             .WriteTo.File(
-                path: "Logs/rpo-web-.log",
+                path: Path.Combine(logPath, "web-resguardo-.log"),                
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 14
             ).CreateLogger();
@@ -119,6 +127,7 @@ namespace Resguardo.Web.Middlewares
             services.AddScoped<AsignarEfectivoHandler>();
             services.AddScoped<CerrarServicioHandler>();
             services.AddScoped<ObtenerPersonalHandler>();
+            services.AddScoped<ListarDptoHandler>();
             services.AddScoped<ListarLimitesHandler>();
             services.AddScoped<ObtenerLimitesHandler>();
             services.AddScoped<RegistrarConfigHandler>();
@@ -129,10 +138,11 @@ namespace Resguardo.Web.Middlewares
             services.AddScoped<ReporteSolicitudHandler>();
             services.AddScoped<ReporteEfectivoHandler>();
             services.AddScoped<ObtenerSolicitudFolioHandler>();
-            services.AddInfor(config);
+            services.AddScoped<ConsultarCapatazHandler>();
             services.AddSeguridad(config);
-            services.AddScoped<IInforService, InforService>();
-            services.AddHttpClient<IMaestroService, MaestroService>();
+            services.AddInfor(config);
+            services.AddMaestros(config);
+            services.AddScoped<IInforService, InforService>();            
             services.AddMemoryCache();
 
             return services;

@@ -20,12 +20,14 @@ namespace Maestros.Infrastructure.Services
         }
 
         public async Task<PagedResult<CodUnidadListDto>> GetByUnidadAsync(
-            int unidad, string empresa, string? filtro, int pagina, int tamano,
+            int unidad, string empresa, string? inicial, string? filtro, int pagina, int tamano,
             CancellationToken ct = default)
         {
             var url = $"{_settings.Endpoints.CodigosUnidad}{unidad}?pagina={pagina}&tamano={tamano}";
             if (!string.IsNullOrWhiteSpace(empresa))
                 url += $"&empresa={Uri.EscapeDataString(empresa)}";
+            if (!string.IsNullOrWhiteSpace(inicial))
+                url += $"&inicial={Uri.EscapeDataString(inicial)}";
             if (!string.IsNullOrWhiteSpace(filtro))
                 url += $"&filtro={Uri.EscapeDataString(filtro)}";
 

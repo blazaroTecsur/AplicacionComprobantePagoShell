@@ -34,7 +34,44 @@ var fncMapa = {
 
             $btn.prop('disabled', false).html('<i class="bi bi-geo-alt-fill"></i> Capturar Ubicación');
             $("#modalMapa").modal("hide");
-        });       
+        });     
+
+        // ── Buscar por coordenada ─────────────────────────────
+        $('#mapa_btnBuscar').on('click', async function () {
+            const valor = $('#mapa_txtBuscar').val().trim();
+            if (!valor) return;
+
+            // 1. Intentar interpretar como coordenadas
+            const coords = fncMapa.convert(valor);
+            if (coords) {
+                fncMapa.moverMarcador(coords);
+                return;
+            }
+
+            // 2. Si no son coordenadas, buscar como dirección de texto
+            try {
+                const { results } = await geocoder.geocode({ address: valor });
+                if (results && results[0]) {
+                    const pos = {
+                        lat: results[0].geometry.location.lat(),
+                        lng: results[0].geometry.location.lng()
+                    };
+                    fncMapa.moverMarcador(pos);
+                }
+            } catch (e) {
+                alert('No se encontró la ubicación.');
+            }
+        });
+
+        // También buscar al presionar Enter
+        $('#mapa_txtBuscar').on('keydown', function (e) {
+            if (e.key === 'Enter') $('#mapa_btnBuscar').trigger('click');
+        });
+    },
+    moverMarcador: function (pos) {
+        marker.setPosition(pos);
+        map.panTo(pos);
+        map.setZoom(fncMapa.zoom);
     },
     obtenerDireccion: function (pos) {
         return new Promise((resolve, reject) => {

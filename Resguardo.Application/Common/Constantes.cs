@@ -28,8 +28,11 @@
         public static string TURNO_NOCTURNO = "N";
         public static string AMPL_PENDIENTE = "P";
         public static string AMPL_RECHAZADO = "R";
-        public static string AMPL_APROBADO = "A";
+        public static string AMPL_APROBADO = "A";        
         public static int CANT_MAX_X_SERV = 30;
         public static int HRA_LIMIT_EDIT = 15;
+        public static string SITE_TECSUR = "STECSUR";
+        public static int API_UND_1 = 1;
+        public static string INI_UND_GOP = "4";
     }
 }

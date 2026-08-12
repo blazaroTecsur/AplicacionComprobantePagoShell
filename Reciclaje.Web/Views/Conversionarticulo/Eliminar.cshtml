@@ -1,0 +1,347 @@
+﻿@model Reciclaje.Aplicacion.DTOs.Reciclaje.ConversionarticuloDto
+
+@{
+    ViewData["Title"] = "Eliminar Conversión";
+}
+
+<style>
+    :root {
+        --verde-oscuro: #1a3a2a;
+        --verde-medio: #2d6a4f;
+        --crema: #f8f4ef;
+        --crema-oscuro: #ede8e1;
+        --texto-principal: #1a1a1a;
+        --texto-secundario: #5a5a5a;
+        --blanco: #ffffff;
+        --rojo: #dc2626;
+        --rojo-oscuro: #991b1b;
+        --rojo-bg: #fef2f2;
+        --rojo-borde: #fca5a5;
+        --sombra: 0 4px 24px rgba(26,58,42,0.10);
+        --radio: 14px;
+        --radio-sm: 8px;
+    }
+
+    body {
+        background: var(--crema);
+        font-family: 'Georgia', serif;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #3a1a1a 0%, #7f1d1d 60%, #b91c1c 100%);
+        border-radius: 0 0 32px 32px;
+        padding: 2rem 2rem 1.8rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 24px rgba(153,27,27,0.18);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header::before {
+            content: '⚠';
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 5rem;
+            opacity: 0.10;
+        }
+
+        .page-header h1 {
+            color: var(--blanco);
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+        }
+
+    .breadcrumb-custom {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        color: #fca5a5;
+        font-size: 0.88rem;
+        margin: 0;
+    }
+
+        .breadcrumb-custom a {
+            color: #fca5a5;
+            text-decoration: none;
+        }
+
+            .breadcrumb-custom a:hover {
+                color: var(--blanco);
+            }
+
+        .breadcrumb-custom span {
+            opacity: 0.6;
+        }
+
+    .alerta-peligro {
+        background: var(--rojo-bg);
+        border-left: 4px solid var(--rojo);
+        color: var(--rojo-oscuro);
+        border-radius: var(--radio-sm);
+        padding: 1rem 1.2rem;
+        margin-bottom: 1.5rem;
+        max-width: 620px;
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.7rem;
+    }
+
+        .alerta-peligro .alerta-icono {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .alerta-peligro strong {
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .alerta-peligro p {
+            margin: 0;
+            font-size: 0.88rem;
+        }
+
+    .confirm-card {
+        background: var(--blanco);
+        border-radius: var(--radio);
+        box-shadow: var(--sombra);
+        max-width: 620px;
+        margin: 0 auto;
+        overflow: hidden;
+        border-top: 4px solid var(--rojo);
+    }
+
+    .confirm-card-header {
+        background: #fff5f5;
+        padding: 1.2rem 1.8rem;
+        border-bottom: 1px solid var(--rojo-borde);
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+        .confirm-card-header .icono {
+            width: 48px;
+            height: 48px;
+            background: var(--rojo-bg);
+            border: 2px solid var(--rojo-borde);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .confirm-card-header h2 {
+            color: var(--rojo-oscuro);
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .confirm-card-header p {
+            color: #b91c1c;
+            font-size: 0.83rem;
+            margin: 0;
+            font-style: italic;
+        }
+
+    .datos-registro {
+        padding: 1.8rem;
+        border-bottom: 1px solid var(--crema-oscuro);
+    }
+
+    .datos-titulo {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--texto-secundario);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 1rem;
+    }
+
+    .datos-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .dato-item {
+    }
+
+    .dato-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--texto-secundario);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.2rem;
+    }
+
+    .dato-valor {
+        font-size: 0.93rem;
+        color: var(--texto-principal);
+        font-weight: 500;
+    }
+
+        .dato-valor.badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: var(--rojo-oscuro);
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            padding: 0.15rem 0.55rem;
+        }
+
+        .dato-valor.mono {
+            font-family: 'Courier New', monospace;
+            font-size: 0.88rem;
+            color: var(--verde-oscuro);
+        }
+
+    .confirm-footer {
+        padding: 1.3rem 1.8rem;
+        background: #fff5f5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn-eliminar-confirm {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--rojo);
+        color: var(--blanco);
+        border: none;
+        border-radius: var(--radio-sm);
+        padding: 0.65rem 1.6rem;
+        font-size: 0.93rem;
+        font-family: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(220,38,38,0.30);
+    }
+
+        .btn-eliminar-confirm:hover {
+            background: var(--rojo-oscuro);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(220,38,38,0.40);
+        }
+
+    .btn-cancelar {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--crema-oscuro);
+        color: var(--texto-secundario);
+        border: none;
+        border-radius: var(--radio-sm);
+        padding: 0.65rem 1.3rem;
+        font-size: 0.93rem;
+        font-family: inherit;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+
+        .btn-cancelar:hover {
+            background: #ddd5ca;
+            color: var(--texto-principal);
+            text-decoration: none;
+        }
+
+    @@media (max-width: 540px) {
+        .datos-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1>🗑 Eliminar Conversión</h1>
+    <div class="breadcrumb-custom">
+        <a asp-action="Index">Conversiones</a>
+        <span>›</span>
+        <span>Eliminar #@Model.ConversionId</span>
+    </div>
+</div>
+
+<div class="container-fluid px-4">
+
+    <div class="alerta-peligro">
+        <div class="alerta-icono">⚠</div>
+        <div>
+            <strong>Acción irreversible</strong>
+            <p>Esta operación eliminará permanentemente la conversión <strong>#@Model.ConversionId</strong> de la base de datos. No se puede deshacer.</p>
+        </div>
+    </div>
+
+    <div class="confirm-card">
+        <div class="confirm-card-header">
+            <div class="icono">🗑</div>
+            <div>
+                <h2>¿Confirma la eliminación?</h2>
+                <p>Revise los datos del registro antes de confirmar</p>
+            </div>
+        </div>
+
+        <div class="datos-registro">
+            <div class="datos-titulo">Datos del registro a eliminar</div>
+            <div class="datos-grid">
+                <div class="dato-item">
+                    <div class="dato-label">ID de Conversión</div>
+                    <div class="dato-valor mono"># @Model.ConversionId</div>
+                </div>
+                <div class="dato-item">
+                    <div class="dato-label">Art. No Inventariado</div>
+                    <div class="dato-valor badge">@Model.ArticuloNoInventariado</div>
+                </div>
+                <div class="dato-item">
+                    <div class="dato-label">Art. Reciclaje</div>
+                    <div class="dato-valor badge">@Model.ArticuloReciclaje</div>
+                </div>
+                <div class="dato-item">
+                    <div class="dato-label">Descripción (Código)</div>
+                    <div class="dato-valor">@Model.DescripcionArticuloReciclaje</div>
+                </div>
+                <div class="dato-item">
+                    <div class="dato-label">Creado por</div>
+                    <div class="dato-valor">@(Model.UsuarioCreacionAudit ?? "—")</div>
+                </div>
+                <div class="dato-item">
+                    <div class="dato-label">Fecha Creación</div>
+                    <div class="dato-valor">@(Model.FechaCreacionAudit?.ToString("dd/MM/yyyy HH:mm") ?? "—")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="confirm-footer">
+            <a asp-action="Index" class="btn-cancelar">← No, Cancelar</a>
+            <form asp-action="EliminarConfirmado" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.ConversionId" />
+                <button type="submit" class="btn-eliminar-confirm">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6" />
+                        <path d="M14 11v6" />
+                        <path d="M9 6V4h6v2" />
+                    </svg>
+                    Sí, Eliminar Definitivamente
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

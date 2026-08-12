@@ -6,19 +6,23 @@ namespace Seguridad.Infrastructure.Services
 {
     public class SeguridadTokenService
     {
-        private readonly SeguridadSetting _settings;
+        private readonly SecuritySetting _security;
+        private readonly ApplicationSetting _application;
         private readonly IMsalHttpClientFactory _httpFactory;
         private readonly ConcurrentDictionary<string, IConfidentialClientApplication> _clients = new();
         public SeguridadTokenService(
             IMsalHttpClientFactory httpFactory,
-            IOptions<SeguridadSetting> settings)
+            IOptions<SecuritySetting> security,
+            IOptions<ApplicationSetting> application)
         {
-            _settings = settings.Value;
+            _security = security.Value;
+            _application = application.Value;
             _httpFactory = httpFactory;
         }
         public async Task<string> GetTokenAsync(string type)
         {
-            var config = GetConfiguration(type);
+            var scope = GetScope(type);
+            var config = GetClient(type);
             var app =
                 _clients.GetOrAdd(type.ToString(),
                     _ =>
@@ -29,16 +33,24 @@ namespace Seguridad.Infrastructure.Services
                             .WithHttpClientFactory(_httpFactory)
                             .Build());
             var result = await app
-                    .AcquireTokenForClient(new[] { config.Scope })
+                    .AcquireTokenForClient([scope])
                     .ExecuteAsync();
             return result.AccessToken;
         }
-        public TenantSetting GetConfiguration(string type)
+        public TenantSetting GetClient(string type)
         {
             return type switch
             {
-                "External" => _settings.External,
-                _ => _settings.Corporate
+                "External" => _application.External,
+                _ => _application.Corporate
+            };
+        }
+        public string GetScope(string type)
+        {
+            return type switch
+            {
+                "External" => _security.ScopeExternal,
+                _ => _security.ScopeCorporate
             };
         }
     }

@@ -1,0 +1,137 @@
+@model Reciclaje.Aplicacion.DTOs.Reciclaje.TareaOrdenCompraEditarDto
+
+@{
+    ViewData["Titulo"] = "Editar Orden de Compra";
+}
+
+<div class="panel-contenedor">
+
+    <!-- ── Header ── -->
+    <div class="panel-principal">
+        <h5><i class="bi bi-pencil-square"></i> Editar Orden de Compra SyteLine</h5>
+    </div>
+
+    <!-- ── Barra de acciones ── -->
+    <div class="barra-acciones">
+        <a asp-action="Index" class="btn btn-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Volver al listado
+        </a>
+    </div>
+
+    <!-- ── Formulario ── -->
+    <div class="p-3">
+
+        <!-- ── Aviso de edición ── -->
+        <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded"
+             style="background:#FAEEDA; border-left:3px solid #854F0B;
+                    color:#854F0B; font-size:13px;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Está modificando el registro
+            <strong style="font-family:'Courier New',monospace;">#@Model.Id</strong> —
+            PO actual: <strong style="font-family:'Courier New',monospace;">@Model.NombrePo</strong>.
+            El Nombre PO se recalculará automáticamente si cambia el año o el mes.
+        </div>
+
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey(string.Empty))
+        {
+            <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded"
+                 style="background:#FDECEA; border-left:3px solid #9B1B10;
+                            color:#9B1B10; font-size:13px;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                @ViewData.ModelState[string.Empty]!.Errors.FirstOrDefault()?.ErrorMessage
+            </div>
+        }
+
+        <form asp-action="Editar" method="post">
+            @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
+            <input asp-for="NombrePo" type="hidden" />
+
+            <!-- ── Sección: Período ── -->
+            <div class="seccion-panel mb-3">
+                <div class="seccion-header">
+                    <strong><i class="bi bi-calendar3 me-1"></i> Período</strong>
+                </div>
+                <div class="seccion-body">
+                    <div class="row g-3">
+
+                        <!-- ID (solo lectura) -->
+                        <div class="col-12">
+                            <label class="form-label">ID</label>
+                            <div>
+                                <span class="badge badge-registrado"
+                                      style="font-family:'Courier New',monospace; font-size:12px;">
+                                    #@Model.Id
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Año -->
+                        <div class="col-md-4">
+                            <label asp-for="Anno" class="form-label">
+                                Año <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Anno"
+                                   type="number"
+                                   class="form-control form-control-sm"
+                                   min="2000" max="2999" />
+                            <span asp-validation-for="Anno" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Mes -->
+                        <div class="col-md-4">
+                            <label asp-for="Mes" class="form-label">
+                                Mes <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Mes" class="form-select form-select-sm">
+                                <option value="1" selected="@(Model.Mes == 1 ? "selected" : null)">01 - Enero</option>
+                                <option value="2" selected="@(Model.Mes == 2 ? "selected" : null)">02 - Febrero</option>
+                                <option value="3" selected="@(Model.Mes == 3 ? "selected" : null)">03 - Marzo</option>
+                                <option value="4" selected="@(Model.Mes == 4 ? "selected" : null)">04 - Abril</option>
+                                <option value="5" selected="@(Model.Mes == 5 ? "selected" : null)">05 - Mayo</option>
+                                <option value="6" selected="@(Model.Mes == 6 ? "selected" : null)">06 - Junio</option>
+                                <option value="7" selected="@(Model.Mes == 7 ? "selected" : null)">07 - Julio</option>
+                                <option value="8" selected="@(Model.Mes == 8 ? "selected" : null)">08 - Agosto</option>
+                                <option value="9" selected="@(Model.Mes == 9 ? "selected" : null)">09 - Septiembre</option>
+                                <option value="10" selected="@(Model.Mes == 10 ? "selected" : null)">10 - Octubre</option>
+                                <option value="11" selected="@(Model.Mes == 11 ? "selected" : null)">11 - Noviembre</option>
+                                <option value="12" selected="@(Model.Mes == 12 ? "selected" : null)">12 - Diciembre</option>
+                            </select>
+                            <span asp-validation-for="Mes" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Sitio -->
+                        <div class="col-md-4">
+                            <label asp-for="Sitio" class="form-label">Sitio</label>
+                            <select asp-for="Sitio" class="form-select form-select-sm">
+                                <option value="TECSUR" selected="@(Model.Sitio == "TECSUR" ? "selected" : null)">TECSUR</option>
+                                <option value="GCI" selected="@(Model.Sitio == "GCI" ? "selected" : null)">GCI</option>
+                                <option value="LA" selected="@(Model.Sitio == "LA" ? "selected" : null)">LA</option>
+                            </select>
+                            <span asp-validation-for="Sitio" class="text-danger small"></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Sección: SyteLine ── -->
+            <!-- ── Footer botones ── -->
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-warning btn-sm">
+                    <i class="bi bi-floppy"></i> Guardar Cambios
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

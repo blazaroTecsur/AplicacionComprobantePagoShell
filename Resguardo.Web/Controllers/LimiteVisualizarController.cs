@@ -1,24 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Resguardo.Application.Queries.ListarDepartamento;
 using Resguardo.Application.Queries.ListarLimites;
-using Resguardo.Application.Services;
-using Seguridad.Infrastructure.Handler.Authorization;
 using Resguardo.Web.Models;
+using Seguridad.Infrastructure.Handler.Authorization;
 
 namespace Resguardo.Web.Controllers
 {
     [Permission("LIMT.VER")]
     public class LimiteVisualizarController : Controller
     {
-        private readonly IMaestroService _maestro;
         private readonly ListarLimitesHandler _listar;
-        
+        private readonly ListarDptoHandler _dptos;
         public LimiteVisualizarController(
-            IMaestroService maestro,
-            ListarLimitesHandler listar)
+            ListarLimitesHandler listar,
+            ListarDptoHandler dptos)
         {
-            _maestro = maestro;
-            _listar = listar;            
+            _listar = listar;
+            _dptos = dptos;
         }
         public IActionResult Consulta()
         {
@@ -31,7 +29,7 @@ namespace Resguardo.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> ListarDepartamento()
         {
-            var dptos = await _maestro.ListarDepartamento();
+            var dptos = await _dptos.Ejecutar();
             if (dptos is not null)
                 dptos.ToList().Add(new ListarDptoResponse { Codigo = "", Nombre = "== SELECCIONAR ==" });
             return Ok(dptos);
@@ -41,6 +39,6 @@ namespace Resguardo.Web.Controllers
         {
             var configs = await _listar.Ejecutar(new ListarLimitesQuery() { Fecha = fecha, CodDpto = dpto });
             return Ok(ApiResponse<IEnumerable<ListarLimitesResponse>>.Ok(configs));
-        }        
+        }
     }
 }

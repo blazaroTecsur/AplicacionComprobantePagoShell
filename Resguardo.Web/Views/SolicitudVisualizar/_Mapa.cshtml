@@ -5,7 +5,14 @@
                 <h5 class="modal-title">Selector de Ubicación</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">                
+            <div class="modal-body">
+                <div class="input-group mb-2">
+                    <input type="text" id="mapa_txtBuscar" class="form-control"
+                           placeholder="Buscar coordenada o dirección  ej: -12.0464, -77.0428">
+                    <button id="mapa_btnBuscar" class="btn btn-primary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
                 <div id="mapa" style="width: 100%; height: 420px"></div>
                 <p class="hint mt-1">
                     💡 Puedes arrastrar el marcador rojo o hacer clic en el mapa para cambiar la ubicación.

@@ -87,6 +87,8 @@ namespace Resguardo.Infrastructure.QueryServices
                 consulta = consulta.Where(x => x.Fecha >= servicio.FechaIni && x.Fecha <= servicio.FechaFin);
             if (!string.IsNullOrEmpty(servicio.Folio))
                 consulta = consulta.Where(x => x.SolicitudNav.Folio == servicio.Folio);
+            if (!string.IsNullOrEmpty(servicio.NumSro))
+                consulta = consulta.Where(x => x.SolicitudNav.NumSro == servicio.NumSro);
 
             var total = await consulta.SelectMany(x => x.ServicioProvs
                        .Where(s => !servicio.IdProveedor.HasValue

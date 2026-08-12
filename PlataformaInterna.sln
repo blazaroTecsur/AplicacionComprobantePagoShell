@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35303.130
+# Visual Studio Version 18
+VisualStudioVersion = 18.6.11822.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resguardo.Web", "Resguardo.Web\Resguardo.Web.csproj", "{6ACA4A85-F0ED-480D-A7ED-FD4ABCA587F4}"
 EndProject
@@ -81,6 +81,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maestros.Abstractions", "Ma
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maestros.Infrastructure", "Maestros.Infrastructure\Maestros.Infrastructure.csproj", "{DC299625-CC45-4248-B727-D6D4429EF480}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reciclaje.Aplicacion", "Reciclaje.Aplicacion\Reciclaje.Aplicacion.csproj", "{21B00618-8737-8756-A9BA-37A3E59071D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reciclaje.Dominio", "Reciclaje.Dominio\Reciclaje.Dominio.csproj", "{05817F04-D649-B6E5-99DB-3E7EACE1C046}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reciclaje.Infraestructura", "Reciclaje.Infraestructura\Reciclaje.Infraestructura.csproj", "{6FB3BE2B-839D-6177-2781-1FC669555636}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reciclaje.Web", "Reciclaje.Web\Reciclaje.Web.csproj", "{38371AFE-3391-4263-EA10-225ABBCF577D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deploy", "deploy", "{6FCBA4F0-44B3-4CD7-B8C8-6423A9ECC12F}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		Dockerfile.Resguardo = Dockerfile.Resguardo
+		Dockerfile.Shell = Dockerfile.Shell
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -159,6 +174,22 @@ Global
 		{DC299625-CC45-4248-B727-D6D4429EF480}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC299625-CC45-4248-B727-D6D4429EF480}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC299625-CC45-4248-B727-D6D4429EF480}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21B00618-8737-8756-A9BA-37A3E59071D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21B00618-8737-8756-A9BA-37A3E59071D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21B00618-8737-8756-A9BA-37A3E59071D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21B00618-8737-8756-A9BA-37A3E59071D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05817F04-D649-B6E5-99DB-3E7EACE1C046}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05817F04-D649-B6E5-99DB-3E7EACE1C046}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05817F04-D649-B6E5-99DB-3E7EACE1C046}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05817F04-D649-B6E5-99DB-3E7EACE1C046}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FB3BE2B-839D-6177-2781-1FC669555636}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FB3BE2B-839D-6177-2781-1FC669555636}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FB3BE2B-839D-6177-2781-1FC669555636}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FB3BE2B-839D-6177-2781-1FC669555636}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38371AFE-3391-4263-EA10-225ABBCF577D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38371AFE-3391-4263-EA10-225ABBCF577D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38371AFE-3391-4263-EA10-225ABBCF577D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38371AFE-3391-4263-EA10-225ABBCF577D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -188,6 +219,10 @@ Global
 		{2544AD03-CECF-43AD-8BE5-F983E7B6A2DB} = {8AB5E0DF-434D-4B98-98A5-3C602A4EEDFF}
 		{78EDDF01-D030-4396-A756-A24F3B8CAAE2} = {4D20CA93-63BF-4C4C-BFF8-AA79628883A3}
 		{DC299625-CC45-4248-B727-D6D4429EF480} = {4D20CA93-63BF-4C4C-BFF8-AA79628883A3}
+		{21B00618-8737-8756-A9BA-37A3E59071D9} = {8CAD5349-016E-44FB-8C6B-A53D9AF7365B}
+		{05817F04-D649-B6E5-99DB-3E7EACE1C046} = {8CAD5349-016E-44FB-8C6B-A53D9AF7365B}
+		{6FB3BE2B-839D-6177-2781-1FC669555636} = {8CAD5349-016E-44FB-8C6B-A53D9AF7365B}
+		{38371AFE-3391-4263-EA10-225ABBCF577D} = {8CAD5349-016E-44FB-8C6B-A53D9AF7365B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A19EDDE-A10F-4268-B1B6-EBA59F616DFB}

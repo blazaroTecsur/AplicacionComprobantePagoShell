@@ -5,6 +5,7 @@
         public int? IdProveedor { get; set; }
         public int? IdTpoServicio { get; set; }
         public string? Folio { get; set; }
+        public string? NumSro { get; set; }
         public DateOnly? FechaIni { get; set; }
         public DateOnly? FechaFin { get; set; }
     }

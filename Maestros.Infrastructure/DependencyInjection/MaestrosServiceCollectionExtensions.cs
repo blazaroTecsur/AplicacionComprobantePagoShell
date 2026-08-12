@@ -44,6 +44,13 @@ namespace Maestros.Infrastructure.DependencyInjection
                     client.BaseAddress = new Uri(settings.BaseUrl);
                 });
 
+            services.AddHttpClient<IMaestrosSocioService, MaestrosSocioService>(
+                (sp, client) =>
+                {
+                    var settings = sp.GetRequiredService<IOptions<MaestrosSettings>>().Value;
+                    client.BaseAddress = new Uri(settings.BaseUrl);
+                });
+
             return services;
         }
     }

@@ -19,7 +19,7 @@ var fncConsulta = {
             fncConsulta.buscarConfiguracion();
         });
         $("#consulta_btnCopiar").click(function (e) {      
-            $("#modalContainer").load(BASE_URL + "/LimiteGestionar/Copiar", function () {
+            $("#modalContainer").load(BASE_URL + "/LimiteVisualizar/Copiar", function () {
                 fncConfig.init();
             });            
         });
@@ -37,8 +37,8 @@ var fncConsulta = {
             headerSortElement: null,
             columnCalcs: "both",
             columns: [
-                { title: "Cod.", field: "codDpto", width: 150 },
-                { title: "Departamento", field: "nomDpto", width: 350 },
+                { title: "Cod.", field: "codDpto", width: 150, visible: false },
+                { title: "Departamento", field: "nomDpto", width: 450 },
                 { title: "IdTpoServicio", field: "idTpoServicio", visible: false },
                 { title: "Servicio", field: "tpoServicio", width: 250 },
                 { title: "Diurno", field: "diurno", width: 150, editor: 'number', bottomCalc: "sum" },

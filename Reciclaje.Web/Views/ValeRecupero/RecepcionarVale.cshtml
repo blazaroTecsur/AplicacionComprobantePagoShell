@@ -1,0 +1,276 @@
+﻿@model Reciclaje.Aplicacion.DTOs.Reciclaje.ValeRecuperoListaViewModel
+@{
+    ViewData["Titulo"] = "Recepcionar Vale de Recupero";
+}
+
+<style>
+    /* ── Badges de tipo de vale ── */
+    .tipo-especifico {
+        background: #dbeafe !important;
+        color: #1e40af !important;
+    }
+
+    .tipo-consolidado {
+        background: #ede9fe !important;
+        color: #5b21b6 !important;
+    }
+
+    .estado-pendiente {
+        background: #fef3c7 !important;
+        color: #92400e !important;
+    }
+
+    .estado-recepcionado {
+        background: #EAF3DE !important;
+        color: #3B6D11 !important;
+    }
+
+    /* ── Columna check centrada ── */
+    #tblVales th.col-check,
+    #tblVales td.col-check {
+        text-align: center;
+        width: 80px;
+    }
+
+    /* ── Flechas DataTables visibles sobre thead gris ── */
+    table.dataTable thead .sorting::before,
+    table.dataTable thead .sorting::after,
+    table.dataTable thead .sorting_asc::before,
+    table.dataTable thead .sorting_asc::after,
+    table.dataTable thead .sorting_desc::before,
+    table.dataTable thead .sorting_desc::after {
+        color: var(--corp-gray-dark) !important;
+        opacity: 0.6;
+    }
+</style>
+
+<div class="panel-contenedor">
+
+    <!-- ── Header ── -->
+    <div class="panel-principal">
+        <h5><i class="bi bi-inbox-fill"></i> Recepcionar Vale de Recupero</h5>
+    </div>
+
+    <!-- ── Alertas ── -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#EAF3DE; border-left:3px solid #3B6D11; color:#3B6D11; font-size:13px;">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Exito"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#FCEBEB; border-left:3px solid #A32D2D; color:#A32D2D; font-size:13px;">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+        </div>
+    }
+
+    <!-- ══════════════════════════════════════════
+         FORM BÚSQUEDA
+    ══════════════════════════════════════════ -->
+    <form asp-action="BuscarVales" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="seccion-panel m-3">
+            <div class="seccion-header">
+                <strong><i class="bi bi-search me-1"></i> Filtros de Búsqueda</strong>
+            </div>
+            <div class="seccion-body">
+                <div class="row g-2 align-items-end">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Nro SRO</label>
+                        <input name="NumeroSro" value="@Model.Filtros.NumeroSro"
+                               class="form-control form-control-sm" placeholder="Ej: SRO001" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Nro Vale</label>
+                        <input name="NumeroVale" value="@Model.Filtros.NumeroVale"
+                               class="form-control form-control-sm" placeholder="Ej: VALE-2026-00001" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Código Artículo Reciclaje</label>
+                        <input name="CodigoArticuloReciclaje" value="@Model.Filtros.CodigoArticuloReciclaje"
+                               class="form-control form-control-sm" placeholder="Código..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Descripción Artículo Reciclaje</label>
+                        <input name="DescripcionArticuloReciclaje" value="@Model.Filtros.DescripcionArticuloReciclaje"
+                               class="form-control form-control-sm" placeholder="Descripción..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha de Vale</label>
+                        <input name="FechaVale" type="date"
+                               value="@(Model.Filtros.FechaVale?.ToString("yyyy-MM-dd"))"
+                               class="form-control form-control-sm" />
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end pt-1">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- ══════════════════════════════════════════
+         TABLA VALES (solo si hubo búsqueda)
+    ══════════════════════════════════════════ -->
+    @if (Model.BusquedaRealizada)
+    {
+        <form asp-action="GuardarRecepcion" method="post" id="formRecepcion">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="filtros.NumeroSro" value="@Model.Filtros.NumeroSro" />
+            <input type="hidden" name="filtros.NumeroVale" value="@Model.Filtros.NumeroVale" />
+
+            <div class="seccion-panel mx-3 mb-3">
+                <div class="seccion-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-table me-1"></i> Vales de Recupero</strong>
+                    @if (Model.Vales.Any())
+                    {
+                        <span class="text-white" style="font-size:12px; font-weight:400;">
+                            Total: <strong>@Model.Vales.Count</strong> vale(s)
+                        </span>
+                    }
+                </div>
+                <div class="seccion-body p-0">
+
+                    <table id="tblVales" class="tabla-corporativa w-100">
+                        <thead>
+                            <tr>
+                                <th>Nro Vale</th>
+                                <th>Tipo</th>
+                                <th>SRO</th>
+                                <th>Contratista</th>
+                                <th>OC</th>
+                                <th>U/M Reciclaje</th>
+                                <th>Cant. Reciclaje</th>
+                                <th>OC Anual</th>
+                                <th>Cód. Art. Reciclaje</th>
+                                <th>Cantidad Real</th>
+                                <th>Peso</th>
+                                <th>Cant. Pendiente</th>
+                                <th class="col-check">Check Recepción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Vales.Count; i++)
+                            {
+                                var vale = Model.Vales[i];
+                                var tipoClass = vale.TipoVale == "Especifico" ? "tipo-especifico" : "tipo-consolidado";
+                                var estadoClass = vale.Estado == "Recepcionado" ? "estado-recepcionado" : "estado-pendiente";
+                                var esPendiente = vale.Estado == "Pendiente";
+                                <tr>
+                                    <td><strong>@vale.NumeroVale</strong></td>
+                                    <td><span class="badge @tipoClass">@vale.TipoVale</span></td>
+                                    <td>@vale.NumeroSro</td>
+                                    <td>@(vale.Contratista ?? "—")</td>
+                                    <td>@(vale.OrdenCompra ?? "—")</td>
+                                    <td>@(vale.UmReciclaje ?? "—")</td>
+                                    <td>@(vale.CantidadReciclaje?.ToString("N4") ?? "—")</td>
+                                    <td>@(vale.OcAnual ?? "—")</td>
+                                    <td>
+                                        <input type="hidden" name="recepciones[@i].ValeId" value="@vale.ValeId" />
+                                        <input type="text"
+                                               name="recepciones[@i].ArticuloReciclaje"
+                                               value="@vale.CodigoArticuloReciclaje"
+                                               class="form-control form-control-sm"
+                                               maxlength="10"
+                                               style="width:110px;"
+                                               @(esPendiente ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.0001"
+                                               name="recepciones[@i].CantidadRecibida"
+                                               value="@vale.CantidadReal"
+                                               class="form-control form-control-sm"
+                                               style="width:100px;"
+                                               @(esPendiente ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.0001"
+                                               name="recepciones[@i].PesoRecibido"
+                                               value="@vale.Peso"
+                                               class="form-control form-control-sm"
+                                               style="width:90px;"
+                                               @(esPendiente ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <span class="badge @estadoClass">
+                                            @(vale.CantidadPendiente?.ToString("N4") ?? "0")
+                                        </span>
+                                    </td>
+                                    <td class="col-check">
+                                        <input type="checkbox"
+                                               name="recepciones[@i].CheckRecepcion"
+                                               value="true"
+                                               @(vale.CheckRecepcion ? "checked" : "")
+                                               @(esPendiente ? "" : "disabled")
+                                               style="width:16px;height:16px;accent-color:var(--corp-blue);cursor:@(esPendiente ? "pointer" : "not-allowed");" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+
+                @if (Model.Vales.Any())
+                {
+                    <div class="d-flex justify-content-end gap-2 p-3"
+                         style="border-top: 1px solid var(--corp-gray);">
+                        <a asp-action="RecepcionarVale" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="bi bi-floppy-fill"></i> Guardar Recepción
+                        </button>
+                    </div>
+                }
+            </div>
+
+        </form>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            if ($('#tblVales').length) {
+                $('#tblVales').DataTable({
+                    language: {
+                        url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                    },
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
+                    order: [[0, 'asc']],
+                    columnDefs: [
+                        { orderable: false, targets: [9, 10, 12] }  // Cantidad Real, Peso, Check: sin ordenamiento
+                    ],
+                    scrollX: true,
+                    autoWidth: false,
+                    responsive: false
+                });
+            }
+        });
+
+        document.getElementById('formRecepcion')?.addEventListener('submit', function (e) {
+            const checks = document.querySelectorAll('input[name$="CheckRecepcion"]:checked');
+            if (checks.length === 0) {
+                alert('Debe seleccionar al menos un vale para registrar la recepción.');
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+}

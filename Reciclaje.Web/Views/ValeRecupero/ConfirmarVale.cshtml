@@ -1,0 +1,617 @@
+@model Reciclaje.Aplicacion.DTOs.Reciclaje.ValeConfirmacionListaViewModel
+@{
+    ViewData["Titulo"] = "Confirmar Vale de Recupero";
+}
+
+<style>
+    /* ── Badges de tipo y estado ── */
+    .tipo-especifico {
+        background: #dbeafe !important;
+        color: #1e40af !important;
+    }
+
+    .tipo-consolidado {
+        background: #ede9fe !important;
+        color: #5b21b6 !important;
+    }
+
+    .estado-pendiente {
+        background: #fef3c7 !important;
+        color: #92400e !important;
+    }
+
+    .estado-recepcionado {
+        background: #EAF3DE !important;
+        color: #3B6D11 !important;
+    }
+
+    .estado-confirmado {
+        background: #dcfce7 !important;
+        color: #14532d !important;
+    }
+
+    /* ── Columnas especiales ── */
+    #tblVales th.col-check, #tblVales td.col-check {
+        text-align: center;
+        width: 80px;
+    }
+
+    #tblVales th.col-sel, #tblVales td.col-sel {
+        text-align: center;
+        width: 50px;
+    }
+
+    /* ── Flechas DataTables visibles sobre thead gris ── */
+    table.dataTable thead .sorting::before,
+    table.dataTable thead .sorting::after,
+    table.dataTable thead .sorting_asc::before,
+    table.dataTable thead .sorting_asc::after,
+    table.dataTable thead .sorting_desc::before,
+    table.dataTable thead .sorting_desc::after {
+        color: var(--corp-gray-dark) !important;
+        opacity: 0.6;
+    }
+
+    /* ── Panel debug request/response ── */
+    #panelResponse .debug-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--corp-blue-dark, #1e2d5a);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.4rem;
+    }
+
+    #panelResponse textarea {
+        width: 100%;
+        box-sizing: border-box;
+        font-family: Consolas, 'Courier New', monospace;
+        font-size: 0.79rem;
+        line-height: 1.55;
+        border: 1.5px solid var(--corp-gray);
+        border-radius: 6px;
+        padding: 0.7rem;
+        background: #f0f4ff;
+        color: var(--corp-text);
+        resize: vertical;
+        white-space: pre;
+        overflow: auto;
+    }
+
+    /* ── Modal de rechazo ── */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1055;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.activo {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 8px 32px rgba(30,45,90,0.22);
+        padding: 2rem 2.2rem;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+    }
+
+        .modal-box .icono-modal {
+            font-size: 2.4rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .modal-box h3 {
+            font-size: 1.1rem;
+            margin: 0 0 0.6rem;
+        }
+
+        .modal-box p {
+            font-size: 0.9rem;
+            color: #5a6a8a;
+            margin: 0 0 1.4rem;
+        }
+
+        .modal-box .acciones {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+        }
+</style>
+
+<div class="panel-contenedor">
+
+    <!-- ── Header ── -->
+    <div class="panel-principal">
+        <h5><i class="bi bi-check2-circle"></i> Confirmar Vale de Recupero</h5>
+    </div>
+
+    <!-- ── Alertas ── -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#EAF3DE; border-left:3px solid #3B6D11; color:#3B6D11; font-size:13px;">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Exito"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#FCEBEB; border-left:3px solid #A32D2D; color:#A32D2D; font-size:13px;">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+        </div>
+    }
+    @if (TempData["Aviso"] != null)
+    {
+        <div class="d-flex align-items-center gap-2 mx-3 mt-3 p-2 rounded"
+             style="background:#fef3c7; border-left:3px solid #f59e0b; color:#92400e; font-size:13px;">
+            <i class="bi bi-exclamation-circle-fill"></i> @TempData["Aviso"]
+        </div>
+    }
+
+    <!-- ══════════════════════════════════════════
+         FORM BÚSQUEDA
+    ══════════════════════════════════════════ -->
+    <form asp-action="BuscarValesConfirmacion" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="seccion-panel m-3">
+            <div class="seccion-header">
+                <strong><i class="bi bi-search me-1"></i> Filtros de Búsqueda</strong>
+            </div>
+            <div class="seccion-body">
+                <div class="row g-2 align-items-end">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Nro SRO</label>
+                        <input name="NumeroSro" value="@Model.Filtros.NumeroSro"
+                               class="form-control form-control-sm" placeholder="Ej: SRO001" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Nro Vale</label>
+                        <input name="NumeroVale" value="@Model.Filtros.NumeroVale"
+                               class="form-control form-control-sm" placeholder="Ej: VALE-2026-00001" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Código Artículo Reciclaje</label>
+                        <input name="CodigoArticuloReciclaje" value="@Model.Filtros.CodigoArticuloReciclaje"
+                               class="form-control form-control-sm" placeholder="Código..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Descripción Artículo Reciclaje</label>
+                        <input name="DescripcionArticuloReciclaje" value="@Model.Filtros.DescripcionArticuloReciclaje"
+                               class="form-control form-control-sm" placeholder="Descripción..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha de Vale</label>
+                        <input name="FechaVale" type="date"
+                               value="@(Model.Filtros.FechaVale?.ToString("yyyy-MM-dd"))"
+                               class="form-control form-control-sm" />
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end pt-1">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- ══════════════════════════════════════════
+         TABLA VALES (solo si hubo búsqueda)
+    ══════════════════════════════════════════ -->
+    @if (Model.BusquedaRealizada)
+    {
+        <form asp-action="GuardarConfirmacion" method="post" id="formConfirmacion">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="accion" id="accionFormulario" value="Confirmar" />
+            <input type="hidden" name="filtros.NumeroSro" value="@Model.Filtros.NumeroSro" />
+            <input type="hidden" name="filtros.NumeroVale" value="@Model.Filtros.NumeroVale" />
+
+            <div class="seccion-panel mx-3 mb-3">
+                <div class="seccion-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-table me-1"></i> Vales de Recupero — Confirmación</strong>
+                    @if (Model.Vales.Any())
+                    {
+                        <span class="text-white" style="font-size:12px; font-weight:400;">
+                            Total: <strong>@Model.Vales.Count</strong> vale(s)
+                        </span>
+                    }
+                </div>
+                <div class="seccion-body p-0">
+
+                    <table id="tblVales" class="tabla-corporativa w-100">
+                        <thead>
+                            <tr>
+                                <th class="col-sel">
+                                    <input type="checkbox" id="selTodos" title="Seleccionar todos"
+                                           style="width:15px;height:15px;cursor:pointer;" />
+                                </th>
+                                <th>Nro Vale</th>
+                                <th>Tipo</th>
+                                <th>SRO</th>
+                                <th>RowPointer</th>
+                                <th>Contratista</th>
+                                <th>CR</th>
+                                <th>U/M Reciclaje</th>
+                                <th>Cant. Reciclaje</th>
+                                <th>OC Anual</th>
+                                <th>Cód. Art. Reciclaje</th>
+                                <th>Cantidad Real</th>
+                                <th>Peso</th>
+                                <th>Cant. Pendiente</th>
+                                <th>Estado</th>
+                                <th class="col-check">Check Confirmación</th>
+                                <th>Fecha Confirmación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Vales.Count; i++)
+                            {
+                                var vale = Model.Vales[i];
+                                var tipoClass = vale.TipoVale == "Especifico" ? "tipo-especifico" : "tipo-consolidado";
+                                var estadoClass = vale.Estado == "Confirmado" ? "estado-confirmado"
+                                : vale.Estado == "Recepcionado" ? "estado-recepcionado"
+                                : "estado-pendiente";
+                                var esRecepcionado = vale.Estado == "Recepcionado";
+                                <tr data-sronum="@vale.NumeroSro" data-rowpointer="@vale.RowPointer">
+                                    <td class="col-sel">
+                                        <input type="hidden" name="confirmaciones[@i].ValeId" value="@vale.ValeId" />
+                                        <input type="checkbox" name="confirmaciones[@i].Seleccionado"
+                                               value="true" class="chk-seleccion"
+                                               style="width:15px;height:15px;accent-color:var(--corp-blue);cursor:pointer;" />
+                                    </td>
+                                    <td><strong>@vale.NumeroVale</strong></td>
+                                    <td><span class="badge @tipoClass">@vale.TipoVale</span></td>
+                                    <td>@vale.NumeroSro</td>
+                                    <td>
+                                        <span title="@vale.RowPointer"
+                                              style="font-family:monospace;font-size:0.78rem;display:inline-block;
+                                                             max-width:120px;overflow:hidden;text-overflow:ellipsis;
+                                                             white-space:nowrap;vertical-align:middle;">
+                                            @(vale.RowPointer ?? "—")
+                                        </span>
+                                    </td>
+                                    <td>@(vale.Contratista ?? "—")</td>
+                                    <td>@(vale.OrdenCompra ?? "—")</td>
+                                    <td>@(vale.UmReciclaje ?? "—")</td>
+                                    <td>@(vale.CantidadReciclaje?.ToString("N4") ?? "—")</td>
+                                    <td>@(vale.OcAnual ?? "—")</td>
+                                    <td>
+                                        <input type="text"
+                                               name="confirmaciones[@i].ArticuloReciclaje"
+                                               value="@vale.CodigoArticuloReciclaje"
+                                               class="form-control form-control-sm"
+                                               maxlength="10"
+                                               style="width:110px;"
+                                               @(esRecepcionado ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.0001"
+                                               name="confirmaciones[@i].CantidadRecibida"
+                                               value="@vale.CantidadReal"
+                                               class="form-control form-control-sm"
+                                               style="width:105px;"
+                                               @(esRecepcionado ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.0001"
+                                               name="confirmaciones[@i].PesoRecibido"
+                                               value="@vale.Peso"
+                                               class="form-control form-control-sm"
+                                               style="width:90px;"
+                                               @(esRecepcionado ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <span class="badge @estadoClass">
+                                            @(vale.CantidadPendiente?.ToString("N4") ?? "0")
+                                        </span>
+                                    </td>
+                                    <td><span class="badge @estadoClass">@vale.Estado</span></td>
+                                    <td class="col-check">
+                                        @if (esRecepcionado)
+                                        {
+                                            <input type="checkbox"
+                                                   name="confirmaciones[@i].CheckConfirmacion"
+                                                   value="true"
+                                                   @(vale.CheckConfirmacion ? "checked" : "")
+                                                   class="chk-confirmacion"
+                                                   style="width:17px;height:17px;accent-color:var(--corp-blue);cursor:pointer;" />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="confirmaciones[@i].CheckConfirmacion" value="false" />
+                                            <input type="checkbox"
+                                                   @(vale.CheckConfirmacion ? "checked" : "")
+                                                   disabled
+                                                   style="width:17px;height:17px;cursor:not-allowed;opacity:0.45;" />
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (vale.FechaConfirmacion.HasValue)
+                                        {
+                                            <span>@vale.FechaConfirmacion.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color:#5a6a8a;">—</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+
+                @if (Model.Vales.Any())
+                {
+                    <div class="d-flex justify-content-end gap-2 p-3"
+                         style="border-top: 1px solid var(--corp-gray);">
+                        <a asp-action="ConfirmarVale" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm" id="btnRechazar">
+                            <i class="bi bi-slash-circle"></i> Rechazar
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm" id="btnConfirmar">
+                            <i class="bi bi-floppy-fill"></i> Guardar Confirmación
+                        </button>
+                    </div>
+                }
+            </div>
+        </form>
+    }
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL DEBUG: request / response proxy
+══════════════════════════════════════════ -->
+<div id="panelResponse" style="display:none; margin: 1.2rem 1rem 2rem;">
+    <div class="seccion-panel">
+        <div class="seccion-header d-flex justify-content-between align-items-center">
+            <strong><i class="bi bi-terminal me-1"></i> execute-payloads — Detalle de llamada</strong>
+            <div class="d-flex align-items-center gap-2">
+                <span id="badgeEstado" class="badge"></span>
+                <button type="button"
+                        onclick="document.getElementById('panelResponse').style.display='none'"
+                        class="btn btn-sm" style="color:#fff;border:1px solid rgba(255,255,255,0.4);padding:0.1rem 0.5rem;">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </div>
+        <div class="seccion-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="debug-label">➤ Request Body enviado</div>
+                    <textarea id="txtRequest" readonly rows="12"></textarea>
+                    <div class="text-end mt-1">
+                        <button type="button" class="btn btn-sm btn-primary btn-copiar" data-target="txtRequest">
+                            <i class="bi bi-clipboard"></i> Copiar
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="debug-label">➤ Response recibido</div>
+                    <textarea id="txtResponse" readonly rows="12" style="background:#f8faff;"></textarea>
+                    <div class="d-flex justify-content-end gap-2 mt-1">
+                        <button type="button" class="btn btn-sm btn-primary btn-copiar" data-target="txtResponse">
+                            <i class="bi bi-clipboard"></i> Copiar
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary"
+                                onclick="document.getElementById('txtRequest').value='';
+                                         document.getElementById('txtResponse').value='';
+                                         document.getElementById('panelResponse').style.display='none';">
+                            <i class="bi bi-trash"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL DE RECHAZO
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalRechazo">
+    <div class="modal-box">
+        <div class="icono-modal"><i class="bi bi-slash-circle text-danger" style="font-size:2.4rem;"></i></div>
+        <h3>Rechazar Vales Seleccionados</h3>
+        <p>Los vales seleccionados volverán al estado <strong>Pendiente</strong> y se limpiarán los datos de recepción. ¿Desea continuar?</p>
+        <div class="acciones">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnCancelarModal">Cancelar</button>
+            <button type="button" class="btn btn-danger btn-sm" id="btnConfirmarRechazo">Sí, Rechazar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ── Inicializar DataTable ─────────────────────────────────────
+        $(function () {
+            if ($('#tblVales').length) {
+                $('#tblVales').DataTable({
+                    language: {
+                        url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                    },
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
+                    order: [[1, 'asc']],
+                    columnDefs: [
+                        { orderable: false, targets: [0, 11, 12, 15] }  // Sel, Cantidad Real, Peso, Check: sin orden
+                    ],
+                    scrollX: true,
+                    autoWidth: false,
+                    responsive: false
+                });
+            }
+        });
+
+        // ── Seleccionar todos ─────────────────────────────────────────
+        document.getElementById('selTodos')?.addEventListener('change', function () {
+            document.querySelectorAll('.chk-seleccion').forEach(c => c.checked = this.checked);
+        });
+
+        // ── Botón Guardar Confirmación ────────────────────────────────
+        document.getElementById('btnConfirmar')?.addEventListener('click', async function (e) {
+            e.preventDefault();
+
+            const checks = document.querySelectorAll('.chk-confirmacion:checked');
+            if (checks.length === 0) {
+                alert('Debe marcar al menos un Check Confirmación para guardar.');
+                return;
+            }
+
+            const btn = this;
+            btn.disabled    = true;
+            btn.innerHTML   = '<i class="bi bi-hourglass-split"></i> Guardando confirmación...';
+
+            const panel   = document.getElementById('panelResponse');
+            const txtReq  = document.getElementById('txtRequest');
+            const txtResp = document.getElementById('txtResponse');
+            const badge   = document.getElementById('badgeEstado');
+
+            function mostrarPanel(reqBody, respData, exito) {
+                txtReq.value      = JSON.stringify(reqBody,  null, 2);
+                txtResp.value     = JSON.stringify(respData, null, 2);
+                badge.textContent = exito ? '✅ Éxito' : '❌ Error';
+                badge.className   = exito ? 'badge bg-success' : 'badge bg-danger';
+                panel.style.display = 'block';
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // ── PASO 1: Recolectar vales confirmados (para el proxy) ──
+            const valesConfirmados = [];
+            checks.forEach(chk => {
+                const fila = chk.closest('tr');
+                if (fila) {
+                    const sroNum     = fila.dataset.sronum;
+                    const rowPointer = fila.dataset.rowpointer;
+                    if (sroNum && rowPointer) {
+                        const yaExiste = valesConfirmados.some(v => v.sroNum === sroNum && v.rowPointer === rowPointer);
+                        if (!yaExiste) valesConfirmados.push({ sroNum, rowPointer });
+                    } else {
+                        console.warn('[Confirmar] Fila sin data-sronum o data-rowpointer:', fila);
+                    }
+                }
+            });
+
+            // ── PASO 2: Enviar formulario al controlador via fetch ────
+            let redirectUrl = null;
+            try {
+                document.getElementById('accionFormulario').value = 'Confirmar';
+                const form     = document.getElementById('formConfirmacion');
+                const formData = new FormData(form);
+
+                const formResp = await fetch(form.action, { method: 'POST', body: formData });
+
+                const contentType = formResp.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    const formJson = await formResp.json();
+                    redirectUrl = formJson.redirectUrl || null;
+                } else {
+                    redirectUrl = formResp.url;
+                }
+            } catch (formErr) {
+                console.error('[Confirmar] Error al enviar formulario:', formErr);
+                alert('Error al guardar la confirmación: ' + formErr.message);
+                btn.disabled  = false;
+                btn.innerHTML = '<i class="bi bi-floppy-fill"></i> Guardar Confirmación';
+                return;
+            }
+
+            // ── PASO 3: Llamar a /proxy/execute-payloads ─────────────
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Enviando a SyteLine...';
+
+            if (valesConfirmados.length > 0) {
+                try {
+                    const llamadas = valesConfirmados.map(async v => {
+                        const requestBody = { sroNum: v.sroNum, rowPointer: v.rowPointer };
+                        try {
+                            const r    = await fetch('http://localhost:3000/proxy/execute-payloads', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(requestBody)
+                            });
+                            const data = await r.json();
+                            return { requestBody, response: { httpStatus: r.status, ...data }, ok: r.ok };
+                        } catch (err) {
+                            return { requestBody, response: { success: false, error: err.message }, ok: false };
+                        }
+                    });
+
+                    const resultados  = await Promise.all(llamadas);
+                    const todosOk     = resultados.every(r => r.ok);
+                    const reqDisplay  = resultados.length === 1 ? resultados[0].requestBody : resultados.map(r => r.requestBody);
+                    const respDisplay = resultados.length === 1 ? resultados[0].response    : resultados.map(r => r.response);
+                    mostrarPanel(reqDisplay, respDisplay, todosOk);
+
+                    const delay = resultados.some(r => !r.ok) ? 4000 : 2500;
+                    setTimeout(() => { if (redirectUrl) window.location.href = redirectUrl; }, delay);
+
+                } catch (err) {
+                    mostrarPanel({}, { success: false, error: err.message }, false);
+                    setTimeout(() => { if (redirectUrl) window.location.href = redirectUrl; }, 3000);
+                }
+            } else {
+                if (redirectUrl) window.location.href = redirectUrl;
+            }
+        });
+
+        // ── Botones copiar ────────────────────────────────────────────
+        document.querySelectorAll('.btn-copiar').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const txt = document.getElementById(this.dataset.target);
+                txt.select();
+                navigator.clipboard?.writeText(txt.value).then(() => {
+                    const orig = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check2"></i> Copiado';
+                    setTimeout(() => this.innerHTML = orig, 2000);
+                }).catch(() => document.execCommand('copy'));
+            });
+        });
+
+        // ── Botón Rechazar: abre modal ────────────────────────────────
+        document.getElementById('btnRechazar')?.addEventListener('click', function () {
+            const seleccionados = document.querySelectorAll('.chk-seleccion:checked');
+            if (seleccionados.length === 0) {
+                alert('Debe seleccionar al menos un vale para rechazar.');
+                return;
+            }
+            document.getElementById('modalRechazo').classList.add('activo');
+        });
+
+        // ── Modal: Cancelar ───────────────────────────────────────────
+        document.getElementById('btnCancelarModal')?.addEventListener('click', function () {
+            document.getElementById('modalRechazo').classList.remove('activo');
+        });
+
+        // ── Modal: Confirmar rechazo ──────────────────────────────────
+        document.getElementById('btnConfirmarRechazo')?.addEventListener('click', function () {
+            document.getElementById('accionFormulario').value = 'Rechazar';
+            document.getElementById('modalRechazo').classList.remove('activo');
+            document.getElementById('formConfirmacion').submit();
+        });
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('modalRechazo')?.addEventListener('click', function (e) {
+            if (e.target === this) this.classList.remove('activo');
+        });
+    </script>
+}

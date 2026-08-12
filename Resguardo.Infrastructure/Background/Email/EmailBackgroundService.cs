@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Notificacion.Application;
+using Notificacion.Abstractions;
 
 namespace Resguardo.Infrastructure.Background.Email
 {

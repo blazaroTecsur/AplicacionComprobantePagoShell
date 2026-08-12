@@ -54,19 +54,29 @@ namespace Resguardo.Application.Commands.AprobarSolicitud
             solicitud.UsuarioApro = _usuario.Correo;
             solicitud.FechaApro = DateTime.Now;
 
-            if (formulario.CodEstado == Constantes.COD_ESTADO_APROBJEFE)
+            if (formulario.CodEstado == Constantes.COD_ESTADO_ANULADO)
             {
-                foreach (var servicio in solicitud.Servicios)
+                await _unidadTrabajo.SolicitudRepositorio.Actualizar(solicitud);
+                await _unidadTrabajo.SaveChangesAsync();
+                return true;
+            }
+
+            int cantAprobada = 0;
+            foreach (var servicio in solicitud.Servicios)
+            {
+                var servicioForm = formulario.Servicios.FirstOrDefault(s => s.Id == servicio.Id);
+                if (servicioForm is not null)
                 {
-                    var servicioForm = formulario.Servicios.FirstOrDefault(s => s.Id == servicio.Id);
-                    if (servicioForm is not null)
-                    {
-                        servicio.CantidadBck = servicio.Cantidad;
-                        servicio.Cantidad = servicioForm.Cantidad;
-                        servicio.Comentario = servicioForm.Comentario;
-                    }
+                    servicio.CantidadBck = servicio.Cantidad;
+                    servicio.Cantidad = servicioForm.Cantidad;
+                    servicio.Comentario = servicioForm.Comentario;
+                    cantAprobada += servicioForm.Cantidad;
                 }
             }
+            if (cantAprobada <= 0)
+                throw new BusinessException(StatusCodes.Status400BadRequest.ToString(),
+                                            "Debe haber al menos un servicio con cantidad mayor a cero.");
+
             await _unidadTrabajo.BeginTransactionAsync();
             try
             {

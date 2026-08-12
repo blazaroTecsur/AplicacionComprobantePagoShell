@@ -12,14 +12,18 @@
 
 	<ItemGroup>
 		<None Include="Templates\EditarSolicitud.html" CopyToOutputDirectory="Always" />
+		<None Include="Templates\AmpliarServicio.html" CopyToOutputDirectory="Always" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+		<PackageReference Include="Infor.Infrastructure" Version="1.0.0" />
+		<PackageReference Include="Maestro.Infrastructure" Version="1.0.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.24" />
 		<PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+		<PackageReference Include="Seguridad.Infrastructure" Version="1.0.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
@@ -27,11 +31,8 @@
 	</ItemGroup>
 
 	<ItemGroup>		
-		<ProjectReference Include="..\Infor.Infrastructure\Infor.Infrastructure.csproj" />		
-		<ProjectReference Include="..\Notificacion.Infrastructure\Notificacion.Infrastructure.csproj" />		
 		<ProjectReference Include="..\Resguardo.Application\Resguardo.Application.csproj" />		
-		<ProjectReference Include="..\Resguardo.Infrastructure\Resguardo.Infrastructure.csproj" />		
-		<ProjectReference Include="..\Seguridad.Infrastructure\Seguridad.Infrastructure.csproj" />
+		<ProjectReference Include="..\Resguardo.Infrastructure\Resguardo.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>

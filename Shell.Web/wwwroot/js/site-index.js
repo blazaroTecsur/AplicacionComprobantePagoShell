@@ -125,12 +125,56 @@
     async function guardarActualizacion() {
         var btn = document.getElementById('layoutBtnGuardarUpd');
         CorporateDS.Button.setLoading(btn, 'Guardando…');
-        await new Promise(function (r) { setTimeout(r, 1400); }); /* fetch real aquí */
-        CorporateDS.Button.stopLoading(btn);
-        bootstrap.Modal.getInstance(
-            document.getElementById('layoutUpdateModal')
-        ).hide();
-        CorporateDS.Toast.success('Datos actualizados correctamente', 'Perfil');
+
+        try {
+            // Lectura de campos (tener en cuenta IDs duplicados en la vista: el primer 'master_txtTitulo' es DNI)
+            var dniEl = document.getElementById('master_txtTitulo');            
+            var empresaEl = document.getElementById('master_txtEmpresa');
+            var deptoEl = document.getElementById('master_txtDepartamento');
+            var puestoEl = document.getElementById('master_txtPuesto');
+
+            var payload = {                
+                Puesto: puestoEl ? puestoEl.value.trim() : null,
+                Departamento: deptoEl ? deptoEl.value.trim() : null,
+                Empresa: empresaEl ? empresaEl.value.trim() : null,
+                Dni: dniEl ? dniEl.value.trim() : null
+            };
+
+            var response = await fetch('/Home/ActualizarDatos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                
+                const error = await response.json();
+                if (error.validationErrors) {
+                    let mensajes = [];
+                    Object.values(error.validationErrors).forEach(lista => mensajes.push(...lista));
+                    const detalle = mensajes.join('<br>');
+                    CorporateDS.Toast.danger(`${error.userMessage}<br>${detalle}`);
+                    return;
+                }
+                CorporateDS.Toast.danger(error.userMessage || 'Hubo un error al actualizar sus datos.');
+                return;
+            }
+
+            // Success: cerrar modal y mostrar notificación
+            var modalEl = document.getElementById('layoutUpdateModal');
+            var modalInst = bootstrap.Modal.getInstance(modalEl);
+            if (modalInst) modalInst.hide();
+
+            CorporateDS.Toast.success('Los han sido actualizados correctamente', 'Perfil');
+            window.location.reload();
+        } catch (err) {
+            CorporateDS.Toast.danger('Error al actualizar: ' + (err && err.message ? err.message : err));
+        } finally {
+            CorporateDS.Button.stopLoading(btn);
+        }
     }
 
     /* ── Modal: Cerrar sesión ──────────────────────────────── */

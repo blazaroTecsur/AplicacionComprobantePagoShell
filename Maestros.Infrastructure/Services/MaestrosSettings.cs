@@ -12,6 +12,7 @@ namespace Maestros.Infrastructure.Services
             public string Empleados        { get; set; } = null!;
             public string CodigosUnidad    { get; set; } = null!;
             public string CuentasContables { get; set; } = null!;
+            public string Socios { get; set; } = null!;
         }
 
         public class MaestrosAuthSettings
