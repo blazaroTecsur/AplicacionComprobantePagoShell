@@ -1,0 +1,24 @@
+using ComprobantePago.Application.DTOs.Comprobante.Common;
+using ComprobantePago.Application.Interfaces.Services.Maestros;
+using Maestro.Abstractions.Interfaces;
+using Seguridad.Abstractions.Interfaces;
+
+namespace ComprobantePago.Infrastructure.Services.Maestros
+{
+    public class ApiCatalogoUnidadService(
+        IMaestrosCatalogoUnidadService maestros,
+        IUsuarioContexto usuario) : ICatalogoUnidadService
+    {
+        public async Task<IEnumerable<ComboDto>> ObtenerCodigosUnidadAsync(int unidad, string filtro = "")
+        {
+            // Unidad 4 es global — sin filtro de empresa (igual que DbCatalogoUnidadService)
+            var empresa = unidad == 4 ? string.Empty : usuario.Empresa;
+            var result  = await maestros.GetAllAsync(unidad, empresa, "", filtro, 1, 100);
+            return result.Items.Select(c => new ComboDto
+            {
+                Codigo      = c.Codigo,
+                Descripcion = c.Descripcion,
+            });
+        }
+    }
+}

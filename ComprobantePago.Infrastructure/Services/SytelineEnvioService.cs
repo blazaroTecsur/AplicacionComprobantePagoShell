@@ -1,0 +1,419 @@
+using ComprobantePago.Application.DTOs.Infor;
+using ComprobantePago.Application.DTOs.Responses;
+using ComprobantePago.Application.Interfaces.Services;
+using ComprobantePago.Infrastructure.Persistence;
+using Infor.Abstractions.DTOs;
+using Infor.Abstractions.Interfaces;
+using Infor.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
+
+namespace ComprobantePago.Infrastructure.Services
+{
+    /// <summary>
+    /// Envía comprobantes aprobados al IDO SLAptrxs de Infor Syteline.
+    /// </summary>
+    public sealed class SytelineEnvioService : ISytelineEnvioService
+    {
+        private readonly IInforIdoService                _ido;
+        private readonly InforSettings                   _settings;
+        private readonly ILogger<SytelineEnvioService>  _logger;
+        private readonly AppDbContext                    _contexto;
+
+        public SytelineEnvioService(
+            IInforIdoService               ido,
+            IOptions<InforSettings>        settings,
+            ILogger<SytelineEnvioService>  logger,
+            AppDbContext                   contexto)
+        {
+            _ido      = ido;
+            _settings = settings.Value;
+            _logger   = logger;
+            _contexto = contexto;
+        }
+
+        // ── Insertar una cabecera ─────────────────────────────────────────────
+
+        public async Task<(int Voucher, string ItemId)> EnviarCabeceraAsync(
+            SytelineCabeceraDto cabecera,
+            CancellationToken ct = default)
+        {
+            var vendNum = FormatearVendNum(cabecera.VendNum);
+            if (string.IsNullOrWhiteSpace(vendNum.Trim()) || vendNum.Trim() == "0")
+                throw new InvalidOperationException(
+                    $"El proveedor del comprobante '{cabecera.Factura}' no tiene VendNum " +
+                    $"asignado en el maestro de proveedores (IdProveedorExternal = 0 o vacío). " +
+                    $"Sincronice el maestro de proveedores con Syteline antes de enviar.");
+
+            // Syteline asigna el Voucher automáticamente cuando se envía -1
+            var dto      = MapearCabecera(cabecera);
+            var propList = ConstruirPropiedades(dto);
+
+            _logger.LogInformation(
+                "Enviando comprobante {InvNum} de proveedor {VendNum} a SLAptrxs...",
+                dto.InvNum, dto.VendNum);
+
+            var respuesta = await _ido.InsertItemAsync("SLAptrxs", propList,
+                refreshAfterSave: true, ct: ct);
+
+            var voucher = ExtraerVoucher(respuesta);
+            var itemId  = ExtraerItemId(respuesta);
+
+            if (voucher == 0)
+                throw new InvalidOperationException(
+                    $"Syteline no devolvió el Voucher asignado para el comprobante '{cabecera.Factura}'.");
+
+            _logger.LogInformation(
+                "Comprobante {InvNum} insertado en SLAptrxs. Voucher: {Voucher} ItemId: {ItemId}",
+                dto.InvNum, voucher, itemId);
+
+            return (voucher, itemId);
+        }
+
+        // ── Insertar múltiples cabeceras ──────────────────────────────────────
+
+        public async Task<IEnumerable<int>> EnviarCabecerasAsync(
+            IEnumerable<SytelineCabeceraDto> cabeceras,
+            CancellationToken ct = default)
+        {
+            var vouchers = new List<int>();
+
+            foreach (var cabecera in cabeceras)
+            {
+                ct.ThrowIfCancellationRequested();
+                var (voucher, _) = await EnviarCabeceraAsync(cabecera, ct);
+                vouchers.Add(voucher);
+            }
+
+            return vouchers;
+        }
+
+        // ── Eliminar cabecera (rollback compensatorio) ────────────────────────
+
+        public async Task EliminarCabeceraAsync(string itemId, CancellationToken ct = default)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                _logger.LogWarning("No se puede revertir cabecera: ItemId vacío.");
+                return;
+            }
+
+            try
+            {
+                await _ido.DeleteItemAsync("SLAptrxs", itemId, ct);
+                _logger.LogInformation("Cabecera Syteline revertida. ItemId={ItemId}", itemId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "No se pudo revertir cabecera Syteline. ItemId={ItemId} — requiere limpieza manual.",
+                    itemId);
+                throw;
+            }
+        }
+
+        // ── Obtener siguiente número de Voucher ───────────────────────────────
+        // Consulta el máximo Voucher existente en SLAptrxs para este site y
+        // devuelve max + 1. Si no hay registros, devuelve 1.
+
+        public async Task<int> ObtenerSiguienteVoucherAsync(CancellationToken ct = default)
+        {
+            // MAX de VoucherSyteline en nuestra BD (cubre vouchers ya asentados/derivados
+            // que desaparecen de SLAptrxs al ser contabilizados en Syteline)
+            var maxLocal = await _contexto.Comprobantes
+                .Where(c => c.VoucherSyteline != null && c.VoucherSyteline > 0)
+                .MaxAsync(c => (int?)c.VoucherSyteline, ct) ?? 0;
+
+            // MAX de Voucher en SLAptrxs (pendientes de asentar en Syteline)
+            int maxSyteline = 0;
+            try
+            {
+                var resultado = await _ido.LoadAsync(
+                    "SLAptrxs",
+                    props:     "Voucher",
+                    orderBy:   "Voucher DESC",
+                    recordCap: 1,
+                    ct:        ct);
+
+                _logger.LogInformation("SLAptrxs MaxVoucher: {Body}", resultado.GetRawText());
+                maxSyteline = ExtraerVoucherDeItems(resultado);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "No se pudo consultar SLAptrxs para el MAX Voucher; se usará el registro local.");
+            }
+
+            var siguiente = Math.Max(maxLocal, maxSyteline) + 1;
+            _logger.LogInformation(
+                "Próximo Voucher: {Voucher} (maxLocal={Local}, maxSyteline={Syteline})",
+                siguiente, maxLocal, maxSyteline);
+            return siguiente;
+        }
+
+        // ── Insertar distribución (SLAptrxds) ─────────────────────────────────
+
+        public async Task EnviarDistribucionAsync(
+            SytelineCabeceraDto cabecera,
+            IEnumerable<SytelineDistribucionDto> lineas,
+            int voucher,
+            CancellationToken ct = default)
+        {
+            var lista   = lineas.OrderBy(l => l.SecDist).ToList();
+            var vendNum = FormatearVendNum(cabecera.VendNum);
+            var distSeq = 5;
+
+            if (lista.Count == 0)
+            {
+                _logger.LogWarning("Sin líneas de distribución para {Factura}", cabecera.Factura);
+                return;
+            }
+
+            var lineaIgv    = lista.FirstOrDefault(l => l.CodImp.StartsWith("IGV"));
+            var lineaExento = lista.FirstOrDefault(l => l.CodImp == "EXO");
+            var expenseLines = lista.Where(l => l.EsLineaPrincipal).ToList();
+
+            // En modo fraccionado las líneas EXENTO ya se envían como expense lines;
+            // no agregar una línea EXO separada que las duplicaría.
+            bool exentoYaComoExpense = expenseLines.Any(l => l.CodImp == "EXO");
+
+            // 1. Líneas de gasto (una por cada imputación principal)
+            foreach (var linea in expenseLines)
+            {
+                var dto = new SLAptrxdsInsertDto
+                {
+                    VendNum     = vendNum,
+                    Voucher     = voucher,
+                    DistSeq     = distSeq,
+                    Acct        = linea.CuentaContable[..Math.Min(12, linea.CuentaContable.Length)],
+                    AcctUnit1   = linea.CodUnidad1.Length > 0 ? linea.CodUnidad1[..Math.Min(4, linea.CodUnidad1.Length)] : "",
+                    AcctUnit2   = linea.CodUnidad2.Length > 0 ? linea.CodUnidad2[..Math.Min(4, linea.CodUnidad2.Length)] : "",
+                    AcctUnit3   = linea.CodUnidad3.Length > 0 ? linea.CodUnidad3[..Math.Min(4, linea.CodUnidad3.Length)] : "",
+                    AcctUnit4   = linea.CodUnidad4.Length > 0 ? linea.CodUnidad4[..Math.Min(4, linea.CodUnidad4.Length)] : "",
+                    Amount      = linea.Importe,
+                    TaxSystem   = linea.CodImp == "EXO" ? "1" : "",
+                    TaxCode     = linea.CodImp == "EXO" ? "EXENTO" : "",
+                    DIOTTransType      = linea.EsEmpleado ? "1" : "0",
+                    TaxRegNum          = linea.EsEmpleado && linea.NumRegFiscal.Length > 0 ? linea.NumRegFiscal[..Math.Min(25, linea.NumRegFiscal.Length)] : "",
+                    TaxRegNumType      = linea.EsEmpleado && !string.IsNullOrEmpty(linea.NumRegFiscal) ? "T" : "",
+                    ProjNum            = linea.Proyecto.Length > 0 ? linea.Proyecto[..Math.Min(10, linea.Proyecto.Length)] : "",
+                    aptZCO_APD_VendNum  = linea.EsEmpleado && linea.AptZCO_APD_VendNum.Length > 0 ? linea.AptZCO_APD_VendNum : "",
+                    aptZLA_TipoDocumento = linea.TipoDoc.Length > 0 ? linea.TipoDoc[..Math.Min(2, linea.TipoDoc.Length)] : "",
+                    VendorName           = linea.EsEmpleado && linea.NombreProveedor.Length > 0 ? linea.NombreProveedor[..Math.Min(60, linea.NombreProveedor.Length)] : "",
+                    ForeignTaxRegNum     = linea.EsEmpleado ? "0" : "",
+                };
+                _logger.LogInformation("IDO SLAptrxds Gasto → Voucher={Voucher} DistSeq={Seq} Acct={Acct} Amount={Amt}",
+                    voucher, distSeq, dto.Acct, dto.Amount);
+                await _ido.InsertItemAsync("SLAptrxds", ConstruirPropiedades(dto), ct: ct);
+                distSeq += 5;
+            }
+
+            // 2. Línea IGV
+            if (lineaIgv != null)
+            {
+                var dto = new SLAptrxdsInsertDto
+                {
+                    VendNum   = vendNum,
+                    Voucher   = voucher,
+                    DistSeq   = distSeq,
+                    Acct      = lineaIgv.CuentaContable[..Math.Min(12, lineaIgv.CuentaContable.Length)],
+                    AcctUnit1 = lineaIgv.CodUnidad1.Length > 0 ? lineaIgv.CodUnidad1[..Math.Min(4, lineaIgv.CodUnidad1.Length)] : "",
+                    AcctUnit2 = lineaIgv.CodUnidad2.Length > 0 ? lineaIgv.CodUnidad2[..Math.Min(4, lineaIgv.CodUnidad2.Length)] : "",
+                    AcctUnit3 = lineaIgv.CodUnidad3.Length > 0 ? lineaIgv.CodUnidad3[..Math.Min(4, lineaIgv.CodUnidad3.Length)] : "",
+                    AcctUnit4 = lineaIgv.CodUnidad4.Length > 0 ? lineaIgv.CodUnidad4[..Math.Min(4, lineaIgv.CodUnidad4.Length)] : "",
+                    Amount    = lineaIgv.Importe,
+                    TaxBasis  = lineaIgv.BaseImp,
+                    TaxCode   = lineaIgv.CodImp,
+                    TaxSystem = "2",
+                    aptZLA_TipoDocumento = lineaIgv.TipoDoc.Length > 0 ? lineaIgv.TipoDoc[..Math.Min(2, lineaIgv.TipoDoc.Length)] : "",
+                };
+                _logger.LogInformation("IDO SLAptrxds IGV → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
+                    voucher, distSeq, dto.Amount);
+                await _ido.InsertItemAsync("SLAptrxds", ConstruirPropiedades(dto), ct: ct);
+                distSeq += 5;
+            }
+
+            // 4. Línea exento (solo si no fue enviada ya como expense line en modo fraccionado)
+            if (lineaExento != null && !exentoYaComoExpense)
+            {
+                var dto = new SLAptrxdsInsertDto
+                {
+                    VendNum  = vendNum,
+                    Voucher  = voucher,
+                    DistSeq  = distSeq,
+                    Acct     = lineaExento.CuentaContable[..Math.Min(12, lineaExento.CuentaContable.Length)],
+                    AcctUnit1 = lineaExento.CodUnidad1.Length > 0 ? lineaExento.CodUnidad1[..Math.Min(4, lineaExento.CodUnidad1.Length)] : "",
+                    AcctUnit2 = lineaExento.CodUnidad2.Length > 0 ? lineaExento.CodUnidad2[..Math.Min(4, lineaExento.CodUnidad2.Length)] : "",
+                    AcctUnit3 = lineaExento.CodUnidad3.Length > 0 ? lineaExento.CodUnidad3[..Math.Min(4, lineaExento.CodUnidad3.Length)] : "",
+                    AcctUnit4 = lineaExento.CodUnidad4.Length > 0 ? lineaExento.CodUnidad4[..Math.Min(4, lineaExento.CodUnidad4.Length)] : "",
+                    Amount    = lineaExento.Importe,
+                    TaxSystem = "1",
+                    TaxCode   = "EXENTO",
+                    aptZLA_TipoDocumento = lineaExento.TipoDoc.Length > 0 ? lineaExento.TipoDoc[..Math.Min(2, lineaExento.TipoDoc.Length)] : "",
+                };
+                _logger.LogInformation("IDO SLAptrxds Exento → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
+                    voucher, distSeq, dto.Amount);
+                await _ido.InsertItemAsync("SLAptrxds", ConstruirPropiedades(dto), ct: ct);
+            }
+        }
+
+        // ── Mapeo SytelineCabeceraDto → SLAptrxsInsertDto ────────────────────
+
+        private SLAptrxsInsertDto MapearCabecera(SytelineCabeceraDto c) => new()
+        {
+            // "V" para facturas y demás; vacío para NC/ND (07/08) — se omite al filtrar
+            Type = c.TipoSunat is "07" or "08" ? "" : "V",
+
+            VendNum  = FormatearVendNum(c.VendNum),
+            Voucher  = -1,  // Syteline asigna el siguiente disponible y lo devuelve en RefreshItems
+            InvDate  = c.FechaFactura,
+            DistDate = c.FechaDistribucion,
+            UbToSite = _settings.Site,
+
+            // Cabecera
+            InvNum      = c.Factura[..Math.Min(22, c.Factura.Length)],
+            PurchAmt    = c.ImpoCompra,
+            SalesTax_2  = c.ImpVentas2,
+            InvAmt      = c.MntoFactura,
+            MiscCharges = c.CargosVarios,
+            NonDiscAmt  = c.CargosVarios,
+
+            // Vencimiento
+            DueDate  = c.FechaVen,
+            DueDays  = c.DiasVto,
+            DiscDate = c.FechaDcto,
+            DiscPct  = 0.000m,
+
+            // Moneda
+            AptCurrCode = c.Moneda,
+            ExchRate    = c.TipoCambio,
+
+            // Cuenta A/P
+            ApAcct      = c.CtaCP[..Math.Min(12, c.CtaCP.Length)],
+            ApAcctUnit1 = c.CtaCPUnid1[..Math.Min(4, c.CtaCPUnid1.Length)],
+            ApAcctUnit2 = c.CtaCPUnid2[..Math.Min(4, c.CtaCPUnid2.Length)],
+            ApAcctUnit3 = c.CtaCPUnid3[..Math.Min(4, c.CtaCPUnid3.Length)],
+            ApAcctUnit4 = c.CtaCPUnid4[..Math.Min(4, c.CtaCPUnid4.Length)],
+
+            // Referencia
+            Ref        = c.Ref[..Math.Min(30, c.Ref.Length)],
+            Txt        = c.Notas[..Math.Min(40, c.Notas.Length)],
+            Authorizer = c.Autorizo[..Math.Min(128, c.Autorizo.Length)],
+
+            // Impuesto: EXE cuando no hay IGV o hay monto exento; NR en caso contrario
+            TaxCode1   = (c.ImpVentas2 == 0 || c.MontoExento > 0) ? "EXENTO" : "NAR",
+            AuthStatus = "F",
+
+            // Folio de origen
+            aptZLA_SeqFac = c.Comprobante.ToString(),
+
+            // Detracción
+            aptZLA_UsaDetraccion        = c.UsaDetraccion == "1" ? (byte)1 : (byte)0,
+            aptZLA_CodigoDetraccion     = c.Detraccion,
+            aptZLA_TasaDetraccion       = c.Tasa,
+            aptZLA_TotalDetraccion      = c.TotalDetraccion,
+            aptZLA_TotalDetraccionLocal = c.TotalDetLocal,
+        };
+
+        // ── Formatear VendNum ─────────────────────────────────────────────────
+        // Numérico → relleno con espacios a la izquierda hasta 7 chars (legacy Syteline).
+        // Alfanumérico → sin espacios.
+        private static string FormatearVendNum(string vendNum)
+        {
+            var v = vendNum.Trim();
+            return v.All(char.IsDigit) ? v.PadLeft(7) : v;
+        }
+
+        // ── Construir lista de IdoProperty ───────────────────────────────────
+        // Todos los campos se envían con IsNull=false.
+        // Se omiten únicamente strings vacíos y nulls.
+        private static List<IdoProperty> ConstruirPropiedades(object dto)
+        {
+            var lista = new List<IdoProperty>();
+
+            foreach (var prop in dto.GetType().GetProperties())
+            {
+                var valor = prop.GetValue(dto);
+
+                if (valor is string s && string.IsNullOrEmpty(s)) continue;
+                if (valor is null) continue;
+
+                lista.Add(new IdoProperty
+                {
+                    IsNull = false,
+                    Name   = prop.Name,
+                    Value  = FormatearValor(valor)
+                });
+            }
+
+            return lista;
+        }
+
+        private static string FormatearValor(object? valor) => valor switch
+        {
+            null       => "",
+            decimal d  => d.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            double  db => db.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            float   f  => f.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            _          => valor.ToString() ?? ""
+        };
+
+        // ── Extraer Voucher del response de update (v2: RefreshItems) ───────────
+
+        private static int ExtraerVoucher(JsonElement respuesta)
+        {
+            if (respuesta.TryGetProperty("RefreshItems", out var items) &&
+                items.GetArrayLength() > 0)
+            {
+                var item = items[0];
+                if (item.TryGetProperty("Properties", out var props) &&
+                    props.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var prop in props.EnumerateArray())
+                    {
+                        if (prop.TryGetProperty("Name",  out var name)  &&
+                            name.GetString() == "Voucher"                &&
+                            prop.TryGetProperty("Value", out var value)  &&
+                            int.TryParse(value.GetString(), out var v))
+                        {
+                            return v;
+                        }
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        // ── Extraer ItemId del response de update (v2: RefreshItems) ─────────
+
+        private static string ExtraerItemId(JsonElement respuesta)
+        {
+            if (respuesta.TryGetProperty("RefreshItems", out var items) &&
+                items.GetArrayLength() > 0 &&
+                items[0].TryGetProperty("ItemId", out var itemId))
+            {
+                return itemId.GetString() ?? string.Empty;
+            }
+            return string.Empty;
+        }
+
+        // ── Extraer Voucher del response de LoadCollection (v2: Items con claves directas) ──
+
+        private static int ExtraerVoucherDeItems(JsonElement resultado)
+        {
+            if (!resultado.TryGetProperty("Items", out var items) || items.GetArrayLength() == 0)
+                return 0;
+
+            var firstItem = items[0];
+            if (firstItem.TryGetProperty("Voucher", out var vp))
+            {
+                if (vp.ValueKind == JsonValueKind.Number && vp.TryGetInt32(out var vi)) return vi;
+                if (vp.ValueKind == JsonValueKind.String && int.TryParse(vp.GetString(), out var vs)) return vs;
+            }
+
+            return 0;
+        }
+    }
+}

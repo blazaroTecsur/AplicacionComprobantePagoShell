@@ -1,0 +1,673 @@
+/* ============================================================
+   VARIABLES � Paleta corporativa moderna
+============================================================ */
+:root {
+    --corp-blue: #185FA5;
+    --corp-blue-dark: #0C447C;
+    --corp-blue-light: #E6F1FB;
+    --corp-blue-mid: #B5D4F4;
+    --corp-gray: #F1EFE8;
+    --corp-gray-mid: #D3D1C7;
+    --corp-gray-dark: #5F5E5A;
+    --corp-border: rgba(0,0,0,0.10);
+    --corp-text: #1a1a1a;
+    --corp-text-muted: #6b7280;
+    --corp-radius: 8px;
+    --corp-radius-lg: 12px;
+}
+
+/* ============================================================
+   BASE
+============================================================ */
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 13.5px;
+    background-color: #f4f6fb;
+    color: var(--corp-text);
+    overflow-y: scroll;
+}
+
+/* ============================================================
+   NAVBAR
+============================================================ */
+.navbar {
+    background-color: var(--corp-blue) !important;
+    box-shadow: 0 2px 8px rgba(24,95,165,0.18);
+    padding: 0;
+    min-height: 52px;
+}
+.navbar .container-fluid {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link {
+    color: #fff !important;
+    font-weight: 500;
+    font-size: 25px;
+    padding: 0 !important;
+}
+
+.navbar .nav-link:hover {
+    color: var(--corp-blue-mid) !important;
+}
+
+.navbar .navbar-brand {
+    font-size: 25px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   PANEL CONTENEDOR
+============================================================ */
+.panel-contenedor {
+    background: #fff;
+    border: 0.5px solid var(--corp-border);
+    border-radius: var(--corp-radius-lg);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* ============================================================
+   PANEL PRINCIPAL (header)
+============================================================ */
+.panel-principal {
+    background-color: var(--corp-blue);
+    color: #fff;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+}
+
+    .panel-principal h5 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        color: #fff;
+    }
+
+/* ============================================================
+   PANEL FILTROS
+============================================================ */
+.panel-filtros {
+    background-color: #f4f6fb;
+    padding: 12px 16px;
+    border-bottom: 0.5px solid var(--corp-border);
+}
+
+    .panel-filtros .form-label {
+        color: var(--corp-text-muted);
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 4px;
+    }
+
+    .panel-filtros .form-control,
+    .panel-filtros .form-select {
+        font-size: 13px;
+        border: 0.5px solid #c9d0dc;
+        background-color: #fff;
+        color: var(--corp-text);
+        border-radius: var(--corp-radius);
+        height: 32px;
+        padding: 0 10px;
+    }
+
+        .panel-filtros .form-control:focus,
+        .panel-filtros .form-select:focus {
+            border-color: var(--corp-blue);
+            box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
+            outline: none;
+        }
+
+/* ============================================================
+   BARRA DE ACCIONES
+============================================================ */
+.barra-acciones {
+    background-color: #f4f6fb;
+    padding: 8px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-bottom: 0.5px solid var(--corp-border);
+}
+
+    .barra-acciones .btn {
+        font-size: 12.5px;
+        padding: 4px 12px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+/* ============================================================
+   BOTONES
+============================================================ */
+.btn {
+    border-radius: var(--corp-radius);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-primary {
+    background-color: var(--corp-blue);
+    border-color: var(--corp-blue);
+    color: #fff;
+}
+
+    .btn-primary:hover {
+        background-color: var(--corp-blue-dark);
+        border-color: var(--corp-blue-dark);
+    }
+
+.btn-secondary {
+    background-color: #e9ecef;
+    border-color: #c9d0dc;
+    color: var(--corp-text);
+}
+
+    .btn-secondary:hover {
+        background-color: var(--corp-gray);
+        border-color: #b0b8c8;
+        color: var(--corp-text);
+    }
+
+#btnAtras {
+    background-color: #A32D2D !important;
+    border-color: #A32D2D !important;
+    color: #fff !important;
+}
+
+    #btnAtras:hover {
+        background-color: #791F1F !important;
+        border-color: #791F1F !important;
+    }
+
+.btn-success {
+    background-color: #3B6D11;
+    border-color: #3B6D11;
+    color: #fff;
+}
+
+    .btn-success:hover {
+        background-color: #27500A;
+        border-color: #27500A;
+    }
+
+.btn-danger {
+    background-color: #A32D2D;
+    border-color: #A32D2D;
+    color: #fff;
+}
+
+    .btn-danger:hover {
+        background-color: #791F1F;
+        border-color: #791F1F;
+    }
+
+.btn-warning {
+    background-color: #854F0B;
+    border-color: #854F0B;
+    color: #fff;
+}
+
+    .btn-warning:hover {
+        background-color: #633806;
+        border-color: #633806;
+    }
+
+.btn-outline-primary {
+    background-color: #fff;
+    border-color: var(--corp-blue);
+    color: var(--corp-blue);
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--corp-blue-light);
+        color: var(--corp-blue-dark);
+    }
+
+.btn-sm {
+    font-size: 12px;
+    padding: 3px 10px;
+    height: 28px;
+}
+
+/* ============================================================
+   PANEL TABLA
+============================================================ */
+.panel-tabla {
+    padding: 0;
+    background-color: #fff;
+}
+
+/* ============================================================
+   TABLA CORPORATIVA
+============================================================ */
+.tabla-corporativa {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: var(--corp-text);
+}
+
+    .tabla-corporativa thead th {
+        background-color: var(--corp-gray);
+        color: var(--corp-text-muted);
+        padding: 10px 14px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 0.5px solid var(--corp-border);
+        white-space: nowrap;
+    }
+
+    .tabla-corporativa tbody tr {
+        border-bottom: 0.5px solid rgba(0,0,0,0.06);
+        transition: background 0.12s;
+    }
+
+        .tabla-corporativa tbody tr:nth-child(even) {
+            background-color: #fafbfd;
+        }
+
+        .tabla-corporativa tbody tr:hover {
+            background-color: var(--corp-blue-light);
+        }
+
+    .tabla-corporativa tbody td {
+        padding: 9px 14px;
+        color: var(--corp-text);
+        border: none;
+    }
+
+/* ============================================================
+   DATATABLES OVERRIDES
+============================================================ */
+.dataTables_wrapper {
+    background-color: #fff;
+    color: var(--corp-text);
+    padding: 0;
+}
+
+    .dataTables_wrapper .row:first-child,
+    .dataTables_wrapper .dt-row:first-child {
+        background: #f4f6fb;
+        border-bottom: 0.5px solid var(--corp-border);
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        padding: 10px 14px;
+    }
+
+        .dataTables_wrapper .dataTables_length label,
+        .dataTables_wrapper .dataTables_filter label,
+        .dataTables_wrapper .dataTables_info {
+            color: var(--corp-text-muted);
+            font-size: 12px;
+        }
+
+        .dataTables_wrapper .dataTables_filter input,
+        .dataTables_wrapper .dataTables_length select {
+            background-color: #fff;
+            color: var(--corp-text);
+            border: 0.5px solid #c9d0dc;
+            border-radius: var(--corp-radius);
+            font-size: 12px;
+            padding: 3px 8px;
+        }
+
+    .dataTables_wrapper .dataTables_info {
+        padding: 10px 14px;
+    }
+
+    .dataTables_wrapper .dataTables_paginate {
+        padding: 8px 14px;
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: var(--corp-radius) !important;
+            font-size: 12px !important;
+            padding: 4px 10px !important;
+            color: var(--corp-text-muted) !important;
+            border: 0.5px solid transparent !important;
+            margin: 0 2px;
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+                background: var(--corp-gray) !important;
+                border-color: var(--corp-gray-mid) !important;
+                color: var(--corp-text) !important;
+            }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+            .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+                background: var(--corp-blue) !important;
+                border-color: var(--corp-blue) !important;
+                color: #fff !important;
+                font-weight: 500;
+            }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+            .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+                color: #c9d0dc !important;
+                cursor: default;
+            }
+
+/* ============================================================
+   BADGES DE ESTADO
+============================================================ */
+.badge {
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+
+    .badge.bg-secondary,
+    .badge-registrado {
+        background-color: #F1EFE8 !important;
+        color: #5F5E5A !important;
+    }
+
+    .badge.bg-primary,
+    .badge-enviado {
+        background-color: var(--corp-blue-light) !important;
+        color: var(--corp-blue-dark) !important;
+    }
+
+    .badge.bg-success,
+    .badge-aprobado {
+        background-color: #EAF3DE !important;
+        color: #3B6D11 !important;
+    }
+
+    .badge.bg-danger,
+    .badge-anulado {
+        background-color: #FCEBEB !important;
+        color: #A32D2D !important;
+    }
+
+    .badge.bg-warning,
+    .badge-derivado {
+        background-color: #FAEEDA !important;
+        color: #854F0B !important;
+    }
+
+/* ============================================================
+   TABS
+============================================================ */
+.nav-tabs {
+    background-color: #f4f6fb;
+    border-bottom: 0.5px solid var(--corp-border);
+    padding: 6px 12px 0;
+    gap: 2px;
+}
+
+    .nav-tabs .nav-link {
+        color: var(--corp-text-muted) !important;
+        font-size: 13px;
+        padding: 6px 14px;
+        border: none;
+        border-radius: var(--corp-radius) var(--corp-radius) 0 0;
+        font-weight: 400;
+    }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--corp-blue) !important;
+            background-color: var(--corp-blue-light);
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: #fff !important;
+            color: var(--corp-blue) !important;
+            font-weight: 500;
+            border-top: 2px solid var(--corp-blue) !important;
+            border-left: 0.5px solid var(--corp-border) !important;
+            border-right: 0.5px solid var(--corp-border) !important;
+            border-bottom: none !important;
+        }
+
+.tab-content {
+    background-color: #fff;
+    border: 0.5px solid var(--corp-border);
+    border-top: none;
+    padding: 16px;
+    color: var(--corp-text) !important;
+}
+
+    .tab-content label,
+    .tab-content .form-label,
+    .tab-content p,
+    .tab-content span:not(.input-group-text):not(.badge) {
+        color: var(--corp-text) !important;
+    }
+
+    .tab-content .seccion-header,
+    .tab-content .seccion-header strong {
+        color: #fff !important;
+    }
+
+/* ============================================================
+   SECCIONES
+============================================================ */
+.seccion-panel {
+    border: 0.5px solid var(--corp-border);
+    border-radius: var(--corp-radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.seccion-header {
+    background-color: var(--corp-blue);
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 12.5px;
+    font-weight: 500;
+}
+
+.seccion-body {
+    padding: 12px 14px;
+    background-color: #fff;
+}
+
+/* ============================================================
+   INPUTS
+============================================================ */
+.form-control,
+.form-select {
+    font-size: 13px;
+    border: 0.5px solid #c9d0dc;
+    border-radius: var(--corp-radius);
+    color: var(--corp-text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--corp-blue);
+        box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
+        outline: none;
+    }
+
+input[readonly]:not(#txtFolio),
+select[disabled] {
+    background-color: #f8f9fa !important;
+    cursor: default;
+    color: var(--corp-text-muted) !important;
+}
+
+/* ============================================================
+   MONTOS
+============================================================ */
+.monto {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.fila-totales .input-group-text {
+    font-size: 12.5px;
+    font-weight: 500;
+    background-color: var(--corp-blue);
+    color: #fff;
+    border-color: var(--corp-blue);
+}
+
+.fila-totales input {
+    text-align: right;
+    font-weight: 600;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   DRAG AND DROP
+============================================================ */
+.drag_area {
+    text-align: center;
+    border: 2px dashed var(--corp-blue-mid);
+    padding: 32px 20px;
+    border-radius: var(--corp-radius-lg);
+    background-color: var(--corp-blue-light);
+    color: var(--corp-blue);
+    transition: all 0.2s;
+}
+
+.drag_over {
+    opacity: 0.6;
+    border-color: var(--corp-blue-dark);
+    background-color: var(--corp-blue-mid);
+}
+
+/* ============================================================
+   LOADING
+============================================================ */
+#loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background-color: #fff;
+    color: var(--corp-text);
+    padding: 16px 24px;
+    border-radius: var(--corp-radius-lg);
+    font-size: 13px;
+    border: 0.5px solid var(--corp-border);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* ============================================================
+   BARRA IMPUTACION
+============================================================ */
+.barra-imputacion {
+    background-color: #f4f6fb;
+    padding: 8px 10px;
+    border-radius: var(--corp-radius);
+    margin-bottom: 10px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    border: 0.5px solid var(--corp-border);
+}
+
+/* ============================================================
+   FOOTER
+============================================================ */
+.footer {
+    font-size: 12px;
+    color: var(--corp-text-muted);
+    padding: 12px 0;
+}
+
+/* ============================================================
+   FOLIO
+============================================================ */
+#txtFolio {
+    background-color: #EAF3DE !important;
+    color: #3B6D11 !important;
+    font-weight: 600;
+    border-color: #97C459 !important;
+}
+
+.footer {
+    font-size: 12px;
+    color: var(--corp-text-muted);
+    padding: 12px 0;
+}
+/* ============================================================
+    Flatpickr personalizado 
+============================================================ */
+.flatpickr-calendar {
+    font-size: 0.82rem;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background: var(--corp-blue) !important;
+    border-color: var(--color-header) !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    background: var(--corp-blue) !important;
+    color: white !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    background: var(--corp-blue) !important;
+    color: white !important;
+}
+
+.flatpickr-weekday {
+    color: var(--corp-blue) !important;
+    font-weight: bold;
+}
+/* ── Panel Documentos Electrónicos ─────────── */
+.doc-cat-item {
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0d6e6e;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    letter-spacing: 0.3px;
+    position: relative;
+    transition: background 0.15s;
+}
+.doc-cat-item:hover {
+    background: #e8f5f5;
+}
+.doc-cat-activa {
+    background: #d0eeee !important;
+    color: #085050 !important;
+    border-left: 3px solid #0d6e6e;
+}
+.doc-cat-badge {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #198754;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
