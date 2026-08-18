@@ -8,7 +8,7 @@ WORKDIR /src
 
 COPY . .
 
-RUN dotnet restore
+RUN dotnet restore ComprobantePago.Web/ComprobantePago.Web.csproj
 
 RUN dotnet publish ComprobantePago.Web/ComprobantePago.Web.csproj \
     -c Release \
@@ -18,7 +18,7 @@ RUN dotnet publish ComprobantePago.Web/ComprobantePago.Web.csproj \
 # RUNTIME
 # =====================================
 
-FROM tecsur/dotnet-runtime:8.0
+FROM ghcr.io/sistecsur/dotnet-runtime:8.1
 
 WORKDIR /app
 
