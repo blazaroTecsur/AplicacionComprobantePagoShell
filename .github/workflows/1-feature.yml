@@ -22,6 +22,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      NUGET_USERNAME: ${{ github.actor }}
+      NUGET_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,15 +34,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-          source-url: https://nuget.pkg.github.com/sistecsur/index.json
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Restore
         run: dotnet restore
-        env:
-          NUGET_USERNAME: ${{ github.actor }}
-          NUGET_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
