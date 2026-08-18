@@ -34,22 +34,8 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configure GitHub Packages
-        run: |
-          dotnet nuget remove source github || true
-
-          dotnet nuget add source \
-            https://nuget.pkg.github.com/sistecsur/index.json \
-            --name github \
-            --username ${{ github.actor }} \
-            --password ${{ secrets.GITHUB_TOKEN }} \
-            --store-password-in-clear-text
-
-      - name: List NuGet Sources
-        run: dotnet nuget list source
-
       - name: Restore
-        run: dotnet restore --verbosity normal
+        run: dotnet restore
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
