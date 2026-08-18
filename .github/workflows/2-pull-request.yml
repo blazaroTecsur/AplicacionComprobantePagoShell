@@ -21,6 +21,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      NUGET_USERNAME: ${{ github.actor }}
+      NUGET_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
 
       - uses: actions/checkout@v4
@@ -31,7 +35,12 @@ jobs:
 
       - run: dotnet restore
 
-      - run: dotnet build --configuration Release
+      - run: dotnet build --configuration Release --no-restore
 
       - name: Docker Build
-        run: docker build -t web-comprobante-pr .
+        run: |
+          docker build \
+            --build-arg NUGET_USERNAME=${{ github.actor }} \
+            --build-arg NUGET_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -t web-comprobante-pr \
+            -f Dockerfile .

@@ -1,6 +1,6 @@
 # Objetivo: Construir y publicar la imagen del API de seguridad en el registro de contenedores de GitHub (GHCR).
 
-name: Build Web Shell
+name: Build Web Comprobante
 
 on:
 
@@ -52,3 +52,6 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: ${{ steps.meta.outputs.tags }}
+        build-args: |
+          NUGET_USERNAME=${{ github.actor }}
+          NUGET_TOKEN=${{ secrets.GITHUB_TOKEN }}
