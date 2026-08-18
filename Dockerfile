@@ -4,8 +4,12 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
+ARG NUGET_USERNAME
+ARG NUGET_TOKEN
+
 WORKDIR /src
 
+COPY nuget.config .
 COPY . .
 
 RUN dotnet restore
