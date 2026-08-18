@@ -14,20 +14,31 @@ on:
     branches:
       - 'feature/**'
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+
+      - name: Authenticate GitHub Packages
+        run: |
+          dotnet nuget add source \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text \
+            --name github \
+            https://nuget.pkg.github.com/sistecsur/index.json
 
       - name: Restore
         run: dotnet restore
@@ -36,5 +47,4 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Docker Build
-        run: |
-          docker build -t web-comprobante-test .
+        run: docker build -t web-comprobante-test .
