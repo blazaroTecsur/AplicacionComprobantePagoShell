@@ -55,4 +55,9 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Docker Build
-        run: docker build -t web-comprobante-test .
+        run: |
+          docker build \
+            --build-arg NUGET_USERNAME=${{ github.actor }} \
+            --build-arg NUGET_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -t web-comprobante-test \
+            -f Dockerfile .
