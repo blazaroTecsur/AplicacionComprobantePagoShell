@@ -4,8 +4,15 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
+ARG NUGET_USERNAME
+ARG NUGET_TOKEN
+ENV NUGET_USERNAME=${NUGET_USERNAME}
+ENV NUGET_TOKEN=${NUGET_TOKEN}
+ENV CI=true
+
 WORKDIR /src
 
+COPY nuget.config .
 COPY . .
 
 RUN dotnet restore
@@ -18,7 +25,7 @@ RUN dotnet publish ComprobantePago.Web/ComprobantePago.Web.csproj \
 # RUNTIME
 # =====================================
 
-FROM tecsur/dotnet-runtime:8.0
+FROM ghcr.io/sistecsur/dotnet-runtime:8.1
 
 WORKDIR /app
 

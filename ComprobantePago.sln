@@ -13,6 +13,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComprobantePago.Infrastruct
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComprobantePago.Tests", "ComprobantePago.Tests\ComprobantePago.Tests.csproj", "{3E475665-A300-44BC-B1B9-300574AA1957}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deploy", "deploy", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		Dockerfile = Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{CB3706D5-FEBE-417B-8434-F5079A73FF42}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\1-feature.yml = .github\workflows\1-feature.yml
+		.github\workflows\2-pull-request.yml = .github\workflows\2-pull-request.yml
+		.github\workflows\3-build.yml = .github\workflows\3-build.yml
+		.github\workflows\4-deploy-pre.yml = .github\workflows\4-deploy-pre.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CD4788AF-B410-4111-9D0B-CF36243B3C87}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,5 +102,14 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EAFC7962-B48C-4D85-95CB-4E05FF94F2AD} = {CD4788AF-B410-4111-9D0B-CF36243B3C87}
+		{2FEE66AC-7DF0-4B49-A920-71B10B272B6C} = {CD4788AF-B410-4111-9D0B-CF36243B3C87}
+		{B853CBE0-AE33-406A-8F05-E679819A3298} = {CD4788AF-B410-4111-9D0B-CF36243B3C87}
+		{DBD77185-2CD7-49EE-B7CD-0607570F00DB} = {CD4788AF-B410-4111-9D0B-CF36243B3C87}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FA4E8A0F-077F-466F-B200-66C07F6C6F92}
 	EndGlobalSection
 EndGlobal
