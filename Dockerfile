@@ -8,7 +8,7 @@ WORKDIR /src
 
 COPY . .
 
-RUN dotnet restore ComprobantePago.Web/ComprobantePago.Web.csproj
+RUN dotnet restore
 
 RUN dotnet publish ComprobantePago.Web/ComprobantePago.Web.csproj \
     -c Release \
