@@ -2,7 +2,7 @@ namespace ComprobantePago.Application.Settings
 {
     public class ApiMaestrosSettings
     {
-        public const string Section = "ApiMaestros";
+        public const string Section = "ApiSettings:Maestro";
         public string BaseUrl { get; set; } = string.Empty;
         public bool UsarApi { get; set; } = false;
         public ApiEndpoints Endpoints { get; set; } = new();
