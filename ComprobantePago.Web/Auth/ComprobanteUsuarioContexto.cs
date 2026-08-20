@@ -15,6 +15,7 @@ namespace ComprobantePago.Web.Auth
         public string Departamento { get; }
         public string Dni          { get; }
         public string Empresa      { get; }
+        public string Esquema       { get; }
 
         public ComprobanteUsuarioContexto(
             IHttpContextAccessor httpContextAccessor,
@@ -29,6 +30,7 @@ namespace ComprobantePago.Web.Auth
             Puesto       = user?.FindFirst("puesto")?.Value       ?? "";
             Departamento = user?.FindFirst("departamento")?.Value ?? "";
             Dni          = user?.FindFirst("dni")?.Value          ?? "";
+            Esquema      = user?.FindFirst("esquema")?.Value ?? "";
 
             var tenantId      = CodTenant;
             var empresaConfig = configuration.GetSection("TenantEmpresaCodigos")[tenantId];
