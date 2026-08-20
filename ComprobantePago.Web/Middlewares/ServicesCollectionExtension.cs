@@ -14,8 +14,6 @@ using ComprobantePago.Infrastructure.Services;
 using ComprobantePago.Infrastructure.Services.Maestros;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using ComprobantePago.Web.Auth;
-using Seguridad.Abstractions.Interfaces;
 using Maestro.Infrastructure.DependencyInjection;
 using Seguridad.Infrastructure.DependencyInjection;
 using Serilog;
@@ -146,12 +144,6 @@ namespace ComprobantePago.Web.Middlewares
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
             services.AddSeguridad(config);
-            // Reemplaza IUsuarioContexto: lee claims del HttpContext y resuelve
-            // Empresa desde appsettings[TenantEmpresas], sin tocar Seguridad.Infrastructure.
-            services.AddScoped<IUsuarioContexto>(sp =>
-                new ComprobanteUsuarioContexto(
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    sp.GetRequiredService<IConfiguration>()));
 
             // Maestros API
             services.AddMaestros(config);

@@ -26,7 +26,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
         private readonly IUsuarioContexto _usuario = usuario;
 
         private EmpresaSettings ObtenerEmpresa() =>
-            _config.GetSection($"{EmpresaSettings.Section}:{_usuario.Empresa}")
+            _config.GetSection($"{EmpresaSettings.Section}:{_usuario.Sitio}")
                    .Get<EmpresaSettings>() ?? new EmpresaSettings();
 
         // ── Buscar comprobantes ───────────────────
@@ -35,7 +35,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
         {
             _logger.LogInformation("Buscando comprobantes con filtros: {@Filtros}", filtros);
             var query = _contexto.Comprobantes
-                .Where(x => x.CodigoEmpresa == _usuario.Empresa)
+                .Where(x => x.CodigoEmpresa == _usuario.Sitio)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(filtros.Tipo))
@@ -75,7 +75,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
         public async Task<ComprobanteDetalleDto> ObtenerDetalleAsync(string folio)
         {
             var c = await _contexto.Comprobantes
-                .FirstOrDefaultAsync(x => x.Folio == folio && x.CodigoEmpresa == _usuario.Empresa);
+                .FirstOrDefaultAsync(x => x.Folio == folio && x.CodigoEmpresa == _usuario.Sitio);
 
             if (c == null) return null!;
 
@@ -137,7 +137,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
         public async Task<byte[]?> ObtenerPdfAsync(string folio)
         {
             var c = await _contexto.Comprobantes
-                .FirstOrDefaultAsync(x => x.Folio == folio && x.CodigoEmpresa == _usuario.Empresa);
+                .FirstOrDefaultAsync(x => x.Folio == folio && x.CodigoEmpresa == _usuario.Sitio);
             if (c is null) return null;
 
             var imputaciones = await _contexto.ImputacionesContables

@@ -15,7 +15,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
             int unidad, string filtro = "")
         {
             bool tieneFiltro = !string.IsNullOrWhiteSpace(filtro);
-            var empresa = _usuario.Empresa;
+            var empresa = _usuario.Sitio;
             bool filtrarEmpresa = !string.IsNullOrWhiteSpace(empresa);
 
             return unidad switch

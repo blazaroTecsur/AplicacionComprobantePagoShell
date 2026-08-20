@@ -68,7 +68,7 @@ namespace ComprobantePago.Infrastructure.Repositories
             var ahora   = DateTime.Now;
             var anio    = ahora.Year;
             var mes     = ahora.Month;
-            var empresa = _usuario.Empresa ?? string.Empty;
+            var empresa = _usuario.Sitio ?? string.Empty;
 
             var registro = await _contexto.SeriesCorrelativo
                 .FirstOrDefaultAsync(x => x.CodigoEmpresa == empresa
@@ -223,7 +223,7 @@ namespace ComprobantePago.Infrastructure.Repositories
                         FechaDigitacion        = DateTime.Now,
                         UsuarioReg             = _usuario.Correo,
                         FechaReg               = DateTime.Now,
-                        CodigoEmpresa          = _usuario.Empresa
+                        CodigoEmpresa          = _usuario.Sitio
                     };
                     await _entidades.AddAsync(comprobante);
                 }
@@ -674,7 +674,7 @@ namespace ComprobantePago.Infrastructure.Repositories
                 throw new InvalidOperationException("El archivo no contiene líneas de imputación válidas.");
 
             // ── Validar catálogo de cuentas contables y códigos de unidad ─────
-            var empresa = _usuario.Empresa;
+            var empresa = _usuario.Sitio;
 
             var cuentasValidas = (await _contexto.CuentasContables
                 .Where(x => x.Activo && x.Codigo.Length >= 7)
