@@ -4,6 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # Ignorar claves sensible:
+.env
 appsettings.Development.json
 appsettings.Production.json
 appsettings.Local.json
@@ -371,3 +372,4 @@ FodyWeavers.xsd
 **/appsettings.Production.json
 **/appsettings.Local.json
 ComprobantePago.Web/wwwroot/lib/
+.env

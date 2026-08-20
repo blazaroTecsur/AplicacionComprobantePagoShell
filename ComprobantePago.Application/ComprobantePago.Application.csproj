@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Infor.Abstractions" Version="1.0.0" />
-    <PackageReference Include="Seguridad.Abstractions" Version="1.0.0" />
+    <PackageReference Include="Seguridad.Abstractions" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>
