@@ -109,7 +109,6 @@ namespace ComprobantePago.Web.Middlewares
 
             // Settings
             services.Configure<SunatSettings>(config.GetSection("Sunat"));
-            services.Configure<ApiMaestrosSettings>(config.GetSection(ApiMaestrosSettings.Section));
 
             // HttpClient SUNAT
             services.AddHttpClient<ISunatService, SunatService>()
@@ -141,13 +140,7 @@ namespace ComprobantePago.Web.Middlewares
             }
 
             // Seguridad
-            // Seguridad
-            services.AddMemoryCache();
             services.AddHttpContextAccessor();
-            var securitySetting = config.GetSection("ApiSettings:Seguridad")
-                .Get<Seguridad.Infrastructure.Services.SecuritySetting>()
-                ?? new Seguridad.Infrastructure.Services.SecuritySetting();
-            services.AddSingleton(securitySetting);
             services.AddSeguridad(config);
 
             // Maestros API
@@ -155,7 +148,6 @@ namespace ComprobantePago.Web.Middlewares
 
             // Infor / Syteline
             services.AddInfor(config);
-            services.AddScoped<ISytelineEnvioService, SytelineEnvioService>();
 
             // Servicios de dominio
             services.AddScoped<XmlComprobanteService>();
@@ -166,6 +158,8 @@ namespace ComprobantePago.Web.Middlewares
             services.AddScoped<IMaestrosQueryService, MaestrosQueryService>();
             services.AddScoped<IComprobanteRepository, ComprobanteRepository>();
             services.AddScoped<IExcelSytelineService, ExcelSytelineService>();
+
+            services.AddMemoryCache();
 
             return services;
         }

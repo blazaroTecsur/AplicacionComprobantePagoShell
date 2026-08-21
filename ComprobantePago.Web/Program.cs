@@ -45,7 +45,7 @@ app.UseSwaggerUI(c =>
 app.UsePathBase("/comprobante");
 app.UseStaticFiles();
 app.UseRouting();
-app.UseAuthentication();
+// app.UseAuthentication();
 
 app.Use(async (context, next) =>
 {
