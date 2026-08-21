@@ -1,0 +1,23 @@
+name: Build Web Shell
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NUGET_USERNAME: ${{ secrets.NUGET_USERNAME }}
+      NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NUGET_USERNAME=${{ secrets.NUGET_USERNAME }} \
+            --build-arg NUGET_TOKEN=${{ secrets.NUGET_TOKEN }} \
+            -f Dockerfile.Comprobante \
+            -t web-comprobante .
