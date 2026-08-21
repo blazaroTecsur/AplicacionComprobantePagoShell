@@ -141,8 +141,13 @@ namespace ComprobantePago.Web.Middlewares
             }
 
             // Seguridad
+            // Seguridad
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
+            var securitySetting = config.GetSection("ApiSettings:Seguridad")
+                .Get<Seguridad.Infrastructure.Services.SecuritySetting>()
+                ?? new Seguridad.Infrastructure.Services.SecuritySetting();
+            services.AddSingleton(securitySetting);
             services.AddSeguridad(config);
 
             // Maestros API
