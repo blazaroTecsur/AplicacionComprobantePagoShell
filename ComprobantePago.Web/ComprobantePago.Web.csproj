@@ -26,7 +26,7 @@
   <ItemGroup>
     <PackageReference Include="Infor.Infrastructure" Version="1.0.0" />
     <PackageReference Include="Maestro.Infrastructure" Version="1.0.7" />
-    <PackageReference Include="Seguridad.Infrastructure" Version="1.0.3" />
+    <PackageReference Include="Seguridad.Infrastructure" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup>
