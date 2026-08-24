@@ -13,14 +13,16 @@ using ComprobantePago.Infrastructure.Repositories;
 using ComprobantePago.Infrastructure.Services;
 using ComprobantePago.Infrastructure.Services.Maestros;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
+using Infor.Infrastructure.DependencyInjection;
 using Maestro.Infrastructure.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Seguridad.Infrastructure.DependencyInjection;
+using Seguridad.Infrastructure.Services;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using System.Text.Json;
-using Infor.Infrastructure.DependencyInjection;
 
 namespace ComprobantePago.Web.Middlewares
 {
@@ -139,16 +141,6 @@ namespace ComprobantePago.Web.Middlewares
                 services.AddScoped<ICuentaContableService, DbCuentaContableService>();
             }
 
-            // Seguridad
-            services.AddHttpContextAccessor();
-            services.AddSeguridad(config);
-
-            // Maestros API
-            services.AddMaestros(config);
-
-            // Infor / Syteline
-            services.AddInfor(config);
-
             // Servicios de dominio
             services.AddScoped<XmlComprobanteService>();
             services.AddScoped<PdfComprobanteService>();
@@ -159,7 +151,30 @@ namespace ComprobantePago.Web.Middlewares
             services.AddScoped<IComprobanteRepository, ComprobanteRepository>();
             services.AddScoped<IExcelSytelineService, ExcelSytelineService>();
 
+            // Seguridad
             services.AddMemoryCache();
+            services.AddHttpContextAccessor();
+
+            var securitySetting = config.GetSection("ApiSettings:Seguridad")
+                .Get<Seguridad.Infrastructure.Services.SecuritySetting>()
+                ?? new Seguridad.Infrastructure.Services.SecuritySetting();
+
+            Log.Information("SecuritySetting: BaseUrl={BaseUrl} ScopeCorporate={ScopeCorporate} ScopeExternal={ScopeExternal}",
+                securitySetting.BaseUrl,
+                securitySetting.ScopeCorporate,
+                securitySetting.ScopeExternal);
+
+            services.AddSeguridad(config);
+
+            // Workaround: SeguridadService inyecta SecuritySetting directo en vez de IOptions<SecuritySetting>
+            services.AddSingleton(sp =>
+                sp.GetRequiredService<IOptions<Seguridad.Infrastructure.Services.SecuritySetting>>().Value);
+
+            // Maestros API
+            services.AddMaestros(config);
+
+            // Infor / Syteline
+            services.AddInfor(config);
 
             return services;
         }
