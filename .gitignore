@@ -371,5 +371,13 @@ FodyWeavers.xsd
 **/appsettings.Development.json
 **/appsettings.Production.json
 **/appsettings.Local.json
-ComprobantePago.Web/wwwroot/lib/
+ComprobantePago.Web/wwwroot/lib/bootstrap/
+ComprobantePago.Web/wwwroot/lib/bootstrap-icons/
+ComprobantePago.Web/wwwroot/lib/jquery/
+ComprobantePago.Web/wwwroot/lib/jquery-validation/
+ComprobantePago.Web/wwwroot/lib/jquery-validation-unobtrusive/
+ComprobantePago.Web/wwwroot/lib/tabulator/
+ComprobantePago.Web/wwwroot/lib/sweetalert2/
+ComprobantePago.Web/wwwroot/lib/datatables.net/
+ComprobantePago.Web/wwwroot/lib/datatables.net-bs5/
 .env

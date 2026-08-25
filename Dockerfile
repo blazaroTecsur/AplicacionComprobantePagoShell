@@ -17,6 +17,11 @@ COPY . .
 
 RUN dotnet restore
 
+# Instalar libman y restaurar librerías de cliente
+RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
+ENV PATH="$PATH:/root/.dotnet/tools"
+RUN libman restore --project-dir ComprobantePago.Web
+
 RUN dotnet publish ComprobantePago.Web/ComprobantePago.Web.csproj \
     -c Release \
     -o /app/publish
