@@ -17,7 +17,7 @@ $(function () {
 // ── Inicializar DataTable ─────────────────────
 function inicializarTablaImputacion() {
     tablaImputacion = $('#tblImputacion').DataTable({
-        language: { url: '/lib/datatables.net/i18n/es-ES.json' },
+        language: { url: (window.baseUrl || '') + '/lib/datatables.net/i18n/es-ES.json' },
         paging: false,
         searching: false,
         info: false,
