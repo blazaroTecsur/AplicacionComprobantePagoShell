@@ -150,6 +150,7 @@ namespace ComprobantePago.Web.Middlewares
             services.AddScoped<IMaestrosQueryService, MaestrosQueryService>();
             services.AddScoped<IComprobanteRepository, ComprobanteRepository>();
             services.AddScoped<IExcelSytelineService, ExcelSytelineService>();
+            services.AddScoped<ISytelineEnvioService, SytelineEnvioService>();
 
             // Seguridad
             services.AddMemoryCache();
