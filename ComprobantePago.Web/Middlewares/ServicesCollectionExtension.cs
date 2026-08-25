@@ -154,21 +154,7 @@ namespace ComprobantePago.Web.Middlewares
             // Seguridad
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
-
-            var securitySetting = config.GetSection("ApiSettings:Seguridad")
-                .Get<Seguridad.Infrastructure.Services.SecuritySetting>()
-                ?? new Seguridad.Infrastructure.Services.SecuritySetting();
-
-            Log.Information("SecuritySetting: BaseUrl={BaseUrl} ScopeCorporate={ScopeCorporate} ScopeExternal={ScopeExternal}",
-                securitySetting.BaseUrl,
-                securitySetting.ScopeCorporate,
-                securitySetting.ScopeExternal);
-
             services.AddSeguridad(config);
-
-            // Workaround: SeguridadService inyecta SecuritySetting directo en vez de IOptions<SecuritySetting>
-            services.AddSingleton(sp =>
-                sp.GetRequiredService<IOptions<Seguridad.Infrastructure.Services.SecuritySetting>>().Value);
 
             // Maestros API
             services.AddMaestros(config);
