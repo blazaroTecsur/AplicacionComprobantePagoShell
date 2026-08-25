@@ -85,18 +85,22 @@
     <script src="~/lib/sweetalert2/dist/sweetalert2.all.min.js"></script>
     <!-- UI Corporativo -->
     <script src="~/lib/ui-corporativo/corp-design-system.js"></script>
+
+    <!-- Variables globales -->
+    <script>
+        window.baseUrl = '@Context.Request.PathBase';
+        const BASE_URL = '@Url.Content("~")';
+        window.ROLES = @Html.Raw(Json.Serialize(
+                                                User.Claims
+                                                .Where(c => c.Type == "permission")
+                                                .Select(c => c.Value)
+                                                ));
+    </script>
+
     <!-- Global JS propio -->
     <script src="~/js/global.js" asp-append-version="true"></script>
 
     <!-- Scripts por vista -->
-    <script type="text/javascript">
-        const BASE_URL = '@Url.Content("~")';
-        window.ROLES = @Html.Raw(Json.Serialize(
-                        User.Claims
-                        .Where(c => c.Type == "permission")
-                        .Select(c => c.Value)
-                        ));
-    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

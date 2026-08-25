@@ -21,7 +21,7 @@ function inicializarTabla() {
     }
 
     tablaComprobantes = $('#index_tblComprobantes').DataTable({
-        language: { url: '/lib/datatables.net/i18n/es-ES.json' },
+        language: { url: (window.baseUrl || '') + '/lib/datatables.net/i18n/es-ES.json' },
         searching: false,
         ordering: true,
         columns: [
