@@ -269,7 +269,7 @@ namespace ComprobantePago.Infrastructure.Services
             Voucher  = -1,  // Syteline asigna el siguiente disponible y lo devuelve en RefreshItems
             InvDate  = c.FechaFactura,
             DistDate = c.FechaDistribucion,
-            UbToSite = _settings.Site,
+            UbToSite = "",
 
             // Cabecera
             InvNum      = c.Factura[..Math.Min(22, c.Factura.Length)],
