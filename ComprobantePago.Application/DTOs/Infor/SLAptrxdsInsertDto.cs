@@ -84,5 +84,11 @@ namespace ComprobantePago.Application.DTOs.Infor
 
         /// <summary>"0" para empleados; vacío (no se envía) para proveedores. Campo ForeignTaxRegNum.</summary>
         public string ForeignTaxRegNum { get; init; } = string.Empty;
+
+        /// <summary>Número de autorización (= Ref de cabecera). Campo aptZLA_NumAutorizacion.</summary>
+        public string aptZLA_NumAutorizacion { get; init; } = string.Empty;
+
+        /// <summary>Fecha de emisión del comprobante (= FechaFactura). Campo aptZLA_FechaEmision.</summary>
+        public string aptZLA_FechaEmision { get; init; } = string.Empty;
     }
 }
