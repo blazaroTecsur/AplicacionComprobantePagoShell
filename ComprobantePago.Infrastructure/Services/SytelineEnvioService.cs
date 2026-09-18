@@ -305,6 +305,7 @@ namespace ComprobantePago.Infrastructure.Services
             ApAcctUnit4 = c.CtaCPUnid4[..Math.Min(4, c.CtaCPUnid4.Length)],
 
             // Referencia
+            Ref        = "-1",
             Txt        = c.Notas[..Math.Min(40, c.Notas.Length)],
             Authorizer = c.Autorizo[..Math.Min(128, c.Autorizo.Length)],
 

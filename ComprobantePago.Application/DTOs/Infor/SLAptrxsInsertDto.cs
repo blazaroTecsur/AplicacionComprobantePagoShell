@@ -93,6 +93,9 @@ namespace ComprobantePago.Application.DTOs.Infor
 
         // ── Referencia y notas ────────────────────────────────────────────────
 
+        /// <summary>Referencia libre. Campo Ref — se envía -1 para que Syteline asigne automáticamente.</summary>
+        public string Ref { get; init; } = string.Empty;
+
         /// <summary>Notas/memo de la transacción AP. Campo Txt (max 40 chars).</summary>
         public string Txt { get; init; } = string.Empty;
 
