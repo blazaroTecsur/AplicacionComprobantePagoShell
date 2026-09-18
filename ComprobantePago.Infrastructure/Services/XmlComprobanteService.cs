@@ -206,6 +206,7 @@ namespace ComprobantePago.Infrastructure.Services
                     out var pctIGV) ? pctIGV : 0;
 
                 // MontoCargo: recargo/surcharge (ChargeTotalAmount en LegalMonetaryTotal)
+                // Se acumula en MontoExento para el balance del formulario
                 var cargoStr = monetaryTotal?
                     .Element(cbc + "ChargeTotalAmount")?.Value ?? "0";
                 datos.MontoCargo = decimal.TryParse(
@@ -213,6 +214,7 @@ namespace ComprobantePago.Infrastructure.Services
                     System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture,
                     out var cargo) ? cargo : 0;
+                datos.MontoExento += datos.MontoCargo;
 
                 // MontoBruto = MontoTotal - MontoRetencion
                 datos.MontoBruto = datos.MontoTotal - datos.MontoRetencion;

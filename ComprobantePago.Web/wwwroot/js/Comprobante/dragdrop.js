@@ -577,7 +577,6 @@ function poblarCamposDesdeXml(datos) {
     const montoTotal     = datos.montoTotal     || 0;
     const montoRetencion = datos.montoRetencion || 0;
     const montoBruto     = datos.montoBruto     || 0;
-    const montoCargo     = datos.montoCargo     || 0;
 
     $('#MontoNeto').removeClass('d-none');
     $('#txtMontoNeto').val(CorporativoCore.formatearMonto(montoNeto));
@@ -604,13 +603,6 @@ function poblarCamposDesdeXml(datos) {
     $('#txtMontoRetencion').val(CorporativoCore.formatearMonto(montoRetencion));
     // Editable si retención es 0
     $('#txtMontoRetencion').prop('readonly', montoRetencion !== 0);
-
-    if (montoCargo > 0) {
-        $('#MontoCargo').removeClass('d-none');
-        $('#txtMontoCargo').val(CorporativoCore.formatearMonto(montoCargo));
-    } else {
-        $('#MontoCargo').addClass('d-none');
-    }
 
     $('#MontoBruto').removeClass('d-none');
     $('#txtMontoBruto').val(CorporativoCore.formatearMonto(montoBruto));
