@@ -93,9 +93,6 @@ namespace ComprobantePago.Application.DTOs.Infor
 
         // ── Referencia y notas ────────────────────────────────────────────────
 
-        /// <summary>Referencia libre. Campo Ref (max 30 chars).</summary>
-        public string Ref { get; init; } = string.Empty;
-
         /// <summary>Notas/memo de la transacción AP. Campo Txt (max 40 chars).</summary>
         public string Txt { get; init; } = string.Empty;
 
@@ -136,5 +133,13 @@ namespace ComprobantePago.Application.DTOs.Infor
 
         /// <summary>Total detracción en moneda local. Campo aptZLA_TotalDetraccionLocal.</summary>
         public decimal aptZLA_TotalDetraccionLocal { get; init; }
+
+        // ── Lugar de pago (Perú) ──────────────────────────────────────────────
+
+        /// <summary>"1" cuando el lugar de pago es Caja Chica (código "01"). Campo aptUf_EsCajaChica.</summary>
+        public string aptUf_EsCajaChica { get; init; } = string.Empty;
+
+        /// <summary>"1" cuando el lugar de pago es Cuentas a Rendir (código "02"). Campo aptUf_EsCuentaRendir.</summary>
+        public string aptUf_EsCuentaRendir { get; init; } = string.Empty;
     }
 }

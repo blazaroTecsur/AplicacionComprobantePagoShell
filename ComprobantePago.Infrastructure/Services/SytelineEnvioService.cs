@@ -199,9 +199,11 @@ namespace ComprobantePago.Infrastructure.Services
                     TaxRegNumType      = linea.EsEmpleado && !string.IsNullOrEmpty(linea.NumRegFiscal) ? "T" : "",
                     ProjNum            = linea.Proyecto.Length > 0 ? linea.Proyecto[..Math.Min(10, linea.Proyecto.Length)] : "",
                     aptZCO_APD_VendNum  = linea.EsEmpleado && linea.AptZCO_APD_VendNum.Length > 0 ? linea.AptZCO_APD_VendNum : "",
-                    aptZLA_TipoDocumento = linea.TipoDoc.Length > 0 ? linea.TipoDoc[..Math.Min(2, linea.TipoDoc.Length)] : "",
-                    VendorName           = linea.EsEmpleado && linea.NombreProveedor.Length > 0 ? linea.NombreProveedor[..Math.Min(60, linea.NombreProveedor.Length)] : "",
-                    ForeignTaxRegNum     = linea.EsEmpleado ? "0" : "",
+                    aptZLA_TipoDocumento  = linea.TipoDoc.Length > 0 ? linea.TipoDoc[..Math.Min(2, linea.TipoDoc.Length)] : "",
+                    VendorName            = linea.EsEmpleado && linea.NombreProveedor.Length > 0 ? linea.NombreProveedor[..Math.Min(60, linea.NombreProveedor.Length)] : "",
+                    ForeignTaxRegNum      = linea.EsEmpleado ? "0" : "",
+                    aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(30, cabecera.Ref.Length)] : "",
+                    aptZLA_FechaEmision    = cabecera.FechaFactura,
                 };
                 _logger.LogInformation("IDO SLAptrxds Gasto → Voucher={Voucher} DistSeq={Seq} Acct={Acct} Amount={Amt}",
                     voucher, distSeq, dto.Acct, dto.Amount);
@@ -226,7 +228,10 @@ namespace ComprobantePago.Infrastructure.Services
                     TaxBasis  = lineaIgv.BaseImp,
                     TaxCode   = lineaIgv.CodImp,
                     TaxSystem = "2",
+                    DIOTTransType        = lineaIgv.EsEmpleado ? "1" : "0",
                     aptZLA_TipoDocumento = lineaIgv.TipoDoc.Length > 0 ? lineaIgv.TipoDoc[..Math.Min(2, lineaIgv.TipoDoc.Length)] : "",
+                    aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(30, cabecera.Ref.Length)] : "",
+                    aptZLA_FechaEmision    = cabecera.FechaFactura,
                 };
                 _logger.LogInformation("IDO SLAptrxds IGV → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
                     voucher, distSeq, dto.Amount);
@@ -250,7 +255,10 @@ namespace ComprobantePago.Infrastructure.Services
                     Amount    = lineaExento.Importe,
                     TaxSystem = "1",
                     TaxCode   = "EXENTO",
+                    DIOTTransType        = lineaExento.EsEmpleado ? "1" : "0",
                     aptZLA_TipoDocumento = lineaExento.TipoDoc.Length > 0 ? lineaExento.TipoDoc[..Math.Min(2, lineaExento.TipoDoc.Length)] : "",
+                    aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(30, cabecera.Ref.Length)] : "",
+                    aptZLA_FechaEmision    = cabecera.FechaFactura,
                 };
                 _logger.LogInformation("IDO SLAptrxds Exento → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
                     voucher, distSeq, dto.Amount);
@@ -297,7 +305,6 @@ namespace ComprobantePago.Infrastructure.Services
             ApAcctUnit4 = c.CtaCPUnid4[..Math.Min(4, c.CtaCPUnid4.Length)],
 
             // Referencia
-            Ref        = c.Ref[..Math.Min(30, c.Ref.Length)],
             Txt        = c.Notas[..Math.Min(40, c.Notas.Length)],
             Authorizer = c.Autorizo[..Math.Min(128, c.Autorizo.Length)],
 
@@ -307,6 +314,10 @@ namespace ComprobantePago.Infrastructure.Services
 
             // Folio de origen
             aptZLA_SeqFac = c.Comprobante.ToString(),
+
+            // Lugar de pago
+            aptUf_EsCajaChica    = c.LugarPago == "01" ? "1" : "",
+            aptUf_EsCuentaRendir = c.LugarPago == "02" ? "1" : "",
 
             // Detracción
             aptZLA_UsaDetraccion        = c.UsaDetraccion == "1" ? (byte)1 : (byte)0,

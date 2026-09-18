@@ -124,7 +124,8 @@ namespace ComprobantePago.Infrastructure.QueryServices
                     MontoExento    = c.MontoExento,
                     MontoRetencion = c.MontoRetencion,
                     PorcentajeIGV  = c.PorcentajeIGV,
-                    TipoSunat      = c.TipoSunat
+                    TipoSunat      = c.TipoSunat,
+                    LugarPago      = c.LugarPago ?? string.Empty
                 });
             }
 
