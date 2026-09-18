@@ -10,14 +10,21 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
     {
         public async Task<IEnumerable<ComboDto>> ObtenerEmpleadosAsync(string filtro = "")
         {
-            var result = await maestros.GetAllAsync(usuario.Esquema, filtro, 1, 100);
-            return result.Items
-                .Where(p => p.TipoPersona == "1" && p.Estado.ToUpper() != "INACTIVO")
-                .Select(p => new ComboDto
-                {
-                    Codigo      = p.Ruc,
-                    Descripcion = p.NombreProveedor
-                });
+            try
+            {
+                var result = await maestros.GetAllAsync(usuario.Esquema, filtro, 1, 100);
+                return result.Items
+                    .Where(p => p.TipoPersona == "1" && p.Estado.ToUpper() != "INACTIVO")
+                    .Select(p => new ComboDto
+                    {
+                        Codigo = p.Ruc,
+                        Descripcion = p.NombreProveedor
+                    });
+            }
+            catch (HttpRequestException)
+            {
+                return Enumerable.Empty<ComboDto>();
+            }
         }
     }
 }

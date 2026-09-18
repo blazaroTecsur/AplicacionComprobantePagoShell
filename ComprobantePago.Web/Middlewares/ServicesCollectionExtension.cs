@@ -81,7 +81,12 @@ namespace ComprobantePago.Web.Middlewares
             services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(
                     config.GetConnectionString("DefaultConnection"),
-                    new MySqlServerVersion(new Version(8, 0, 0))
+                    new MySqlServerVersion(new Version(8, 0, 0)),
+                    mysqlOptions => mysqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                        errorNumbersToAdd: null
+                    )
                 )
             );
             return services;
