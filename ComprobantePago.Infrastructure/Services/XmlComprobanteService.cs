@@ -205,6 +205,15 @@ namespace ComprobantePago.Infrastructure.Services
                     System.Globalization.CultureInfo.InvariantCulture,
                     out var pctIGV) ? pctIGV : 0;
 
+                // MontoCargo: recargo/surcharge (ChargeTotalAmount en LegalMonetaryTotal)
+                var cargoStr = monetaryTotal?
+                    .Element(cbc + "ChargeTotalAmount")?.Value ?? "0";
+                datos.MontoCargo = decimal.TryParse(
+                    cargoStr,
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var cargo) ? cargo : 0;
+
                 // MontoBruto = MontoTotal - MontoRetencion
                 datos.MontoBruto = datos.MontoTotal - datos.MontoRetencion;
 

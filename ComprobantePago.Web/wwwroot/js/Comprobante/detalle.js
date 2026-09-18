@@ -252,6 +252,7 @@ function poblarMontos(data) {
     const montoTotal     = data.montoTotal     || 0;
     const montoRetencion = data.montoRetencion || 0;
     const montoBruto     = data.montoBruto     || 0;
+    const montoCargo     = data.montoCargo     || 0;
 
     $('#MontoNeto').removeClass('d-none');
     $('#txtMontoNeto').val(CorporativoCore.formatearMonto(montoNeto));
@@ -284,6 +285,13 @@ function poblarMontos(data) {
     $('#txtMontoRetencion').val(CorporativoCore.formatearMonto(montoRetencion));
     // Editable solo si la retención es 0 (el usuario la ingresará manualmente)
     $('#txtMontoRetencion').prop('readonly', montoRetencion !== 0);
+
+    if (montoCargo > 0) {
+        $('#MontoCargo').removeClass('d-none');
+        $('#txtMontoCargo').val(CorporativoCore.formatearMonto(montoCargo));
+    } else {
+        $('#MontoCargo').addClass('d-none');
+    }
 
     $('#MontoBruto').removeClass('d-none');
     $('#txtMontoBruto').val(CorporativoCore.formatearMonto(montoBruto));

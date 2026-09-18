@@ -24,6 +24,7 @@
         public decimal MontoIGVCredito { get; set; }
         public decimal MontoBruto { get; set; }
         public decimal PorcentajeIGV { get; set; }
+        public decimal MontoCargo { get; set; } // ChargeTotalAmount (recargo/surcharge)
         // ── Detracción ── NUEVO ───────────────────────────────────
         public bool TieneDetraccion { get; set; }
         public string CodigoDetraccion { get; set; } = string.Empty; // ej: "030"
