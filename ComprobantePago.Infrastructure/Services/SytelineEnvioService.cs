@@ -318,7 +318,7 @@ namespace ComprobantePago.Infrastructure.Services
 
             // Lugar de pago
             aptUf_EsCajaChica    = c.LugarPago == "01" ? "1" : "",
-            aptUf_EsCuentaRendir = c.LugarPago == "02" ? "1" : "",
+            aptUf_EsCuentaRendir = c.LugarPago == "02" || c.LugarPago == "03" ? "1" : "",
 
             // Detracción
             aptZLA_UsaDetraccion        = c.UsaDetraccion == "1" ? (byte)1 : (byte)0,
