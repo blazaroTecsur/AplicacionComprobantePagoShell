@@ -61,7 +61,7 @@ function inicializarTablaImputacion() {
                     const editable = estado === '' || estado === 'NUEVO' || estado === 'REGISTRADO';
                     if (!editable) return '';
                     if (row.estado === 'pendiente') {
-                        return `<button class="btn btn-sm btn-warning btn-configurar-imp"
+                        return `<button class="btn btn-sm btn-primary btn-configurar-imp"
                                         data-secuencia="${secuencia}"
                                         title="Configurar cuenta contable y códigos de unidad">
                                     <i class="bi bi-pencil-square"></i> Configurar
@@ -72,7 +72,7 @@ function inicializarTablaImputacion() {
                                 data-secuencia="${secuencia}">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger btn-eliminar-imp"
+                        <button class="btn btn-sm btn-outline-danger btn-eliminar-imp"
                                 data-secuencia="${secuencia}">
                             <i class="bi bi-trash"></i>
                         </button>`;
@@ -281,12 +281,18 @@ function calcularTotales() {
 
     if (Math.abs(diferencia) > 0.01) {
         $('#txtDiferenciaImputacion')
-            .addClass('text-danger fw-bold')
+            .addClass('text-danger fw-bold bg-danger bg-opacity-10')
             .removeClass('text-success');
     } else {
         $('#txtDiferenciaImputacion')
             .addClass('text-success')
-            .removeClass('text-danger fw-bold');
+            .removeClass('text-danger fw-bold bg-danger bg-opacity-10');
+    }
+
+    if (totalImputado < montoTotal - 0.01) {
+        $('#txtTotalImputacion').addClass('text-warning fw-bold').removeClass('text-success');
+    } else {
+        $('#txtTotalImputacion').addClass('text-success').removeClass('text-warning fw-bold');
     }
 
     // Bloquear el botón "Agregar Imputación" cuando la diferencia llega a 0.

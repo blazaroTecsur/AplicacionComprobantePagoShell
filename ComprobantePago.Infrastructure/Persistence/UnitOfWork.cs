@@ -1,4 +1,5 @@
 using ComprobantePago.Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ComprobantePago.Infrastructure.Persistence
@@ -13,6 +14,27 @@ namespace ComprobantePago.Infrastructure.Persistence
 
         public async Task BeginTransactionAsync()
             => _transaction = await _contexto.Database.BeginTransactionAsync();
+
+        // Envuelve el bloque completo (begin + trabajo + commit/rollback) dentro de
+        // CreateExecutionStrategy para ser compatible con EnableRetryOnFailure.
+        public async Task ExecuteInTransactionAsync(Func<Task> action)
+        {
+            var strategy = _contexto.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var tx = await _contexto.Database.BeginTransactionAsync();
+                try
+                {
+                    await action();
+                    await tx.CommitAsync();
+                }
+                catch
+                {
+                    await tx.RollbackAsync();
+                    throw;
+                }
+            });
+        }
 
         public async Task CommitAsync()
         {

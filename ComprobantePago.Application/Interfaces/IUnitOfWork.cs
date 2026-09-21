@@ -6,5 +6,10 @@ namespace ComprobantePago.Application.Interfaces
         Task BeginTransactionAsync();
         Task CommitAsync();
         Task RollbackAsync();
+        /// <summary>
+        /// Ejecuta una acción dentro de una transacción compatible con la
+        /// estrategia de reintentos (EnableRetryOnFailure).
+        /// </summary>
+        Task ExecuteInTransactionAsync(Func<Task> action);
     }
 }
