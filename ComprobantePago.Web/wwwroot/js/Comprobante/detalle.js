@@ -703,11 +703,19 @@ function bindEventos() {
     // En modo manual, PV/VC/PT → pre-rellenar serie; número se genera al guardar
     $('#ddlTipoDocumento').on('change', function () {
         const tipo = $(this).val();
-        const mapSerie = { PV: 'PV', VC: 'VC', PT: 'PT' };
+        const tiposAutoNumero = ['PV', 'VC', 'PT'];
         if (!$('#rdoFacturacionManual').is(':checked')) return;
-        if (mapSerie[tipo]) {
-            $('#txtSerie').val(mapSerie[tipo]);
-            $('#txtNumero').val('');
+        if (tiposAutoNumero.includes(tipo)) {
+            $('#txtSerie').val(tipo);
+            $('#txtNumero').val('Cargando...').prop('readonly', true);
+            CorporativoQuery.ajaxGet(
+                BASE_URL + '/Comprobante/PrevisualizarSerieNumero?tipoDocumento=' + tipo,
+                function (res) {
+                    $('#txtNumero').val(res.numero);
+                }
+            );
+        } else {
+            $('#txtNumero').val('').prop('readonly', false);
         }
     });
 
