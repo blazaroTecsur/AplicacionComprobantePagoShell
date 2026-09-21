@@ -63,6 +63,26 @@ namespace ComprobantePago.Infrastructure.Repositories
                 .ToString("D4");
         }
 
+        // ── Previsualizar siguiente Serie + Número sin incrementar el correlativo ──
+        public async Task<(string serie, string numero)> PrevisualizarSerieNumeroAsync(string tipoDocumento)
+        {
+            var ahora   = DateTime.Now;
+            var anio    = ahora.Year;
+            var mes     = ahora.Month;
+            var empresa = _usuario.CodigoEmpresa() ?? string.Empty;
+
+            var registro = await _contexto.SeriesCorrelativo
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.CodigoEmpresa == empresa
+                                       && x.TipoDocumento  == tipoDocumento
+                                       && x.Anio           == anio
+                                       && x.Mes            == mes);
+
+            var siguiente = (registro?.UltimoCorrelativo ?? 0) + 1;
+            var numero    = $"{anio:D4}{mes:D2}{siguiente:D5}";
+            return (tipoDocumento, numero);
+        }
+
         // ── Generar Serie + Número (PV / VC / PT) ────────────────────
         public async Task<(string serie, string numero)> GenerarSerieNumeroAsync(string tipoDocumento)
         {

@@ -52,5 +52,6 @@ namespace ComprobantePago.Application.Interfaces.Repositories
         Task EliminarDocumentoAsync(int idDocumento);
         Task<string> GenerarFolioAsync();
         Task<(string serie, string numero)> GenerarSerieNumeroAsync(string tipoDocumento);
+        Task<(string serie, string numero)> PrevisualizarSerieNumeroAsync(string tipoDocumento);
     }
 }
