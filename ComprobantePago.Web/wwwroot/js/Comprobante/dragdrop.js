@@ -564,7 +564,7 @@ function poblarCamposDesdeXml(datos) {
     esperarComboYAsignar('#ddlTipoDocumento', 'FP');
     esperarComboYAsignar('#ddlTipoSunat', datos.tipoSunat);
     esperarComboYAsignar('#ddlMoneda', datos.moneda);
-    esperarComboYAsignar('#dldLugarPago', '04');
+    $('#dldLugarPago').val('');
 
     // Tipo de cambio: viene calculado desde el servidor (PEN=1, otras monedas del XML)
     if (datos.tasaCambio && datos.tasaCambio > 0) {
