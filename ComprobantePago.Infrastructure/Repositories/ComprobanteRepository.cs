@@ -152,8 +152,7 @@ namespace ComprobantePago.Infrastructure.Repositories
                     $"Ya existe un comprobante con serie {serieEfectiva}-{numeroEfectivo} para el RUC {dto.Ruc}.");
             _logger.LogInformation("Guardando comprobante folio {Folio}", folio);
 
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
                 var existente = await _contexto.Comprobantes
                     .FirstOrDefaultAsync(x => x.Folio == folio);
@@ -250,13 +249,7 @@ namespace ComprobantePago.Infrastructure.Repositories
                 }
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
-            }
-            catch
-            {
-                await _unitOfWork.RollbackAsync();
-                throw;
-            }
+            });
 
             return (folio, serieEfectiva, numeroEfectivo);
         }

@@ -18,6 +18,7 @@ namespace ComprobantePago.Tests.Helpers
         public Task BeginTransactionAsync() => Task.CompletedTask;
         public Task CommitAsync()           => Task.CompletedTask;
         public Task RollbackAsync()         => Task.CompletedTask;
+        public async Task ExecuteInTransactionAsync(Func<Task> action) => await action();
         public void Dispose()               { }
     }
 }
