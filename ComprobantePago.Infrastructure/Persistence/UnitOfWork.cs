@@ -1,4 +1,5 @@
 using ComprobantePago.Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ComprobantePago.Infrastructure.Persistence
