@@ -121,6 +121,11 @@ function actualizarBotonesRP() {
 
 // ── Helpers localStorage por afectación ──────
 
+// Cuentas predeterminadas por afectación (usadas si no hay valor guardado en localStorage)
+const _defaultCuentas = {
+    IGV: { alias: '4011110', cuenta: '4011110', descripcion: 'IGV Cuenta Propia', cod1: '', cod2: '', cod3: '', cod4: '' }
+};
+
 function _guardarCuentaEnLocalStorage(afectacion) {
     try {
         const data = {
@@ -140,9 +145,8 @@ function _guardarCuentaEnLocalStorage(afectacion) {
 function _cargarCuentaGuardada(afectacion) {
     try {
         const stored = localStorage.getItem(`imp_cuenta_${afectacion}`);
-        if (!stored) return;
-        const data = JSON.parse(stored);
-        if (!data.cuenta) return;
+        const data = stored ? JSON.parse(stored) : (_defaultCuentas[afectacion] || null);
+        if (!data || !data.cuenta) return;
         $('#txtAliasCuenta').val(data.alias || '');
         $('#txtCuentaContable').val(data.cuenta || '');
         $('#txtDescripcionCuenta').val(data.descripcion || '');
