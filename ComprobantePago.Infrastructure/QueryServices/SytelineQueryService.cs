@@ -241,7 +241,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
                     if (c.EsEmpleado)
                     {
                         empleadoVendNums.TryGetValue(c.RucReceptor, out var eVendId);
-                        numRegFiscDist = idx == 0 ? c.RucReceptor : string.Empty;
+                        numRegFiscDist = c.RucReceptor;            // RUC en todas las líneas del empleado
                         aptZCO         = eVendId ?? string.Empty;  // IdProveedorExternal en todas las líneas
                     }
                     else
