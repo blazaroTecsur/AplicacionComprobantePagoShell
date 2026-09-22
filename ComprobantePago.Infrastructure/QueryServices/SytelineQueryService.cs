@@ -238,11 +238,11 @@ namespace ComprobantePago.Infrastructure.QueryServices
                     //   TaxRegNum      = RUC del beneficiario
                     //   aptZCO_APD     = vacío
                     string numRegFiscDist, aptZCO;
-                    if (c.EsEmpleado && idx == 0)
+                    if (c.EsEmpleado)
                     {
                         empleadoVendNums.TryGetValue(c.RucReceptor, out var eVendId);
-                        numRegFiscDist = c.RucReceptor;            // RUC del proveedor
-                        aptZCO         = eVendId ?? string.Empty;  // IdProveedorExternal como string
+                        numRegFiscDist = idx == 0 ? c.RucReceptor : string.Empty;
+                        aptZCO         = eVendId ?? string.Empty;  // IdProveedorExternal en todas las líneas
                     }
                     else
                     {
