@@ -61,6 +61,16 @@ function inicializarTablaImputacion() {
                     const editable = estado === '' || estado === 'NUEVO' || estado === 'REGISTRADO';
                     if (!editable) return '';
                     if (row.estado === 'pendiente') {
+                        const guardadas      = new Set(listaImputaciones.map(i => i.secuencia));
+                        const anteriorGuardada = secuencia === 1 || guardadas.has(secuencia - 1);
+                        if (!anteriorGuardada) {
+                            return `<button class="btn btn-sm btn-secondary btn-configurar-imp"
+                                            data-secuencia="${secuencia}"
+                                            title="Debe configurar la línea anterior primero"
+                                            disabled>
+                                        <i class="bi bi-lock"></i> Configurar
+                                    </button>`;
+                        }
                         return `<button class="btn btn-sm btn-primary btn-configurar-imp"
                                         data-secuencia="${secuencia}"
                                         title="Configurar cuenta contable y códigos de unidad">
