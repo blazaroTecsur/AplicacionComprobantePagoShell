@@ -73,6 +73,8 @@ function inicializarTablaImputacion() {
                         }
                         return `<button class="btn btn-sm btn-primary btn-configurar-imp"
                                         data-secuencia="${secuencia}"
+                                        data-monto="${row.monto ?? 0}"
+                                        data-desc="${row.descripcion ?? ''}"
                                         title="Configurar cuenta contable y códigos de unidad">
                                     <i class="bi bi-pencil-square"></i> Configurar
                                 </button>`;
@@ -116,23 +118,24 @@ function actualizarBotonesRP() {
 }
 
 // ── Mostrar formulario nueva imputación ───────
-function mostrarFormularioImputacion(secuenciaObjetivo) {
+function mostrarFormularioImputacion(secuenciaObjetivo, montoOverride, descOverride) {
     limpiarFormularioImputacion();
     modoEdicion = false;
     secuenciaEditando = null;
 
-    // Si viene de "Configurar" usamos la secuencia del pendiente; si es "Nueva" la siguiente disponible
+    // Si viene de "Configurar" (fila) usamos los datos del botón (monto/desc ya calculados).
+    // Si viene de "Nueva Imputación" (secuenciaObjetivo=null) calculamos la siguiente línea.
     let linea;
     if (secuenciaObjetivo != null) {
-        const lineas = obtenerLineasEsperadas();
-        const item   = lineas[secuenciaObjetivo - 1];
-        linea = item ? { seq: secuenciaObjetivo, ...item } : { seq: secuenciaObjetivo, monto: null, desc: null };
+        const monto = (montoOverride !== undefined && !isNaN(montoOverride)) ? montoOverride : null;
+        const desc  = descOverride || null;
+        linea = { seq: secuenciaObjetivo, monto, desc };
     } else {
         linea = obtenerLineaSiguiente();
     }
 
     $('#txtSecuencia').val(linea.seq);
-    if (linea.monto !== null) {
+    if (linea.monto !== null && linea.monto > 0) {
         $('#txtMonto').val(CorporativoCore.formatearMonto(linea.monto));
     }
     $('#lblLineaImputacion')
@@ -883,7 +886,7 @@ function confirmarFraccionamiento(soloExento, mixto) {
 
 function bindEventosImputacion() {
 
-    $('#btnAgregarDetalle').on('click', mostrarFormularioImputacion);
+    $('#btnAgregarDetalle').on('click', () => mostrarFormularioImputacion(null));
     $('#btnAgregarNuevaImputacion').on('click', agregarImputacion);
     $('#btnEditarDetalle').on('click', guardarEdicionImputacion);
     $('#btnCancelarDetalle').on('click', ocultarFormularioImputacion);
@@ -904,7 +907,10 @@ function bindEventosImputacion() {
     });
 
     $('#tblImputacion').on('click', '.btn-configurar-imp', function () {
-        mostrarFormularioImputacion(parseInt($(this).data('secuencia')));
+        const seq   = parseInt($(this).data('secuencia'));
+        const monto = parseFloat($(this).data('monto'));
+        const desc  = $(this).data('desc') || null;
+        mostrarFormularioImputacion(seq, monto, desc);
     });
 
     $(document).on('change', '#inpFile', function () {
