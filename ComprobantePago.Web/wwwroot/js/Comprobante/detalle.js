@@ -706,7 +706,7 @@ function bindEventos() {
         const tiposAutoNumero = ['PV', 'VC', 'PT'];
         if (!$('#rdoFacturacionManual').is(':checked')) return;
         if (tiposAutoNumero.includes(tipo)) {
-            $('#txtSerie').val(tipo);
+            $('#txtSerie').val(tipo).prop('readonly', true);
             $('#txtNumero').val('Cargando...').prop('readonly', true);
             CorporativoQuery.ajaxGet(
                 BASE_URL + '/Comprobante/PrevisualizarSerieNumero?tipoDocumento=' + tipo,
@@ -715,6 +715,7 @@ function bindEventos() {
                 }
             );
         } else {
+            $('#txtSerie').prop('readonly', false);
             $('#txtNumero').val('').prop('readonly', false);
         }
     });
