@@ -71,10 +71,12 @@ function inicializarTablaImputacion() {
                                         <i class="bi bi-lock"></i> Configurar
                                     </button>`;
                         }
+                        const afect = obtenerAfectacion(secuencia, row.tipoLinea);
                         return `<button class="btn btn-sm btn-primary btn-configurar-imp"
                                         data-secuencia="${secuencia}"
                                         data-monto="${row.monto ?? 0}"
                                         data-desc="${row.descripcion ?? ''}"
+                                        data-afectacion="${afect}"
                                         title="Configurar cuenta contable y códigos de unidad">
                                     <i class="bi bi-pencil-square"></i> Configurar
                                 </button>`;
@@ -117,11 +119,52 @@ function actualizarBotonesRP() {
     $('#btnDescargarPlantillaImputacion').removeClass('d-none');
 }
 
+// ── Helpers localStorage por afectación ──────
+
+function _guardarCuentaEnLocalStorage(afectacion) {
+    try {
+        const data = {
+            alias:       $('#txtAliasCuenta').val(),
+            cuenta:      $('#txtCuentaContable').val(),
+            descripcion: $('#txtDescripcionCuenta').val(),
+            cod1:        $('#txtCodUnidad1Cuenta').val(),
+            cod2:        $('#txtCodUnidad2Cuenta').val(),
+            cod3:        $('#txtCodUnidad3Cuenta').val(),
+            cod4:        $('#txtCodUnidad4Cuenta').val(),
+        };
+        if (!data.cuenta) return;
+        localStorage.setItem(`imp_cuenta_${afectacion}`, JSON.stringify(data));
+    } catch (e) {}
+}
+
+function _cargarCuentaGuardada(afectacion) {
+    try {
+        const stored = localStorage.getItem(`imp_cuenta_${afectacion}`);
+        if (!stored) return;
+        const data = JSON.parse(stored);
+        if (!data.cuenta) return;
+        $('#txtAliasCuenta').val(data.alias || '');
+        $('#txtCuentaContable').val(data.cuenta || '');
+        $('#txtDescripcionCuenta').val(data.descripcion || '');
+        $('#txtCuentaContable').trigger('change');
+        if (data.cod1 || data.cod2 || data.cod3 || data.cod4) {
+            mostrarCodigosUnidad('Cuenta');
+            $('#txtCodUnidad1Cuenta').val(data.cod1 || '');
+            $('#txtCodUnidad2Cuenta').val(data.cod2 || '');
+            $('#txtCodUnidad3Cuenta').val(data.cod3 || '');
+            $('#txtCodUnidad4Cuenta').val(data.cod4 || '');
+        }
+    } catch (e) {}
+}
+
 // ── Mostrar formulario nueva imputación ───────
-function mostrarFormularioImputacion(secuenciaObjetivo, montoOverride, descOverride) {
+let _afectacionActual = null;
+
+function mostrarFormularioImputacion(secuenciaObjetivo, montoOverride, descOverride, afectacion) {
     limpiarFormularioImputacion();
     modoEdicion = false;
     secuenciaEditando = null;
+    _afectacionActual = afectacion || null;
 
     // Si viene de "Configurar" (fila) usamos los datos del botón (monto/desc ya calculados).
     // Si viene de "Nueva Imputación" (secuenciaObjetivo=null) calculamos la siguiente línea.
@@ -142,7 +185,10 @@ function mostrarFormularioImputacion(secuenciaObjetivo, montoOverride, descOverr
         .text(linea.desc ? `Línea ${linea.seq} — ${linea.desc}` : `Línea ${linea.seq}`)
         .removeClass('d-none');
 
+    if (_afectacionActual) _cargarCuentaGuardada(_afectacionActual);
+
     $('#pnlDetalleImputacion').removeClass('d-none');
+
     $('#btnAgregarNuevaImputacion').removeClass('d-none');
     $('#btnCancelarDetalle').removeClass('d-none');
     $('#btnEliminarDetalle').addClass('d-none');
@@ -215,6 +261,7 @@ function agregarImputacion() {
         { imputacion: datos },
         function (response) {
             if (response.exito) {
+                if (_afectacionActual) _guardarCuentaEnLocalStorage(_afectacionActual);
                 listaImputaciones.push(response.imputacion);
                 refrescarTabla();
                 calcularTotales();
@@ -907,10 +954,11 @@ function bindEventosImputacion() {
     });
 
     $('#tblImputacion').on('click', '.btn-configurar-imp', function () {
-        const seq   = parseInt($(this).data('secuencia'));
-        const monto = parseFloat($(this).data('monto'));
-        const desc  = $(this).data('desc') || null;
-        mostrarFormularioImputacion(seq, monto, desc);
+        const seq       = parseInt($(this).data('secuencia'));
+        const monto     = parseFloat($(this).data('monto'));
+        const desc      = $(this).data('desc') || null;
+        const afectacion = $(this).data('afectacion') || null;
+        mostrarFormularioImputacion(seq, monto, desc, afectacion);
     });
 
     $(document).on('change', '#inpFile', function () {
