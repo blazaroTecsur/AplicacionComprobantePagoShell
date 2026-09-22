@@ -229,6 +229,8 @@ namespace ComprobantePago.Infrastructure.Services
                     TaxCode   = lineaIgv.CodImp,
                     TaxSystem = "2",
                     DIOTTransType        = lineaIgv.EsEmpleado ? "1" : "0",
+                    aptZCO_APD_VendNum   = lineaIgv.EsEmpleado && lineaIgv.AptZCO_APD_VendNum.Length > 0 ? lineaIgv.AptZCO_APD_VendNum : "",
+                    VendorName           = lineaIgv.EsEmpleado && lineaIgv.NombreProveedor.Length > 0 ? lineaIgv.NombreProveedor[..Math.Min(60, lineaIgv.NombreProveedor.Length)] : "",
                     aptZLA_TipoDocumento = lineaIgv.TipoDoc.Length > 0 ? lineaIgv.TipoDoc[..Math.Min(2, lineaIgv.TipoDoc.Length)] : "",
                     aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(30, cabecera.Ref.Length)] : "",
                     aptZLA_FechaEmision    = cabecera.FechaFactura,
@@ -256,6 +258,8 @@ namespace ComprobantePago.Infrastructure.Services
                     TaxSystem = "1",
                     TaxCode   = "EXENTO",
                     DIOTTransType        = lineaExento.EsEmpleado ? "1" : "0",
+                    aptZCO_APD_VendNum   = lineaExento.EsEmpleado && lineaExento.AptZCO_APD_VendNum.Length > 0 ? lineaExento.AptZCO_APD_VendNum : "",
+                    VendorName           = lineaExento.EsEmpleado && lineaExento.NombreProveedor.Length > 0 ? lineaExento.NombreProveedor[..Math.Min(60, lineaExento.NombreProveedor.Length)] : "",
                     aptZLA_TipoDocumento = lineaExento.TipoDoc.Length > 0 ? lineaExento.TipoDoc[..Math.Min(2, lineaExento.TipoDoc.Length)] : "",
                     aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(30, cabecera.Ref.Length)] : "",
                     aptZLA_FechaEmision    = cabecera.FechaFactura,
@@ -305,7 +309,7 @@ namespace ComprobantePago.Infrastructure.Services
             ApAcctUnit4 = c.CtaCPUnid4[..Math.Min(4, c.CtaCPUnid4.Length)],
 
             // Referencia
-            Ref        = "-1",
+            // Ref = "-1",  // comentado: Syteline asigna automáticamente sin enviar el campo
             Txt        = c.Notas[..Math.Min(40, c.Notas.Length)],
             Authorizer = c.Autorizo[..Math.Min(128, c.Autorizo.Length)],
 
