@@ -25,7 +25,7 @@ namespace ComprobantePago.Infrastructure.Services
                     page.Size(PageSizes.Letter);
                     page.Margin(1.2f, Unit.Centimetre);
                     page.DefaultTextStyle(t => t
-                        .FontFamily("Courier New")
+                        .FontFamily("Liberation Mono")
                         .FontSize(7.5f)
                         .FontColor(Colors.Black));
 
