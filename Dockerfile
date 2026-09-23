@@ -40,7 +40,9 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-# Copiar solo el archivo TTF desde la etapa build (sin necesitar apt en runtime)
-COPY --from=build /usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf ./fonts/LiberationMono-Regular.ttf
+# COPY corre como root en build time aunque la imagen use un usuario no-root.
+# Copiar Liberation Mono al directorio estándar de fuentes del sistema para que
+# libfontconfig (ya presente en la imagen base .NET) lo descubra automáticamente.
+COPY --from=build /usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf /usr/local/share/fonts/LiberationMono-Regular.ttf
 
 ENTRYPOINT ["dotnet", "ComprobantePago.Web.dll"]
