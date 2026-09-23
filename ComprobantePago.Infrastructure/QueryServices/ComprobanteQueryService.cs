@@ -241,7 +241,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
             _logger.LogInformation("Obteniendo imputaciones para folio {Folio}", folio);
 
             var lista = await _contexto.ImputacionesContables
-                .Where(x => x.Folio == folio)
+                .Where(x => x.Folio == folio && x.Comprobante.CodigoEmpresa == _usuario.CodigoEmpresa())
                 .OrderBy(x => x.Secuencia)
                 .ToListAsync();
 

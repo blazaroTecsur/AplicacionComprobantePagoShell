@@ -503,7 +503,7 @@ namespace ComprobantePago.Infrastructure.Repositories
             {
                 var cpte = await _contexto.Comprobantes
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(x => x.Folio == dto.Folio);
+                    .FirstOrDefaultAsync(x => x.Folio == dto.Folio && x.CodigoEmpresa == _usuario.CodigoEmpresa());
 
                 // El comprobante puede no estar en DB todavía (folio generado en validación
                 // XML pero aún no guardado). En ese caso se omite la validación de montos;
