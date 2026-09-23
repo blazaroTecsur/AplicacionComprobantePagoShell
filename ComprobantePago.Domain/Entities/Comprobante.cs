@@ -72,6 +72,7 @@
         public string? EmpleadoNombre { get; set; }
         public int? VoucherSyteline { get; set; }
         public string CodigoEmpresa { get; set; } = string.Empty;
+        public string? Departamento { get; set; }
 
         // Navegación
         public ICollection<ImputacionContable> Imputaciones { get; set; }

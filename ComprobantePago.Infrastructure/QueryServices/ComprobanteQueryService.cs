@@ -37,6 +37,12 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 .Where(x => x.CodigoEmpresa == _usuario.Sitio)
                 .AsQueryable();
 
+            // Filtrar por departamento cuando el usuario tiene uno asignado.
+            // Registros históricos sin departamento (null/vacío) son visibles para todos.
+            if (!string.IsNullOrEmpty(_usuario.Departamento))
+                query = query.Where(x => string.IsNullOrEmpty(x.Departamento)
+                                      || x.Departamento == _usuario.Departamento);
+
             if (!string.IsNullOrEmpty(filtros.Tipo))
                 query = query.Where(x => x.TipoDocumento == filtros.Tipo);
 
@@ -74,7 +80,9 @@ namespace ComprobantePago.Infrastructure.QueryServices
         public async Task<ComprobanteDetalleDto> ObtenerDetalleAsync(string folio)
         {
             var c = await _contexto.Comprobantes
-                .FirstOrDefaultAsync(x => x.Folio == folio && x.CodigoEmpresa == _usuario.Sitio);
+                .FirstOrDefaultAsync(x => x.Folio == folio
+                    && x.CodigoEmpresa == _usuario.Sitio
+                    && (string.IsNullOrEmpty(x.Departamento) || string.IsNullOrEmpty(_usuario.Departamento) || x.Departamento == _usuario.Departamento));
 
             if (c == null) return null!;
 
@@ -240,7 +248,9 @@ namespace ComprobantePago.Infrastructure.QueryServices
             _logger.LogInformation("Obteniendo imputaciones para folio {Folio}", folio);
 
             var lista = await _contexto.ImputacionesContables
-                .Where(x => x.Folio == folio && x.Comprobante.CodigoEmpresa == _usuario.Sitio)
+                .Where(x => x.Folio == folio
+                    && x.Comprobante.CodigoEmpresa == _usuario.Sitio
+                    && (string.IsNullOrEmpty(x.Comprobante.Departamento) || string.IsNullOrEmpty(_usuario.Departamento) || x.Comprobante.Departamento == _usuario.Departamento))
                 .OrderBy(x => x.Secuencia)
                 .ToListAsync();
 

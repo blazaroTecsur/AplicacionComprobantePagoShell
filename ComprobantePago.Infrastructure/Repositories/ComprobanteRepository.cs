@@ -242,7 +242,8 @@ namespace ComprobantePago.Infrastructure.Repositories
                         FechaDigitacion        = DateTime.Now,
                         UsuarioReg             = _usuario.Correo,
                         FechaReg               = DateTime.Now,
-                        CodigoEmpresa          = _usuario.Sitio
+                        CodigoEmpresa          = _usuario.Sitio,
+                        Departamento           = _usuario.Departamento
                     };
                     await _entidades.AddAsync(comprobante);
                 }
