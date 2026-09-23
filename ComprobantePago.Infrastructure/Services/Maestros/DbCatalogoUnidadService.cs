@@ -1,6 +1,5 @@
 using ComprobantePago.Application.DTOs.Comprobante.Common;
 using ComprobantePago.Application.Interfaces.Services.Maestros;
-using ComprobantePago.Infrastructure.Extensions;
 using ComprobantePago.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Seguridad.Abstractions.Interfaces;
@@ -16,7 +15,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
             int unidad, string filtro = "")
         {
             bool tieneFiltro = !string.IsNullOrWhiteSpace(filtro);
-            var empresa = _usuario.CodigoEmpresa();
+            var empresa = _usuario.Sitio;
             bool filtrarEmpresa = !string.IsNullOrWhiteSpace(empresa);
 
             return unidad switch
