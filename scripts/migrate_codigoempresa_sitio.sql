@@ -7,12 +7,12 @@
 -- =============================================================================
 
 -- Verificar estado actual antes de ejecutar
-SELECT 'rcocomprobante'       AS tabla, CodigoEmpresa, COUNT(*) AS registros
+SELECT 'rcocomprobante'      AS tabla, CodigoEmpresa, COUNT(*) AS registros
   FROM rcocomprobante
  GROUP BY CodigoEmpresa
 UNION ALL
-SELECT 'rcoserie_correlativo' AS tabla, CodigoEmpresa, COUNT(*) AS registros
-  FROM rcoserie_correlativo
+SELECT 'rcoseriecorrelativo' AS tabla, CodigoEmpresa, COUNT(*) AS registros
+  FROM rcoseriecorrelativo
  GROUP BY CodigoEmpresa;
 
 -- =============================================================================
@@ -24,16 +24,16 @@ UPDATE rcocomprobante
  WHERE CodigoEmpresa NOT LIKE 'S%'
    AND CodigoEmpresa <> '';
 
-UPDATE rcoserie_correlativo
+UPDATE rcoseriecorrelativo
    SET CodigoEmpresa = CONCAT('S', CodigoEmpresa)
  WHERE CodigoEmpresa NOT LIKE 'S%'
    AND CodigoEmpresa <> '';
 
 -- Verificar resultado final
-SELECT 'rcocomprobante'       AS tabla, CodigoEmpresa, COUNT(*) AS registros
+SELECT 'rcocomprobante'      AS tabla, CodigoEmpresa, COUNT(*) AS registros
   FROM rcocomprobante
  GROUP BY CodigoEmpresa
 UNION ALL
-SELECT 'rcoserie_correlativo' AS tabla, CodigoEmpresa, COUNT(*) AS registros
-  FROM rcoserie_correlativo
+SELECT 'rcoseriecorrelativo' AS tabla, CodigoEmpresa, COUNT(*) AS registros
+  FROM rcoseriecorrelativo
  GROUP BY CodigoEmpresa;
