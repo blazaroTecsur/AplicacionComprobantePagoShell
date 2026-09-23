@@ -14,6 +14,15 @@ namespace ComprobantePago.Infrastructure.Services
         static ComprobantePdfReporteService()
         {
             QuestPDF.Settings.License = LicenseType.Community;
+
+            // Registrar Liberation Mono desde el archivo copiado en el Dockerfile.
+            // Necesario porque la imagen runtime Linux no tiene Courier New (fuente Windows).
+            var fontPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fonts", "LiberationMono-Regular.ttf");
+            if (File.Exists(fontPath))
+            {
+                using var fs = File.OpenRead(fontPath);
+                QuestPDF.Infrastructure.FontManager.RegisterFont(fs);
+            }
         }
 
         public static byte[] Generar(ComprobanteReporteData d)

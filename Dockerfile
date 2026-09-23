@@ -26,19 +26,21 @@ RUN dotnet publish ComprobantePago.Web/ComprobantePago.Web.csproj \
     -c Release \
     -o /app/publish
 
+# Instalar fonts-liberation en la etapa build (tiene root) para extraer el TTF
+RUN apt-get update && apt-get install -y --no-install-recommends fonts-liberation \
+    && rm -rf /var/lib/apt/lists/*
+
 # =====================================
 # RUNTIME
 # =====================================
 
 FROM ghcr.io/sistecsur/dotnet-runtime:8.1
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    fontconfig \
-    fonts-liberation \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
 COPY --from=build /app/publish .
+
+# Copiar solo el archivo TTF desde la etapa build (sin necesitar apt en runtime)
+COPY --from=build /usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf ./fonts/LiberationMono-Regular.ttf
 
 ENTRYPOINT ["dotnet", "ComprobantePago.Web.dll"]
