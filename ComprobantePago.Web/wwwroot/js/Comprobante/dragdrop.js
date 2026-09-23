@@ -9,7 +9,8 @@ const CATEGORIAS_DOC = [
     { subTipo: 'XML_SUNAT',             accept: ['.xml'] },
     { subTipo: 'CORREO_ORIGEN',         accept: ['.msg', '.eml'] },
     { subTipo: 'ORDEN_COMPRA',          accept: ['.pdf'] },
-    { subTipo: 'XML_CDR',              accept: ['.xml', '.zip'] }
+    { subTipo: 'XML_CDR',              accept: ['.xml', '.zip'] },
+    { subTipo: 'OTROS_DOCUMENTOS',     accept: ['.xlsx', '.xls'] }
 ];
 
 // Estado interno del panel

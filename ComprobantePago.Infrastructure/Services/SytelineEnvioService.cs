@@ -202,7 +202,7 @@ namespace ComprobantePago.Infrastructure.Services
                     aptZLA_TipoDocumento  = linea.TipoDoc.Length > 0 ? linea.TipoDoc[..Math.Min(2, linea.TipoDoc.Length)] : "",
                     VendorName            = linea.EsEmpleado && linea.NombreProveedor.Length > 0 ? linea.NombreProveedor[..Math.Min(60, linea.NombreProveedor.Length)] : "",
                     ForeignTaxRegNum      = linea.EsEmpleado ? "0" : "",
-                    aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(30, cabecera.Ref.Length)] : "",
+                    aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(50, cabecera.Ref.Length)] : "",
                     aptZLA_FechaEmision    = cabecera.FechaFactura,
                 };
                 _logger.LogInformation("IDO SLAptrxds Gasto → Voucher={Voucher} DistSeq={Seq} Acct={Acct} Amount={Amt}",
@@ -235,7 +235,7 @@ namespace ComprobantePago.Infrastructure.Services
                     VendorName           = lineaIgv.EsEmpleado && lineaIgv.NombreProveedor.Length > 0 ? lineaIgv.NombreProveedor[..Math.Min(60, lineaIgv.NombreProveedor.Length)] : "",
                     ForeignTaxRegNum     = lineaIgv.EsEmpleado ? "0" : "",
                     aptZLA_TipoDocumento = lineaIgv.TipoDoc.Length > 0 ? lineaIgv.TipoDoc[..Math.Min(2, lineaIgv.TipoDoc.Length)] : "",
-                    aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(30, cabecera.Ref.Length)] : "",
+                    aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(50, cabecera.Ref.Length)] : "",
                     aptZLA_FechaEmision    = cabecera.FechaFactura,
                 };
                 _logger.LogInformation("IDO SLAptrxds IGV → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
@@ -267,7 +267,7 @@ namespace ComprobantePago.Infrastructure.Services
                     VendorName           = lineaExento.EsEmpleado && lineaExento.NombreProveedor.Length > 0 ? lineaExento.NombreProveedor[..Math.Min(60, lineaExento.NombreProveedor.Length)] : "",
                     ForeignTaxRegNum     = lineaExento.EsEmpleado ? "0" : "",
                     aptZLA_TipoDocumento = lineaExento.TipoDoc.Length > 0 ? lineaExento.TipoDoc[..Math.Min(2, lineaExento.TipoDoc.Length)] : "",
-                    aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(30, cabecera.Ref.Length)] : "",
+                    aptZLA_NumAutorizacion = cabecera.Ref.Length > 0 ? cabecera.Ref[..Math.Min(50, cabecera.Ref.Length)] : "",
                     aptZLA_FechaEmision    = cabecera.FechaFactura,
                 };
                 _logger.LogInformation("IDO SLAptrxds Exento → Voucher={Voucher} DistSeq={Seq} Amount={Amt}",
