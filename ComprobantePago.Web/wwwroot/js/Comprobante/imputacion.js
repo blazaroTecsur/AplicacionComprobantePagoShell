@@ -126,6 +126,11 @@ const _defaultCuentas = {
     IGV: { alias: '4011110', cuenta: '4011110', descripcion: 'IGV Cuenta Propia', cod1: '', cod2: '', cod3: '', cod4: '' }
 };
 
+function _lsKey(afectacion) {
+    const user = (window.USUARIO_KEY || 'default').toLowerCase();
+    return `imp_cuenta_${user}_${afectacion}`;
+}
+
 function _guardarCuentaEnLocalStorage(afectacion) {
     try {
         const data = {
@@ -138,13 +143,13 @@ function _guardarCuentaEnLocalStorage(afectacion) {
             cod4:        $('#txtCodUnidad4Cuenta').val(),
         };
         if (!data.cuenta) return;
-        localStorage.setItem(`imp_cuenta_${afectacion}`, JSON.stringify(data));
+        localStorage.setItem(_lsKey(afectacion), JSON.stringify(data));
     } catch (e) {}
 }
 
 function _cargarCuentaGuardada(afectacion) {
     try {
-        const stored = localStorage.getItem(`imp_cuenta_${afectacion}`);
+        const stored = localStorage.getItem(_lsKey(afectacion));
         const data = stored ? JSON.parse(stored) : (_defaultCuentas[afectacion] || null);
         if (!data || !data.cuenta) return;
         $('#txtAliasCuenta').val(data.alias || '');
@@ -983,7 +988,12 @@ function bindEventosImputacion() {
                 $('#barraOpcionesImputacion').removeClass('d-none');
                 $('#barraAccionesImputacion').removeClass('d-none');
             }
-            cargarImputaciones(folio);
+            // Solo recargar si los montos ya fueron poblados (cargarComprobante completó
+            // su setTimeout). Si aún están vacíos, cargarComprobante los poblará y
+            // llamará cargarImputaciones con los valores correctos.
+            if ($('#txtMontoTotal').val()) {
+                cargarImputaciones(folio);
+            }
         }
         actualizarBotonesRP();
     });

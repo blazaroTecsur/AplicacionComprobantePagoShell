@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.IO.Compression;
-using ComprobantePago.Infrastructure.Extensions;
 
 namespace ComprobantePago.Infrastructure.Repositories
 {
@@ -69,7 +68,7 @@ namespace ComprobantePago.Infrastructure.Repositories
             var ahora   = DateTime.Now;
             var anio    = ahora.Year;
             var mes     = ahora.Month;
-            var empresa = _usuario.CodigoEmpresa() ?? string.Empty;
+            var empresa = _usuario.Sitio ?? string.Empty;
 
             var registro = await _contexto.SeriesCorrelativo
                 .AsNoTracking()
@@ -89,7 +88,7 @@ namespace ComprobantePago.Infrastructure.Repositories
             var ahora   = DateTime.Now;
             var anio    = ahora.Year;
             var mes     = ahora.Month;
-            var empresa = _usuario.CodigoEmpresa() ?? string.Empty;
+            var empresa = _usuario.Sitio ?? string.Empty;
 
             var registro = await _contexto.SeriesCorrelativo
                 .FirstOrDefaultAsync(x => x.CodigoEmpresa == empresa
@@ -243,7 +242,8 @@ namespace ComprobantePago.Infrastructure.Repositories
                         FechaDigitacion        = DateTime.Now,
                         UsuarioReg             = _usuario.Correo,
                         FechaReg               = DateTime.Now,
-                        CodigoEmpresa          = _usuario.CodigoEmpresa()
+                        CodigoEmpresa          = _usuario.Sitio,
+                        Departamento           = _usuario.Departamento
                     };
                     await _entidades.AddAsync(comprobante);
                 }
@@ -503,7 +503,7 @@ namespace ComprobantePago.Infrastructure.Repositories
             {
                 var cpte = await _contexto.Comprobantes
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(x => x.Folio == dto.Folio);
+                    .FirstOrDefaultAsync(x => x.Folio == dto.Folio && x.CodigoEmpresa == _usuario.Sitio);
 
                 // El comprobante puede no estar en DB todavía (folio generado en validación
                 // XML pero aún no guardado). En ese caso se omite la validación de montos;
@@ -688,7 +688,7 @@ namespace ComprobantePago.Infrastructure.Repositories
                 throw new InvalidOperationException("El archivo no contiene líneas de imputación válidas.");
 
             // ── Validar catálogo de cuentas contables y códigos de unidad ─────
-            var empresa = _usuario.CodigoEmpresa();
+            var empresa = _usuario.Sitio;
 
             var cuentasValidas = (await _contexto.CuentasContables
                 .Where(x => x.Activo && x.Codigo.Length >= 7)

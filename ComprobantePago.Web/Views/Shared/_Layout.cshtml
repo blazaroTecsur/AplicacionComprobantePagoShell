@@ -95,6 +95,7 @@
                                                 .Where(c => c.Type == "permission")
                                                 .Select(c => c.Value)
                                                 ));
+        window.USUARIO_KEY = '@System.Text.RegularExpressions.Regex.Replace(User.Identity?.Name ?? "", "[^a-zA-Z0-9_@.-]", "_")';
     </script>
 
     <!-- Global JS propio -->
