@@ -315,6 +315,7 @@ function bloquearTodosLosCampos() {
 function mostrarBotonesSegunEstado(estado) {
     ocultarTodosLosBotones();
     $('#btnAtras').removeClass('d-none');
+    habilitarTabImputacion(true);
 
     switch (estado) {
         case 'NUEVO':
@@ -372,6 +373,20 @@ function mostrarBotonesNuevo() {
 
 function ocultarTodosLosBotones() {
     $('#barraAcciones .btn').addClass('d-none');
+}
+
+function habilitarTabImputacion(habilitar) {
+    const $tab = $('#tabImputacionLink');
+    if (habilitar) {
+        $tab.removeClass('disabled').removeAttr('tabindex').removeAttr('aria-disabled').removeAttr('title');
+    } else {
+        $tab.addClass('disabled').attr('tabindex', '-1').attr('aria-disabled', 'true')
+            .attr('title', 'Guarde el comprobante antes de agregar imputaciones');
+        // Si el tab estaba activo, volver al tab de detalle
+        if ($tab.hasClass('active')) {
+            $('a[href="#tabDetalleComprobante"]').tab('show');
+        }
+    }
 }
 
 // ── Guardar comprobante ───────────────────────
@@ -554,6 +569,8 @@ function limpiarFormulario() {
     // Ocultar botones
     ocultarTodosLosBotones();
     $('#btnLimpiarCorreo').removeClass('d-none');
+
+    habilitarTabImputacion(false);
 }
 
 // ── Bloquear campos modo electrónico ──────────

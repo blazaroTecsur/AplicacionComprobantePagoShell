@@ -17,7 +17,7 @@ COPY . .
 
 RUN dotnet restore
 
-# Instalar libman y restaurar librer�as de cliente
+# Instalar libman y restaurar librer�as de cliente
 RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 ENV PATH="$PATH:/root/.dotnet/tools"
 RUN cd ComprobantePago.Web && libman restore
@@ -25,6 +25,10 @@ RUN cd ComprobantePago.Web && libman restore
 RUN dotnet publish ComprobantePago.Web/ComprobantePago.Web.csproj \
     -c Release \
     -o /app/publish
+
+# Instalar fonts-liberation en la etapa build (tiene root) para extraer el TTF
+RUN apt-get update && apt-get install -y --no-install-recommends fonts-liberation \
+    && rm -rf /var/lib/apt/lists/*
 
 # =====================================
 # RUNTIME
@@ -35,5 +39,10 @@ FROM ghcr.io/sistecsur/dotnet-runtime:8.1
 WORKDIR /app
 
 COPY --from=build /app/publish .
+
+# COPY corre como root en build time aunque la imagen use un usuario no-root.
+# Copiar Liberation Mono al directorio estándar de fuentes del sistema para que
+# libfontconfig (ya presente en la imagen base .NET) lo descubra automáticamente.
+COPY --from=build /usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf /usr/local/share/fonts/LiberationMono-Regular.ttf
 
 ENTRYPOINT ["dotnet", "ComprobantePago.Web.dll"]
