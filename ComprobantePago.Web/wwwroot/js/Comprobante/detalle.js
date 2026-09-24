@@ -477,6 +477,10 @@ function validarCabecera() {
             msg: 'Debe seleccionar el tipo de comprobante.'
         },
         {
+            selector: '#ddlTipoSunat',
+            msg: 'Debe seleccionar el tipo SUNAT.'
+        },
+        {
             selector: '#txtSerie',
             msg: 'Debe ingresar la serie.'
         },
@@ -490,8 +494,20 @@ function validarCabecera() {
             msg: 'Debe ingresar la fecha de emisión.'
         },
         {
+            selector: '#txtFechaRecepcion',
+            msg: 'Debe ingresar la fecha de recepción.'
+        },
+        {
             selector: '#ddlMoneda',
             msg: 'Debe seleccionar la moneda.'
+        },
+        {
+            selector: '#txtTasaCambio',
+            msg: 'Debe ingresar la tasa de cambio.'
+        },
+        {
+            selector: '#dldLugarPago',
+            msg: 'Debe seleccionar el lugar de pago.'
         },
         {
             selector: '#txtPlazoPago',
