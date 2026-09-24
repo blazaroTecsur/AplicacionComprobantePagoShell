@@ -513,6 +513,10 @@ function validarCabecera() {
             selector: '#txtPlazoPago',
             msg: 'Debe ingresar el plazo de pago.'
         },
+        {
+            selector: '#txtObservacion',
+            msg: 'Debe ingresar una observación.'
+        },
     ];
 
     for (const campo of campos) {
