@@ -40,26 +40,36 @@ namespace ComprobantePago.Web.Middlewares
 
         public static WebApplicationBuilder AddSeriLog(this WebApplicationBuilder builder)
         {
+            var logPath  = builder.Configuration["Loggings:Path"] ?? "logs";
+            Directory.CreateDirectory(logPath);
+
+            var appName       = builder.Configuration["Observability:ApplicationName"] ?? "WebComprobante";
+            var seqUrl        = builder.Configuration["Observability:SeqUrl"] ?? "http://seq";
+            var retainedFiles = builder.Configuration.GetValue<int>("Observability:RetainedFile", 14);
+
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .Enrich.WithMachineName()
+                .Enrich.WithEnvironmentName()
+                .Enrich.WithThreadId()
+                .Enrich.WithProcessName()
+                .Enrich.WithProperty("Application", appName)
                 .WriteTo.Console(
                     outputTemplate:
                     "[{Timestamp:HH:mm:ss} {Level:u3}] [{CorrelationId}] {UserId} | {Message:lj}{NewLine}{Exception}")
                 .WriteTo.File(
-                    path: "logs/comprobante-.log",
+                    path: Path.Combine(logPath, "comprobante-.log"),
                     rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 30,
+                    retainedFileCountLimit: retainedFiles,
                     outputTemplate:
                     "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{CorrelationId}] {UserId} | {Message:lj}{NewLine}{Exception}")
                 .WriteTo.File(
                     formatter: new CompactJsonFormatter(),
-                    path: "logs/comprobante-json-.log",
+                    path: Path.Combine(logPath, "comprobante-json-.log"),
                     rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 30,
+                    retainedFileCountLimit: retainedFiles,
                     restrictedToMinimumLevel: LogEventLevel.Information)
                 .WriteTo.Logger(lc => lc
                     .Filter.ByIncludingOnly(e =>
@@ -67,9 +77,10 @@ namespace ComprobantePago.Web.Middlewares
                         e.Properties["AuditLog"].ToString() == "True")
                     .WriteTo.File(
                         formatter: new CompactJsonFormatter(),
-                        path: "logs/audit-.log",
+                        path: Path.Combine(logPath, "audit-.log"),
                         rollingInterval: RollingInterval.Day,
                         retainedFileCountLimit: 90))
+                .WriteTo.Seq(seqUrl)
                 .CreateLogger();
 
             builder.Host.UseSerilog();
