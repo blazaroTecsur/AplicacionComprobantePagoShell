@@ -127,6 +127,7 @@ namespace ComprobantePago.Web.Middlewares
 
             // Settings
             services.Configure<SunatSettings>(config.GetSection("Sunat"));
+            services.Configure<StorageSettings>(config.GetSection("Storages"));
 
             // HttpClient SUNAT
             services.AddHttpClient<ISunatService, SunatService>()
@@ -156,6 +157,9 @@ namespace ComprobantePago.Web.Middlewares
                 services.AddScoped<ICatalogoUnidadService, DbCatalogoUnidadService>();
                 services.AddScoped<ICuentaContableService, DbCuentaContableService>();
             }
+
+            // Almacenamiento de archivos
+            services.AddScoped<IStorageService, StorageService>();
 
             // Servicios de dominio
             services.AddScoped<XmlComprobanteService>();

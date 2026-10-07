@@ -3,6 +3,7 @@ using ComprobantePago.Application.DTOs.Comprobante.Requests;
 using ComprobantePago.Application.Common;
 using ComprobantePago.Application.Interfaces.QueryServices;
 using ComprobantePago.Application.Interfaces.Repositories;
+using ComprobantePago.Application.Interfaces.Services;
 using ComprobantePago.Application.Interfaces.Services.Maestros;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ namespace ComprobantePago.Web.Controllers
         private readonly IMaestrosQueryService    _maestrosService;
         private readonly IProveedorService        _proveedorService;
         private readonly IComprobanteRepository   _repository;
+        private readonly IStorageService          _storageService;
         private readonly ILogger<ComprobanteController> _logger;
 
         public ComprobanteController(
@@ -25,12 +27,14 @@ namespace ComprobantePago.Web.Controllers
             IMaestrosQueryService   maestrosService,
             IProveedorService       proveedorService,
             IComprobanteRepository  repository,
+            IStorageService         storageService,
             ILogger<ComprobanteController> logger)
         {
             _queryService     = queryService;
             _maestrosService  = maestrosService;
             _proveedorService = proveedorService;
             _repository       = repository;
+            _storageService   = storageService;
             _logger           = logger;
         }
 
@@ -156,9 +160,10 @@ namespace ComprobantePago.Web.Controllers
         {
             var doc = await _repository.DescargarDocumentoAsync(id);
             if (doc is null) return NotFound();
+            var contenido = await _storageService.LeerAsync(doc.RutaArchivo);
             var ext = Path.GetExtension(doc.NombreArchivo).TrimStart('.').ToLowerInvariant();
             var contentType = ext == "pdf" ? "application/pdf" : "application/octet-stream";
-            return File(doc.Contenido, contentType, doc.NombreArchivo);
+            return File(contenido, contentType, doc.NombreArchivo);
         }
 
         [HttpGet("[action]")]

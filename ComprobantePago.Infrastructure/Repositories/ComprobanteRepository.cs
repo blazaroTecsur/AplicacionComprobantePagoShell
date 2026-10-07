@@ -26,6 +26,7 @@ namespace ComprobantePago.Infrastructure.Repositories
         XmlComprobanteService xmlService,
         PdfComprobanteService pdfService,
         IUsuarioContexto usuario,
+        IStorageService storageService,
         ILogger<ComprobanteRepository> logger)
         : RepositorioBase<Comprobante>(contexto), IComprobanteRepository
     {
@@ -34,6 +35,7 @@ namespace ComprobantePago.Infrastructure.Repositories
         private readonly XmlComprobanteService _xmlService = xmlService;
         private readonly PdfComprobanteService _pdfService = pdfService;
         private readonly IUsuarioContexto _usuario = usuario;
+        private readonly IStorageService _storageService = storageService;
         private readonly ILogger<ComprobanteRepository> _logger = logger;
 
         // ── Generar Folio ─────────────────────────
@@ -938,13 +940,15 @@ namespace ComprobantePago.Infrastructure.Repositories
         {
             foreach (var (contenido, nombre, tipo, subTipo) in archivos)
             {
+                var ruta = await _storageService.GuardarAsync(folio, nombre, contenido);
                 var doc = new DocumentoElectronico
                 {
                     Folio         = folio,
                     TipoArchivo   = tipo,
                     SubTipo       = subTipo,
                     NombreArchivo = nombre,
-                    Contenido     = contenido,
+                    RutaArchivo   = ruta,
+                    TamanioBytes  = contenido.LongLength,
                     FechaReg      = DateTime.Now,
                     UsuarioReg    = _usuario.Correo
                 };
@@ -965,6 +969,7 @@ namespace ComprobantePago.Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.IdDocumento == idDocumento);
             if (doc != null)
             {
+                await _storageService.EliminarAsync(doc.RutaArchivo);
                 _contexto.DocumentosElectronicos.Remove(doc);
                 await _unitOfWork.SaveChangesAsync();
             }
