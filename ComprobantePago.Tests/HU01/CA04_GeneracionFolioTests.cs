@@ -55,6 +55,7 @@ namespace ComprobantePago.Tests.HU01
                 new XmlComprobanteService(),
                 new PdfComprobanteService(),
                 mockUsuario.Object,
+                new Mock<IStorageService>().Object,
                 NullLogger<ComprobanteRepository>.Instance), nombre);
         }
 
@@ -96,7 +97,7 @@ namespace ComprobantePago.Tests.HU01
                     It.IsAny<string>(), It.IsAny<decimal>()))
                 .ReturnsAsync(new ValidacionSunatDto { Exito = true, CodigoEstado = "1", EstadoSunat = "ACEPTADO" });
 
-            var repo    = new ComprobanteRepository(db, unitOfWork.Object, mockSunat.Object, new XmlComprobanteService(), new PdfComprobanteService(), mockUsuario.Object, NullLogger<ComprobanteRepository>.Instance);
+            var repo    = new ComprobanteRepository(db, unitOfWork.Object, mockSunat.Object, new XmlComprobanteService(), new PdfComprobanteService(), mockUsuario.Object, new Mock<IStorageService>().Object, NullLogger<ComprobanteRepository>.Instance);
             var archivo = ArchivoTestFactory.CrearFormFileXml(ArchivoTestFactory.XmlFacturaSunat());
 
             var resultado = await repo.ValidarXmlSunatAsync(archivo);
@@ -161,7 +162,7 @@ namespace ComprobantePago.Tests.HU01
                     It.IsAny<string>(), It.IsAny<decimal>()))
                 .ReturnsAsync(new ValidacionSunatDto { Exito = false, CodigoEstado = "0", EstadoSunat = "NO_EXISTE" });
 
-            var repo    = new ComprobanteRepository(db, unitOfWork.Object, mockSunat.Object, new XmlComprobanteService(), new PdfComprobanteService(),  mockUsuario.Object, NullLogger<ComprobanteRepository>.Instance);
+            var repo    = new ComprobanteRepository(db, unitOfWork.Object, mockSunat.Object, new XmlComprobanteService(), new PdfComprobanteService(), mockUsuario.Object, new Mock<IStorageService>().Object, NullLogger<ComprobanteRepository>.Instance);
             var archivo = ArchivoTestFactory.CrearFormFileXml(ArchivoTestFactory.XmlFacturaSunat());
 
             var resultado = await repo.ValidarXmlSunatAsync(archivo);

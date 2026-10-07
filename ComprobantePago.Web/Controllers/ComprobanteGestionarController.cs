@@ -188,7 +188,15 @@ namespace ComprobantePago.Web.Controllers
         public async Task<IActionResult> SubirDocumentos(
             string folio, string subTipo, IFormFileCollection archivos)
         {
-            var extensionesPermitidas = new[] { "pdf", "xml", "jpg", "jpeg", "png", "xlsx", "xls" };
+            var docsExistentes = await _queryService.ObtenerDocumentosElectronicosAsync(folio);
+            if (docsExistentes.Any(d => d.SubTipo == subTipo))
+                return BadRequest(new
+                {
+                    mensaje = $"Ya existe un archivo del tipo '{subTipo}' para este comprobante. " +
+                               "Elimine el actual antes de subir uno nuevo."
+                });
+
+            var extensionesPermitidas = new[] { "pdf", "xml", "zip", "msg", "eml", "jpg", "jpeg", "png", "xlsx", "xls" };
             var lista = new List<(byte[], string, string, string)>();
             foreach (var archivo in archivos.Where(a => a.Length > 0))
             {
