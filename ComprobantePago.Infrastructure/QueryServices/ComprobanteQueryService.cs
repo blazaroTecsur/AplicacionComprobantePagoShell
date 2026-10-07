@@ -237,7 +237,7 @@ namespace ComprobantePago.Infrastructure.QueryServices
                     SubTipo = x.SubTipo,
                     NombreArchivo = x.NombreArchivo,
                     FechaReg = x.FechaReg.ToString("dd/MM/yyyy HH:mm"),
-                    TamanioBytes = x.Contenido.Length
+                    TamanioBytes = x.TamanioBytes
                 })
                 .ToListAsync();
         }

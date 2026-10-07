@@ -7,7 +7,8 @@ namespace ComprobantePago.Domain.Entities
         public string TipoArchivo { get; set; } = string.Empty;  // XML, PDF, MSG, EML
         public string SubTipo { get; set; } = string.Empty;      // XML_SUNAT, XML_CDR, REPRESENTACION_IMPRESA, etc.
         public string NombreArchivo { get; set; } = string.Empty;
-        public byte[] Contenido { get; set; } = Array.Empty<byte>();
+        public string RutaArchivo { get; set; } = string.Empty;
+        public long TamanioBytes { get; set; }
         public DateTime FechaReg { get; set; }
         public string UsuarioReg { get; set; } = string.Empty;
     }
