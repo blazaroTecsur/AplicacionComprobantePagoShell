@@ -43,6 +43,7 @@ namespace ComprobantePago.Tests.HU01
                 new XmlComprobanteService(),
                 new PdfComprobanteService(),
                 mockUsuario.Object,
+                new Mock<IStorageService>().Object,
                 NullLogger<ComprobanteRepository>.Instance);
         }
 

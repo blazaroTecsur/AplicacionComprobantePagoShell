@@ -36,6 +36,7 @@ namespace ComprobantePago.Tests.HU02
                 new XmlComprobanteService(),
                 new PdfComprobanteService(),
                 usuario.Object,
+                new Mock<IStorageService>().Object,
                 NullLogger<ComprobanteRepository>.Instance);
 
             return (repo, db);
@@ -162,6 +163,7 @@ namespace ComprobantePago.Tests.HU02
                 new Mock<ISunatService>().Object,
                 new XmlComprobanteService(), new PdfComprobanteService(),
                 usuario.Object,
+                new Mock<IStorageService>().Object,
                 NullLogger<ComprobanteRepository>.Instance);
 
             var (folio, _, _) = await repo.GuardarAsync(Comando("RP"));
