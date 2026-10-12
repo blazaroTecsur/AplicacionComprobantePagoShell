@@ -859,10 +859,15 @@ function bindEventos() {
         $('#panelFechaVencimiento').removeClass('d-none');
     });
 
-    // Fecha recepción cambia → recalcular vencimiento si ya hay plazo
+    // Fecha recepción cambia → defaultear plazo a 0 si está vacío y recalcular vencimiento
     $('#txtFechaRecepcion').on('change', function () {
-        const plazo = parseInt($('#txtPlazoPago').val());
-        if (!isNaN(plazo) && plazo >= 0 && $(this).val()) {
+        if (!$(this).val()) return;
+        let plazo = parseInt($('#txtPlazoPago').val());
+        if (isNaN(plazo) || $('#txtPlazoPago').val().trim() === '') {
+            plazo = 0;
+            $('#txtPlazoPago').val(0);
+        }
+        if (plazo >= 0) {
             $('#txtFechaVencimiento').val(
                 calcularFechaVencimiento($(this).val(), plazo));
             $('#panelFechaVencimiento').removeClass('d-none');
