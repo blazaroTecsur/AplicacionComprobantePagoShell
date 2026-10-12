@@ -935,10 +935,16 @@ function bindEventos() {
     // Vista previa PDF
     $('#btnVistaPrevia').on('click', function () {
         const folio = $('#hdnFolio').val();
-        if (folio) {
-            $('a[href="#tabImpresion"]').tab('show');
-            $('#pdfComprobante').attr('src',
-                BASE_URL+`/Comprobante/ObtenerPdf?folio=${folio}`);
+        if (!folio) return;
+        const tabLink = $('a[href="#tabImpresion"]');
+        const src = BASE_URL + `/Comprobante/ObtenerPdf?folio=${folio}`;
+        if ($('#tabImpresion').hasClass('active')) {
+            $('#pdfComprobante').attr('src', src);
+        } else {
+            tabLink.one('shown.bs.tab', function () {
+                $('#pdfComprobante').attr('src', src);
+            });
+            tabLink.tab('show');
         }
     });
 
