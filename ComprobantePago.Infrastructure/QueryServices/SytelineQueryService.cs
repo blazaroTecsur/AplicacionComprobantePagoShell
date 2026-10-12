@@ -36,9 +36,11 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 .Distinct()
                 .ToList();
 
-            var vendNums = await _contexto.Proveedores
+            var vendNums = (await _contexto.Proveedores
                 .Where(p => rucs.Contains(p.Ruc) && !string.IsNullOrEmpty(p.IdProveedorExternal))
-                .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal!);
+                .ToListAsync())
+                .GroupBy(p => p.Ruc)
+                .ToDictionary(g => g.Key, g => g.First().IdProveedorExternal!);
 
             var result = new List<SytelineCabeceraDto>();
 
@@ -153,9 +155,11 @@ namespace ComprobantePago.Infrastructure.QueryServices
                 .ToList();
 
             var empleadoVendNums = empleadoRucs.Count > 0
-                ? await _contexto.Proveedores
+                ? (await _contexto.Proveedores
                     .Where(p => empleadoRucs.Contains(p.Ruc) && !string.IsNullOrEmpty(p.IdProveedorExternal))
-                    .ToDictionaryAsync(p => p.Ruc, p => p.IdProveedorExternal!)
+                    .ToListAsync())
+                    .GroupBy(p => p.Ruc)
+                    .ToDictionary(g => g.Key, g => g.First().IdProveedorExternal!)
                 : new Dictionary<string, string>();
 
             var resultado = new List<SytelineDistribucionDto>();

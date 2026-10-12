@@ -859,10 +859,15 @@ function bindEventos() {
         $('#panelFechaVencimiento').removeClass('d-none');
     });
 
-    // Fecha recepción cambia → recalcular vencimiento si ya hay plazo
+    // Fecha recepción cambia → defaultear plazo a 0 si está vacío y recalcular vencimiento
     $('#txtFechaRecepcion').on('change', function () {
-        const plazo = parseInt($('#txtPlazoPago').val());
-        if (!isNaN(plazo) && plazo >= 0 && $(this).val()) {
+        if (!$(this).val()) return;
+        let plazo = parseInt($('#txtPlazoPago').val());
+        if (isNaN(plazo) || $('#txtPlazoPago').val().trim() === '') {
+            plazo = 0;
+            $('#txtPlazoPago').val(0);
+        }
+        if (plazo >= 0) {
             $('#txtFechaVencimiento').val(
                 calcularFechaVencimiento($(this).val(), plazo));
             $('#panelFechaVencimiento').removeClass('d-none');
@@ -935,10 +940,16 @@ function bindEventos() {
     // Vista previa PDF
     $('#btnVistaPrevia').on('click', function () {
         const folio = $('#hdnFolio').val();
-        if (folio) {
-            $('a[href="#tabImpresion"]').tab('show');
-            $('#pdfComprobante').attr('src',
-                BASE_URL+`/Comprobante/ObtenerPdf?folio=${folio}`);
+        if (!folio) return;
+        const tabLink = $('a[href="#tabImpresion"]');
+        const src = BASE_URL + `/Comprobante/ObtenerPdf?folio=${folio}`;
+        if ($('#tabImpresion').hasClass('active')) {
+            $('#pdfComprobante').attr('src', src);
+        } else {
+            tabLink.one('shown.bs.tab', function () {
+                $('#pdfComprobante').attr('src', src);
+            });
+            tabLink.tab('show');
         }
     });
 
