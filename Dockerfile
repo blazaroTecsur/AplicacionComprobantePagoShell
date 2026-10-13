@@ -40,6 +40,9 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
+# Crear directorio de almacenamiento con permisos de escritura para el usuario no-root
+RUN mkdir -p /app/storage && chmod 777 /app/storage
+
 # COPY corre como root en build time aunque la imagen use un usuario no-root.
 # Copiar Liberation Mono al directorio estándar de fuentes del sistema para que
 # libfontconfig (ya presente en la imagen base .NET) lo descubra automáticamente.
