@@ -130,13 +130,13 @@ namespace ComprobantePago.Infrastructure.Repositories
                 ? await GenerarFolioAsync()
                 : dto.Folio;
 
-            // Para PV/VC/PT nuevos sin número: generar serie+número en el momento del guardado
+            // Para PV/VC/PT nuevos: siempre generar serie+número en el servidor
+            // (el frontend pre-llena txtNumero con la vista previa, que no es el correlativo real)
             var serieEfectiva  = dto.Serie;
             var numeroEfectivo = dto.Numero;
             var tiposAutoNumero = new[] { "PV", "VC", "PT" };
             if (string.IsNullOrWhiteSpace(dto.Folio) &&
-                tiposAutoNumero.Contains(dto.TipoDocumento) &&
-                string.IsNullOrWhiteSpace(dto.Numero))
+                tiposAutoNumero.Contains(dto.TipoDocumento))
             {
                 (serieEfectiva, numeroEfectivo) = await GenerarSerieNumeroAsync(dto.TipoDocumento);
             }
