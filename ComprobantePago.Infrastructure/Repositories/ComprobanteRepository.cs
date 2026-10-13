@@ -420,9 +420,21 @@ namespace ComprobantePago.Infrastructure.Repositories
             if (resultado.CodigoEstado == "1" || resultado.CodigoEstado == "3")
             {
                 resultado.Datos = datos;
-                resultado.Folio = await GenerarFolioAsync();
-                await GuardarDocumentosAsync(resultado.Folio,
-                    [(contenidoXml, archivo.FileName, "XML", "XML_SUNAT")]);
+
+                // Si el archivo ya fue subido, reutilizar el folio existente
+                var docExistente = await _contexto.DocumentosElectronicos
+                    .FirstOrDefaultAsync(d => d.NombreArchivo == archivo.FileName && d.SubTipo == "XML_SUNAT");
+
+                if (docExistente != null)
+                {
+                    resultado.Folio = docExistente.Folio;
+                }
+                else
+                {
+                    resultado.Folio = await GenerarFolioAsync();
+                    await GuardarDocumentosAsync(resultado.Folio,
+                        [(contenidoXml, archivo.FileName, "XML", "XML_SUNAT")]);
+                }
             }
 
             return resultado;
@@ -905,6 +917,17 @@ namespace ComprobantePago.Infrastructure.Repositories
             if (resultado.CodigoEstado == "1" || resultado.CodigoEstado == "3")
             {
                 resultado.Datos = datos;
+
+                // Si el XML principal del ZIP ya fue subido, reutilizar el folio existente
+                var docExistente = await _contexto.DocumentosElectronicos
+                    .FirstOrDefaultAsync(d => d.NombreArchivo == entradaXml.Name && d.SubTipo == "XML_SUNAT");
+
+                if (docExistente != null)
+                {
+                    resultado.Folio = docExistente.Folio;
+                    return resultado;
+                }
+
                 resultado.Folio = await GenerarFolioAsync();
 
                 var archivos = new List<(byte[] contenido, string nombre, string tipo, string subTipo)>();
