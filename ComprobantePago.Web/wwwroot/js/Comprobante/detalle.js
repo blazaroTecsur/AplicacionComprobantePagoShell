@@ -527,6 +527,16 @@ function validarCabecera() {
             return false;
         }
     }
+
+    if ($('#chkEsEmpleado').is(':checked')) {
+        const empCodigo = $('#hdnEmpleadoCodigo').val();
+        if (CorporativoCore.esVacio(empCodigo) || empCodigo === '-') {
+            CorporativoCore.notificarAdvertencia('Debe seleccionar un empleado cuando la opción "Es Empleado" está marcada.');
+            $('#btnBuscarEmpleado').trigger('focus');
+            return false;
+        }
+    }
+
     return true;
 }
 

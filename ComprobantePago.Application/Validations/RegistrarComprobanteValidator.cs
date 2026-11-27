@@ -54,6 +54,11 @@ namespace ComprobantePago.Application.Validations
             RuleFor(x => x.MontoIGVCredito)
                 .GreaterThanOrEqualTo(0).WithMessage("El monto IGV no puede ser negativo.");
 
+            RuleFor(x => x.EmpleadoCodigo)
+                .NotEmpty().WithMessage("Debe seleccionar un empleado cuando la opción \"Es Empleado\" está marcada.")
+                .Must(c => c != "-").WithMessage("Debe seleccionar un empleado cuando la opción \"Es Empleado\" está marcada.")
+                .When(x => x.EsEmpleado);
+
             RuleFor(x => x.TipoDetraccion)
                 .NotEmpty().WithMessage("El tipo de detracción es obligatorio cuando aplica detracción.")
                 .When(x => x.TieneDetraccion);
