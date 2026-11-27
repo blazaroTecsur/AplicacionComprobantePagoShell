@@ -34,7 +34,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends fonts-liberatio
 # RUNTIME
 # =====================================
 
-FROM ghcr.io/sistecsur/dotnet-runtime:8.1
+# TODO: reemplazar por ghcr.io/sistecsur/dotnet-runtime:10.0 cuando esté disponible
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 
 WORKDIR /app
 
