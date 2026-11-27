@@ -12,7 +12,7 @@ namespace ComprobantePago.Infrastructure.Services.Maestros
         {
             try
             {
-                var result = await maestros.GetAllAsync(usuario.Esquema, filtro, 1, 100);
+                var result = await maestros.GetAllAsync(usuario.Esquema, usuario.Sitio, filtro, 1, 100);
                 return result.Items
                     .Where(p => p.TipoPersona == "1" && p.Estado.ToUpper() != "INACTIVO")
                     .Select(p => new ComboDto
